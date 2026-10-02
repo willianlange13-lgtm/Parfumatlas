@@ -2,8 +2,9 @@ import "server-only";
 
 export const geminiConfigurado = () => Boolean(process.env.GEMINI_API_KEY);
 /** "gemini-flash-latest" sempre aponta para o Flash mais novo, então não sai de linha. */
-const MODELOS = () => [...new Set([process.env.GEMINI_MODEL, "gemini-flash-latest"].filter(Boolean) as string[])];
-let modeloQueFunciona: string | null = null;
+/** Se um modelo estiver fora de linha, sem cota ou sobrecarregado, tenta o seguinte. */
+const MODELOS = () => [...new Set([process.env.GEMINI_MODEL, "gemini-flash-latest", "gemini-flash-lite-latest"].filter(Boolean) as string[])];
+const espera = (ms: number) => new Promise((ok) => setTimeout(ok, ms));
 
 type Parte = { text: string } | { inlineData: { mimeType: string; data: string } };
 
@@ -34,19 +35,24 @@ async function chamar(partes: Parte[], opcoes: { schema?: object; pesquisar?: bo
   if (opcoes.sistema) corpo.systemInstruction = { parts: [{ text: opcoes.sistema }] };
   if (opcoes.pesquisar) corpo.tools = [{ google_search: {} }, { url_context: {} }];
   let r: Response | null = null;
-  const lista = modeloQueFunciona ? [modeloQueFunciona] : MODELOS();
-  for (const modelo of lista) {
-    r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "x-goog-api-key": chave },
-      body: JSON.stringify(corpo),
-    });
-    if (r.status === 404) continue; // modelo fora de linha: tenta o próximo
-    modeloQueFunciona = modelo;
-    break;
+  let ultimo = "";
+  externo: for (const modelo of MODELOS()) {
+    for (let tentativa = 0; tentativa < 2; tentativa++) {
+      r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-goog-api-key": chave },
+        body: JSON.stringify(corpo),
+        signal: AbortSignal.timeout(45000),
+      });
+      if (r.ok) break externo;
+      ultimo = `Gemini ${r.status} (${modelo}): ${(await r.clone().text()).slice(0, 200)}`;
+      if (r.status === 503 && tentativa === 0) { await espera(1500); continue; } // sobrecarga passageira: tenta de novo
+      if ([404, 429, 503].includes(r.status)) continue externo; // fora de linha, sem cota ou ocupado: próximo modelo
+      break externo;
+    }
   }
   if (!r) throw new Error("Gemini: nenhum modelo disponível");
-  if (!r.ok) throw new Error(`Gemini ${r.status}: ${(await r.text()).slice(0, 300)}`);
+  if (!r.ok) throw new Error(ultimo || `Gemini ${r.status}`);
   const j = await r.json();
   const texto: string = (j.candidates?.[0]?.content?.parts ?? []).map((p: { text?: string }) => p.text ?? "").join("");
   if (!texto) throw new Error(`Gemini respondeu vazio (${j.candidates?.[0]?.finishReason ?? j.promptFeedback?.blockReason ?? "sem motivo"})`);

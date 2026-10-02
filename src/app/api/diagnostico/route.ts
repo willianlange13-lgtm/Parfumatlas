@@ -4,7 +4,7 @@ import { geminiConfigurado, geminiJSON } from "@/lib/gemini";
 import { gerarFicha, ultimoErroFicha } from "@/lib/ficha";
 import type { NextRequest } from "next/server";
 
-export const maxDuration = 60;
+export const maxDuration = 120;
 
 /** Mostra o que está ligado (sem revelar chaves). Abra /api/diagnostico no navegador. */
 export async function GET(request: NextRequest) {
