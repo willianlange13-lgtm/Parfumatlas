@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
     const cota = ultimoErroFicha.includes("429");
     const ocupado = ultimoErroFicha.includes("503");
     const msg = cota
-      ? "A cota gratuita da IA do Google acabou por agora. Tente de novo em alguns minutos ou ative o faturamento no Google AI Studio."
+      ? "A IA chegou no limite de uso (cota gratuita ou crédito acabou). Confira o crédito da sua chave e tente de novo."
       : ocupado
         ? "A IA do Google está sobrecarregada neste momento. Tente de novo em um minuto."
         : `Não consegui montar a ficha desse perfume.${ultimoErroFicha ? ` Detalhe: ${ultimoErroFicha}` : " Confira o nome ou cole o link do Fragrantica."}`;

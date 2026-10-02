@@ -1,7 +1,7 @@
 # Parfum Atlas
 
 Arquivo pessoal de fragrâncias. Site no computador e app no celular (PWA), com voz e Alexa.
-Next.js 16 + Supabase + Gemini.
+Next.js 16 + Supabase + ChatGPT (ou Gemini).
 
 ## O que tem
 
@@ -16,7 +16,7 @@ Sem banco ligado, tudo abre com a coleção de exemplo (marcada como "ilustrativ
 1. **Supabase**: crie um projeto. Em *SQL Editor > New query*, cole `supabase/migrations/0001_inicial.sql` e rode.
 2. Em *Authentication > URL Configuration*, coloque a URL da Vercel em *Site URL* e adicione `https://SEU-DOMINIO/auth/callback` em *Redirect URLs*.
 3. Depois do seu primeiro login, desligue novos cadastros em *Authentication > Sign In / Providers > Allow new users to sign up*. O sistema é só seu.
-4. **Gemini**: crie a chave em https://aistudio.google.com/apikey.
+4. **IA**: crie a chave do ChatGPT em https://platform.openai.com/api-keys (com crédito) e cadastre como `OPENAI_API_KEY`. O Gemini (`GEMINI_API_KEY`) também funciona, mas a cota gratuita acaba rápido.
 5. **Avisos**: rode `npx web-push generate-vapid-keys` e guarde as duas chaves.
 6. **Vercel**: importe o repositório e cadastre as variáveis de `.env.example`. O `vercel.json` já agenda o aviso diário (7h30 em Campo Grande).
 7. No celular, abra o site e use *Adicionar à tela inicial*. No iPhone, os avisos só chegam com o app instalado assim.

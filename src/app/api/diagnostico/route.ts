@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient, supabaseConfigurado } from "@/lib/supabase/server";
-import { geminiConfigurado, geminiJSON } from "@/lib/gemini";
+import { geminiConfigurado, geminiJSON, nomeIA } from "@/lib/gemini";
 import { gerarFicha, ultimoErroFicha } from "@/lib/ficha";
 import { lerPagina } from "@/lib/pagina";
 import type { NextRequest } from "next/server";
@@ -20,12 +20,13 @@ export async function GET(request: NextRequest) {
     const { data: b, error: eb } = await sb.storage.from("frascos").list("", { limit: 1 });
     r.fotos = eb ? `ERRO: ${eb.message}` : `pasta de fotos ok${b ? "" : ""}`;
   }
-  if (!geminiConfigurado()) r.gemini = "FALTA GEMINI_API_KEY";
+  r.ia = geminiConfigurado() ? nomeIA() : "nenhuma";
+  if (!geminiConfigurado()) r.gemini = "FALTA OPENAI_API_KEY (ou GEMINI_API_KEY)";
   else if (request.nextUrl.searchParams.get("pagina")) r.gemini = "chave ok (não testada)";
   else {
     try {
       const t = await geminiJSON<{ ok: string }>([{ text: 'Responda {"ok":"sim"}' }], { schema: { type: "OBJECT", properties: { ok: { type: "STRING" } }, required: ["ok"] } });
-      r.gemini = t.ok === "sim" ? "IA respondendo" : "IA respondeu algo estranho";
+      r.gemini = t.ok === "sim" ? `${nomeIA()} respondendo` : "IA respondeu algo estranho";
     } catch (e) {
       r.gemini = `ERRO: ${e instanceof Error ? e.message.slice(0, 200) : "desconhecido"}`;
     }

@@ -1,6 +1,9 @@
 import "server-only";
 
-export const geminiConfigurado = () => Boolean(process.env.GEMINI_API_KEY);
+/** A IA do sistema: ChatGPT (OpenAI) quando houver OPENAI_API_KEY; senão, Gemini. */
+export const usaOpenAI = () => Boolean(process.env.OPENAI_API_KEY);
+export const geminiConfigurado = () => usaOpenAI() || Boolean(process.env.GEMINI_API_KEY);
+export const nomeIA = () => (usaOpenAI() ? "ChatGPT" : "Gemini");
 /** "gemini-flash-latest" sempre aponta para o Flash mais novo, então não sai de linha. */
 /** Se um modelo estiver fora de linha, sem cota ou sobrecarregado, tenta o seguinte. */
 const MODELOS = (leve = false) => [...new Set([process.env.GEMINI_MODEL, ...(leve ? ["gemini-flash-lite-latest", "gemini-flash-latest"] : ["gemini-flash-latest", "gemini-flash-lite-latest"])].filter(Boolean) as string[])];
@@ -26,6 +29,7 @@ export async function geminiTexto(partes: Parte[], opcoes: { pesquisar?: boolean
 }
 
 async function chamar(partes: Parte[], opcoes: { schema?: object; pesquisar?: boolean; sistema?: string; temperatura?: number; leve?: boolean }, json: boolean): Promise<string> {
+  if (usaOpenAI()) return chamarOpenAI(partes, opcoes, json);
   const chave = process.env.GEMINI_API_KEY;
   if (!chave) throw new Error("GEMINI_API_KEY não configurada");
   const corpo: Record<string, unknown> = {
@@ -57,4 +61,56 @@ async function chamar(partes: Parte[], opcoes: { schema?: object; pesquisar?: bo
   const texto: string = (j.candidates?.[0]?.content?.parts ?? []).map((p: { text?: string }) => p.text ?? "").join("");
   if (!texto) throw new Error(`Gemini respondeu vazio (${j.candidates?.[0]?.finishReason ?? j.promptFeedback?.blockReason ?? "sem motivo"})`);
   return texto;
+}
+
+// ---------------- ChatGPT (OpenAI, Responses API) ----------------
+
+/** Modelos do mais barato ao mais capaz. OPENAI_MODEL na Vercel passa na frente. */
+const MODELOS_OPENAI = () => [...new Set([process.env.OPENAI_MODEL, "gpt-5-mini", "gpt-4.1-mini", "gpt-4o-mini"].filter(Boolean) as string[])];
+
+/** Converte o schema no estilo do Gemini (OBJECT, STRING…) para JSON Schema comum, só para descrever o formato. */
+function schemaComum(o: unknown): unknown {
+  if (Array.isArray(o)) return o.map(schemaComum);
+  if (o && typeof o === "object") {
+    const r: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(o)) r[k] = k === "type" && typeof v === "string" ? v.toLowerCase() : schemaComum(v);
+    return r;
+  }
+  return o;
+}
+
+async function chamarOpenAI(partes: Parte[], opcoes: { schema?: object; pesquisar?: boolean; sistema?: string; temperatura?: number }, json: boolean): Promise<string> {
+  const chave = process.env.OPENAI_API_KEY!;
+  const conteudo = partes.map((p) => ("text" in p ? { type: "input_text", text: p.text } : { type: "input_image", image_url: `data:${p.inlineData.mimeType};base64,${p.inlineData.data}` }));
+  if (json) conteudo.push({ type: "input_text", text: `Responda só com um JSON válido${opcoes.schema ? ` neste formato (JSON Schema): ${JSON.stringify(schemaComum(opcoes.schema))}` : ""}.` });
+  const corpo: Record<string, unknown> = {
+    input: [{ role: "user", content: conteudo }],
+    ...(opcoes.sistema ? { instructions: opcoes.sistema } : {}),
+    ...(opcoes.pesquisar ? { tools: [{ type: "web_search" }] } : {}),
+    ...(json && !opcoes.pesquisar ? { text: { format: { type: "json_object" } } } : {}),
+  };
+  let ultimo = "";
+  for (const modelo of MODELOS_OPENAI()) {
+    const r = await fetch("https://api.openai.com/v1/responses", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${chave}` },
+      body: JSON.stringify({ model: modelo, ...corpo }),
+      signal: AbortSignal.timeout(90000),
+    });
+    if (!r.ok) {
+      ultimo = `ChatGPT ${r.status} (${modelo}): ${(await r.text()).slice(0, 200)}`;
+      if (r.status === 404 || r.status === 400) continue; // modelo indisponível na conta: tenta o próximo
+      throw new Error(ultimo);
+    }
+    const j = await r.json();
+    const texto: string = (j.output ?? [])
+      .filter((o: { type: string }) => o.type === "message")
+      .flatMap((o: { content?: { type: string; text?: string }[] }) => o.content ?? [])
+      .filter((c: { type: string }) => c.type === "output_text")
+      .map((c: { text?: string }) => c.text ?? "")
+      .join("");
+    if (!texto) throw new Error(`ChatGPT respondeu vazio (${j.status ?? "sem motivo"})`);
+    return texto;
+  }
+  throw new Error(ultimo || "ChatGPT: nenhum modelo disponível");
 }
