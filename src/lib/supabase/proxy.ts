@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { SESSAO_CURTA, semValidade } from "./sessao";
 
 const PUBLICAS = ["/entrar", "/auth", "/api/avisos", "/api/alexa"];
 
@@ -17,7 +18,8 @@ export async function atualizarSessao(request: NextRequest) {
       setAll(lista) {
         lista.forEach(({ name, value }) => request.cookies.set(name, value));
         resposta = NextResponse.next({ request });
-        lista.forEach(({ name, value, options }) => resposta.cookies.set(name, value, options));
+        const curta = request.cookies.get(SESSAO_CURTA)?.value === "1";
+        lista.forEach(({ name, value, options }) => resposta.cookies.set(name, value, curta ? semValidade(options) : options));
       },
     },
   });
