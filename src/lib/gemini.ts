@@ -1,7 +1,9 @@
 import "server-only";
 
 export const geminiConfigurado = () => Boolean(process.env.GEMINI_API_KEY);
-const MODELO = () => process.env.GEMINI_MODEL || "gemini-2.5-flash";
+/** "gemini-flash-latest" sempre aponta para o Flash mais novo, então não sai de linha. */
+const MODELOS = () => [...new Set([process.env.GEMINI_MODEL, "gemini-flash-latest"].filter(Boolean) as string[])];
+let modeloQueFunciona: string | null = null;
 
 type Parte = { text: string } | { inlineData: { mimeType: string; data: string } };
 
@@ -18,11 +20,19 @@ export async function geminiJSON<T>(partes: Parte[], opcoes: { schema?: object; 
   };
   if (opcoes.sistema) corpo.systemInstruction = { parts: [{ text: opcoes.sistema }] };
   if (opcoes.pesquisar) corpo.tools = [{ google_search: {} }, { url_context: {} }];
-  const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODELO()}:generateContent`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", "x-goog-api-key": chave },
-    body: JSON.stringify(corpo),
-  });
+  let r: Response | null = null;
+  const lista = modeloQueFunciona ? [modeloQueFunciona] : MODELOS();
+  for (const modelo of lista) {
+    r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-goog-api-key": chave },
+      body: JSON.stringify(corpo),
+    });
+    if (r.status === 404) continue; // modelo fora de linha: tenta o próximo
+    modeloQueFunciona = modelo;
+    break;
+  }
+  if (!r) throw new Error("Gemini: nenhum modelo disponível");
   if (!r.ok) throw new Error(`Gemini ${r.status}: ${(await r.text()).slice(0, 300)}`);
   const j = await r.json();
   const texto: string = (j.candidates?.[0]?.content?.parts ?? []).map((p: { text?: string }) => p.text ?? "").join("");
