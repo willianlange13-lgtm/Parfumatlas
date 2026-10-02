@@ -19,7 +19,7 @@ export function itemVitrine(p: Perfume, extra: { rel?: string; assin?: boolean; 
     vidro: `linear-gradient(115deg, rgba(255,255,255,.38) 0%, ${hexA(cor, 0.3)} 38%, ${hexA(cor, 0.55)} 100%)`,
     href: extra.href ?? `/colecao/${p.id}`,
     situacao: extra.situacao ?? "",
-    forma: p.forma, foto: extra.foto ?? null, numero: extra.numero ?? 0, adicionado: extra.adicionado ?? "", dias: extra.dias ?? 0,
+    forma: p.forma, foto: extra.foto ?? p.imagem ?? null, oficial: !extra.foto && Boolean(p.imagem), numero: extra.numero ?? 0, adicionado: extra.adicionado ?? "", dias: extra.dias ?? 0,
     busca: [p.nome, p.casa, p.familia, ...p.notas.saida, ...p.notas.coracao, ...p.notas.fundo].join(" ").toLowerCase(),
   };
 }

@@ -1,6 +1,7 @@
 import "server-only";
 import { geminiConfigurado, geminiJSON, geminiTexto } from "@/lib/gemini";
 import { carregarAcervo } from "@/lib/dados";
+import { lerPagina, linkDePerfume, type Pagina } from "@/lib/pagina";
 import type { Perfume } from "@/lib/tipos";
 
 export type Candidato = { nome: string; casa: string; concentracao: string; por: string; pct: number; link?: string };
@@ -105,30 +106,45 @@ export async function gerarFicha(c: { nome: string; casa: string; concentracao?:
   if (geminiConfigurado()) {
     ultimoErroFicha = "";
     const alvo = `"${c.nome}" da casa "${c.casa}"${c.concentracao ? ` (${c.concentracao})` : ""}`;
-    // 1) pesquisa na internet, em texto livre
+    // 1) a página do link, lida direto (dados reais e a foto oficial)
+    let pagina: Pagina | null = c.link ? await lerPagina(c.link) : null;
+    // 2) pesquisa na internet, se não houver página ou para completar
     let pesquisa = "";
     try {
-      pesquisa = await geminiTexto([{ text: `Pesquise o perfume ${alvo}.${c.link ? ` Comece por este link: ${c.link}.` : ""} Use o Fragrantica, o Parfumo e o site oficial da marca.
-Anote: ano, concentração, perfumistas, família olfativa, gênero, país da casa, notas de saída, coração e fundo, acordes principais com a força de cada um (0 a 100), votos da comunidade (fixação, projeção, estações, dia e noite, ocasiões), número de votos, formato e cor da tampa do frasco, URL da foto oficial e os sites consultados.` }], { pesquisar: true, temperatura: 0.2 });
+      pesquisa = await geminiTexto([{ text: `Pesquise o perfume ${alvo}.${c.link ? ` A página dele: ${c.link}.` : ""} Use o Fragrantica, o Parfumo e o site oficial da marca.
+Anote só o que encontrar nas fontes: ano, concentração, perfumistas, família olfativa, gênero, país da casa, notas de saída, coração e fundo, acordes principais com a força de cada um (0 a 100), votos da comunidade (fixação, projeção, estações, dia e noite, ocasiões), número de votos, formato e cor da tampa do frasco.
+No fim, escreva o endereço completo da página do perfume no Fragrantica (linha "FRAGRANTICA: https://...").` }], { pesquisar: true, temperatura: 0.1 });
     } catch (e) {
       ultimoErroFicha = `pesquisa: ${e instanceof Error ? e.message.slice(0, 160) : e}`;
       console.error("gerarFicha pesquisa", e);
     }
-    // 2) organiza no formato da ficha (com ou sem a pesquisa)
+    if (!pagina && pesquisa) {
+      const link = linkDePerfume(pesquisa);
+      if (link) pagina = await lerPagina(link);
+    }
+    // sem fonte nenhuma, não inventa: avisa
+    if (!pagina && !pesquisa) {
+      ultimoErroFicha = ultimoErroFicha || "sem fonte para consultar";
+      if (local) { const { id: _i, clima: _c, ...resto } = local; void _i; void _c; return { ...resto, revisar: [] }; }
+      return null;
+    }
+    // 3) organiza no formato da ficha, só com o que veio das fontes
     try {
-      const f = await geminiJSON<FichaIA>([{ text: `Monte a ficha do perfume ${alvo} no formato pedido.
-${pesquisa ? `Use estas anotações da pesquisa:\n${pesquisa}\n` : "Use o que você sabe sobre ele e marque em \"revisar\" o que tiver pouca certeza.\n"}
+      const f = await geminiJSON<FichaIA>([{ text: `Monte a ficha do perfume ${alvo} usando SOMENTE as fontes abaixo. Não invente: o que não estiver nas fontes fica vazio (ou 0) e entra em "revisar".
+${pagina ? `\n=== PÁGINA ${pagina.url} ===\n${pagina.texto}\n` : ""}${pesquisa ? `\n=== PESQUISA ===\n${pesquisa}\n` : ""}
 Regras:
 - Tudo em português do Brasil, inclusive os nomes das notas ("Bergamota", "Almíscar", "Baunilha", "Âmbar cinzento").
 - "acorde" é o principal, um de: ${ACORDE_PRINCIPAL}.
-- Cada item de "acordes" usa um destes nomes: ${ACORDES_OK}. Valor de 0 a 100.
+- Cada item de "acordes" usa um destes nomes: ${ACORDES_OK}. Valor de 0 a 100 (no Fragrantica, a largura da barra).
 - fixacaoH em horas (ex.: 7.5) e projecaoM em metros (ex.: 1.4).
 - votos.fixacao: 5 porcentagens (muito fraca, fraca, moderada, duradoura, muito longa). votos.projecao: 4 (íntima, moderada, forte, enorme). Estações, dia e noite de 0 a 100.
 - ocasioes: Trabalho, Dia a dia, Encontro, Festa, Formal e Esporte, de 0 a 100.
 - descricao: 1 ou 2 frases curtas, sem exagero. genero: Masculino, Feminino ou Unissex.
 - forma do frasco: alto, ret, redondo ou largo. tampa: cor em hex (#RRGGBB).
-- fontes: os sites usados e o que veio de cada um. revisar: campos com pouca certeza.` }], { schema: SCHEMA_FICHA, temperatura: 0.2 });
-      return { ...f, perfumistas: f.perfumistas ?? [], revisar: f.revisar ?? [], fontes: f.fontes ?? [], forma: f.forma ?? "ret", tampa: /^#[0-9a-f]{6}$/i.test(f.tampa ?? "") ? f.tampa : "#141417", imagem: f.imagem || null };
+- fontes: os sites usados e o que veio de cada um.` }], { schema: SCHEMA_FICHA, temperatura: 0.1 });
+      const imagem = pagina?.imagem ?? (f.imagem && /^https:\/\/fimgs\.net\//.test(f.imagem) ? f.imagem : null);
+      const fontes = f.fontes?.length ? f.fontes : pagina ? [{ nome: new URL(pagina.url).hostname.replace("www.", ""), url: pagina.url, oQue: "notas, acordes e votos" }] : [];
+      return { ...f, perfumistas: f.perfumistas ?? [], revisar: f.revisar ?? [], fontes, forma: f.forma ?? "ret", tampa: /^#[0-9a-f]{6}$/i.test(f.tampa ?? "") ? f.tampa : "#141417", imagem };
     } catch (e) {
       ultimoErroFicha = `${ultimoErroFicha ? ultimoErroFicha + " · " : ""}ficha: ${e instanceof Error ? e.message.slice(0, 160) : e}`;
       console.error("gerarFicha", e);

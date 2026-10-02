@@ -128,14 +128,14 @@ export function NotaChip({ nome, tam = 28, rotulo = true, fs = 13 }: { nome: str
 }
 
 /** Palco com frasco desenhado ou foto. */
-export function PalcoC({ nome, casa, acorde, forma = "ret", tampa = "#141417", altura, k, raio = 20, foto, children, semBorda, transparente }: { nome: string; casa: string; acorde?: string | null; forma?: Forma | string; tampa?: string; altura: number; k?: number; raio?: number; foto?: string | null; children?: ReactNode; semBorda?: boolean; transparente?: boolean }) {
+export function PalcoC({ nome, casa, acorde, forma = "ret", tampa = "#141417", altura, k, raio = 20, foto, oficial, children, semBorda, transparente }: { nome: string; casa: string; acorde?: string | null; forma?: Forma | string; tampa?: string; altura: number; k?: number; raio?: number; foto?: string | null; oficial?: boolean; children?: ReactNode; semBorda?: boolean; transparente?: boolean }) {
   const cor = corDoAcorde(acorde);
   const esc = k ?? Math.round((altura / 150) * 100) / 100;
   return (
     <div style={{ position: "relative", height: altura, borderRadius: raio, overflow: "hidden", border: semBorda ? "none" : "1px solid var(--line)", background: `radial-gradient(ellipse at 50% 85%, ${hexA(cor, 0.22)} 0%, ${hexA(cor, 0.06)} 55%, ${transparente ? "rgba(0,0,0,0)" : "var(--surface)"} 100%)`, display: "flex", alignItems: "flex-end", justifyContent: "center", paddingBottom: Math.round(22 * esc), flexShrink: 0 }}>
       {foto ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={foto} alt={nome} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
+        <img src={foto} alt={nome} style={oficial ? { position: "absolute", inset: 10, width: "calc(100% - 20px)", height: "calc(100% - 20px)", objectFit: "contain", background: "#FFFFFF", borderRadius: Math.max(8, raio - 8) } : { position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
       ) : (
         <Frasco nome={nome} casa={casa} acorde={acorde} forma={(forma as Forma) ?? "ret"} tampa={tampa} escala={esc} />
       )}
@@ -146,7 +146,7 @@ export function PalcoC({ nome, casa, acorde, forma = "ret", tampa = "#141417", a
 }
 
 /** Frasco pequeno em quadrado (listas). */
-export function Mini(p: { nome: string; casa: string; acorde?: string | null; forma?: string; tampa?: string; foto?: string | null; w?: number; h?: number; raio?: number }) {
+export function Mini(p: { nome: string; casa: string; acorde?: string | null; forma?: string; tampa?: string; foto?: string | null; oficial?: boolean; w?: number; h?: number; raio?: number }) {
   const w = p.w ?? 52, h = p.h ?? 58;
   return (
     <div style={{ width: w, flexShrink: 0 }}>

@@ -22,9 +22,9 @@ export function CelFicha({ v, x }: { v: V; x: ExtraFicha }) {
       <Topo titulo={`Coleção / ${p.acorde}`} voltar direita={<OpcoesPerfume id={p.id} nome={p.nome} casa={p.casa} entradaId={x.entradaId} situacao={x.situacao} numero={x.numero} />} />
 
       {/* 01 · identidade */}
-      <PalcoC nome={p.nome} casa={p.casa} acorde={p.acorde} forma={p.forma} tampa={p.tampa} foto={x.foto ?? p.imagem} altura={240} k={1.25} raio={24}>
+      <PalcoC nome={p.nome} casa={p.casa} acorde={p.acorde} forma={p.forma} tampa={p.tampa} foto={x.foto ?? p.imagem} oficial={!x.foto && Boolean(p.imagem)} altura={240} k={1.25} raio={24}>
         {x.situacao === "assinatura" ? <span style={{ position: "absolute", right: 14, top: 14 }}><svg viewBox="0 0 24 24" style={{ width: 18, height: 18, fill: OURO, stroke: OURO }}><path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.5 1.3 6.6L12 17.2 6.1 20.5l1.3-6.6L2.5 9.4l6.6-.8z" /></svg></span> : null}
-        <span style={{ position: "absolute", left: 14, bottom: 12, fontFamily: MONO, fontSize: 9.5, letterSpacing: ".14em", color: "var(--ink-3)" }}>{x.foto ? "FOTO DO SEU FRASCO" : "FRASCO ILUSTRATIVO"}</span>
+        <span style={{ position: "absolute", left: 14, bottom: 12, fontFamily: MONO, fontSize: 9.5, letterSpacing: ".14em", color: "var(--ink-3)" }}>{x.foto ? "FOTO DO SEU FRASCO" : p.imagem ? "FOTO OFICIAL" : "FRASCO ILUSTRATIVO"}</span>
       </PalcoC>
       <div style={{ display: "flex", flexDirection: "column", gap: 8, flexShrink: 0 }}>
         <Rot style={{ color: "var(--ink-2)" }}>{cab.casaCidade}</Rot>

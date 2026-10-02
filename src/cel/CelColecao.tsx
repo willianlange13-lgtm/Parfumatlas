@@ -24,7 +24,7 @@ const ORD: [string, string][] = [["usados", "Mais usados"], ["recentes", "Mais r
 function CardP({ p }: { p: Item }) {
   return (
     <Link href={p.href} style={{ display: "flex", flexDirection: "column", gap: 8, minWidth: 0 }}>
-      <PalcoC nome={p.nome} casa={p.marca} acorde={p.acorde} forma={p.forma} tampa={p.tampa} foto={p.foto} altura={140} k={0.78} raio={18}>
+      <PalcoC nome={p.nome} casa={p.marca} acorde={p.acorde} forma={p.forma} tampa={p.tampa} foto={p.foto} oficial={p.oficial} altura={140} k={0.78} raio={18}>
         {p.rel ? <span style={{ position: "absolute", left: 9, top: 9, padding: "3px 8px", borderRadius: 9, background: "var(--bg)", color: "var(--prata)", fontSize: 10 }}>{p.rel}</span> : null}
         {p.assin ? <span style={{ position: "absolute", right: 9, top: 9 }}><svg viewBox="0 0 24 24" style={{ width: 15, height: 15, fill: OURO, stroke: OURO, strokeWidth: 1 }}><path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.5 1.3 6.6L12 17.2 6.1 20.5l1.3-6.6L2.5 9.4l6.6-.8z" /></svg></span> : null}
       </PalcoC>

@@ -151,6 +151,7 @@ export async function montarFicha(id: string) {
       relacao, som: `/sommelier?perfume=${p.id}`, comparar: `/comparar?a=${p.id}`, blind: `/blind?a=${p.id}`,
       frase: frase(p), dia, noite, pergunte: `pergunte sobre o ${p.nome}, por texto ou voz`, voz: `/sommelier?perfume=${p.id}&voz=1`,
       anotacao: entrada?.anotacao ?? "",
+      foto: entrada?.foto ?? p.imagem ?? null, fotoOficial: !entrada?.foto && Boolean(p.imagem),
     },
     conv: acervo.demo && p.id === "aventus"
       ? { p: "Serve para um jantar hoje à noite? Vai fazer uns 18 °C.", r: "Serve. Com 18 °C o abacaxi abre mais contido e a bétula aparece cedo, o que deixa o Aventus mais sério. Se quiser algo mais quente para a mesma noite, o Layton da sua coleção vai melhor." }

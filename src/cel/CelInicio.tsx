@@ -29,7 +29,7 @@ export function CelInicio({ v, usado }: { v: D; usado?: string }) {
           </div>
           <Link href={`/colecao/${d.e.perfumeId}`} style={{ display: "flex", gap: 14, alignItems: "stretch" }}>
             <div style={{ width: 128, flexShrink: 0 }}>
-              <PalcoC nome={p.nome} casa={p.casa} acorde={p.acorde} forma={p.forma} tampa={p.tampa} foto={d.e.foto} altura={170} k={0.9} raio={18} />
+              <PalcoC nome={p.nome} casa={p.casa} acorde={p.acorde} forma={p.forma} tampa={p.tampa} foto={d.e.foto ?? p.imagem} oficial={!d.e.foto && Boolean(p.imagem)} altura={170} k={0.9} raio={18} />
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 8, minWidth: 0, paddingTop: 4 }}>
               <div style={{ fontSize: 26, fontWeight: 500, letterSpacing: "-.02em", lineHeight: 1 }}>{p.nome}</div>
@@ -90,7 +90,7 @@ export function CelInicio({ v, usado }: { v: D; usado?: string }) {
             <span style={{ fontSize: 12, color: "var(--ink-3)" }}>há mais tempo sem sair do armário</span>
           </div>
           {c.esquecidos.map((e, i) => (
-            <Linha key={e.id} borda={i > 0} href={`/colecao/${e.perfumeId}`} esq={<Mini nome={e.perfume.nome} casa={e.perfume.casa} acorde={e.perfume.acorde} forma={e.perfume.forma} tampa={e.perfume.tampa} foto={e.foto} />}
+            <Linha key={e.id} borda={i > 0} href={`/colecao/${e.perfumeId}`} esq={<Mini nome={e.perfume.nome} casa={e.perfume.casa} acorde={e.perfume.acorde} forma={e.perfume.forma} tampa={e.perfume.tampa} foto={e.foto ?? e.perfume.imagem} oficial={!e.foto && Boolean(e.perfume.imagem)} />}
               dir={<div style={{ textAlign: "right", lineHeight: 1 }}><div style={{ fontSize: 22, color: OURO }}>{e.dias}</div><div style={{ fontFamily: MONO, fontSize: 9, color: "var(--ink-3)", marginTop: 3 }}>DIAS</div></div>}>
               <NomeSub nome={e.perfume.nome} sub={`${e.perfume.casa} · ${e.perfume.acorde}`} />
             </Linha>
@@ -104,7 +104,7 @@ export function CelInicio({ v, usado }: { v: D; usado?: string }) {
           <Rolar gap={10}>
             {c.ultimas.map((e) => (
               <Link key={e.id} href={`/colecao/${e.perfumeId}`} style={{ width: 132, flexShrink: 0, display: "flex", flexDirection: "column", gap: 8 }}>
-                <PalcoC nome={e.perfume.nome} casa={e.perfume.casa} acorde={e.perfume.acorde} forma={e.perfume.forma} tampa={e.perfume.tampa} foto={e.foto} altura={118} k={0.6} raio={16}>
+                <PalcoC nome={e.perfume.nome} casa={e.perfume.casa} acorde={e.perfume.acorde} forma={e.perfume.forma} tampa={e.perfume.tampa} foto={e.foto ?? e.perfume.imagem} oficial={!e.foto && Boolean(e.perfume.imagem)} altura={118} k={0.6} raio={16}>
                   <span style={{ position: "absolute", left: 9, top: 8, fontFamily: MONO, fontSize: 9.5, color: "var(--ink-3)" }}>Nº {n3(e.numero)}</span>
                 </PalcoC>
                 <div style={{ display: "flex", flexDirection: "column", gap: 3, padding: "0 2px" }}>
