@@ -1,5 +1,5 @@
 import "server-only";
-import { geminiConfigurado, geminiJSON } from "@/lib/gemini";
+import { geminiConfigurado, geminiJSON, geminiTexto } from "@/lib/gemini";
 import { carregarAcervo } from "@/lib/dados";
 import type { Perfume } from "@/lib/tipos";
 
@@ -72,25 +72,65 @@ Responda só com JSON: {"lido": [], "candidatos": [{"nome": "...", "casa": "..."
   return { lido: [], candidatos: texto ? await buscaLocal(texto) : [] };
 }
 
+const N = { type: "NUMBER" }, T = { type: "STRING" }, L = { type: "ARRAY", items: { type: "STRING" } };
+const SCHEMA_FICHA = {
+  type: "OBJECT",
+  properties: {
+    nome: T, casa: T, ano: { type: "INTEGER" }, concentracao: T, perfumistas: L, familia: T, acorde: T, genero: T, pais: T, descricao: T,
+    notas: { type: "OBJECT", properties: { saida: L, coracao: L, fundo: L }, required: ["saida", "coracao", "fundo"] },
+    acordes: { type: "ARRAY", items: { type: "OBJECT", properties: { nome: T, valor: N }, required: ["nome", "valor"] } },
+    fixacaoH: N, projecaoM: N,
+    votos: {
+      type: "OBJECT",
+      properties: {
+        total: { type: "INTEGER" }, fixacao: { type: "ARRAY", items: N }, projecao: { type: "ARRAY", items: N },
+        estacoes: { type: "OBJECT", properties: { primavera: N, verao: N, outono: N, inverno: N }, required: ["primavera", "verao", "outono", "inverno"] },
+        dia: N, noite: N, ocasioes: { type: "ARRAY", items: { type: "OBJECT", properties: { nome: T, v: N }, required: ["nome", "v"] } },
+      },
+      required: ["fixacao", "projecao", "estacoes", "dia", "noite", "ocasioes"],
+    },
+    forma: { type: "STRING", enum: ["alto", "ret", "redondo", "largo"] }, tampa: T, imagem: T,
+    fontes: { type: "ARRAY", items: { type: "OBJECT", properties: { nome: T, url: T, oQue: T }, required: ["nome", "oQue"] } },
+    revisar: L,
+  },
+  required: ["nome", "casa", "familia", "acorde", "notas", "acordes", "votos", "forma", "tampa", "fontes", "revisar"],
+};
+
+/** Último erro da IA ao montar a ficha (aparece na tela e no diagnóstico). */
+export let ultimoErroFicha = "";
+
 export async function gerarFicha(c: { nome: string; casa: string; concentracao?: string; link?: string }): Promise<FichaIA | null> {
   const { perfumes } = await carregarAcervo();
   const local = [...perfumes.values()].find((p) => normal(p.nome) === normal(c.nome) && normal(p.casa) === normal(c.casa));
   if (geminiConfigurado()) {
+    ultimoErroFicha = "";
+    const alvo = `"${c.nome}" da casa "${c.casa}"${c.concentracao ? ` (${c.concentracao})` : ""}`;
+    // 1) pesquisa na internet, em texto livre
+    let pesquisa = "";
     try {
-      const f = await geminiJSON<FichaIA>([{ text: `Monte a ficha completa do perfume "${c.nome}" da casa "${c.casa}"${c.concentracao ? ` (${c.concentracao})` : ""}.${c.link ? ` Comece por este link: ${c.link}.` : ""}
-Pesquise no Fragrantica, no Parfumo e no site oficial da marca. Use os votos da comunidade para fixação, projeção, estações, dia/noite e ocasiões.
-Escreva tudo em português do Brasil (nomes das notas também: "Bergamota", "Almíscar", "Baunilha", "Âmbar cinzento"...).
-Responda só com JSON, neste formato:
-{"nome":"","casa":"","ano":2020,"concentracao":"Eau de Parfum","perfumistas":[""],"familia":"ex.: Chipre frutado","acorde":"um de: ${ACORDE_PRINCIPAL}","genero":"Masculino|Feminino|Unissex","pais":"","descricao":"1 ou 2 frases curtas, sem exagero",
-"notas":{"saida":[],"coracao":[],"fundo":[]},
-"acordes":[{"nome":"um de: ${ACORDES_OK}","valor":0-100}],
-"fixacaoH":7.5,"projecaoM":1.4,
-"votos":{"total":0,"fixacao":[muito fraca, fraca, moderada, duradoura, muito longa em %],"projecao":[íntima, moderada, forte, enorme em %],"estacoes":{"primavera":0-100,"verao":0-100,"outono":0-100,"inverno":0-100},"dia":0-100,"noite":0-100,"ocasioes":[{"nome":"Trabalho","v":0-100},{"nome":"Dia a dia","v":0},{"nome":"Encontro","v":0},{"nome":"Festa","v":0},{"nome":"Formal","v":0},{"nome":"Esporte","v":0}]},
-"forma":"alto|ret|redondo|largo (formato do frasco)","tampa":"#hex da cor da tampa","imagem":"url da foto oficial do frasco, se achar",
-"fontes":[{"nome":"Fragrantica","url":"","oQue":"notas e votos"}],
-"revisar":["campos com pouca certeza, ex.: ano, perfumistas"]}` }], { pesquisar: true, temperatura: 0.2 });
-      return { ...f, perfumistas: f.perfumistas ?? [], revisar: f.revisar ?? [], fontes: f.fontes ?? [], forma: f.forma ?? "ret", tampa: f.tampa ?? "#141417" };
+      pesquisa = await geminiTexto([{ text: `Pesquise o perfume ${alvo}.${c.link ? ` Comece por este link: ${c.link}.` : ""} Use o Fragrantica, o Parfumo e o site oficial da marca.
+Anote: ano, concentração, perfumistas, família olfativa, gênero, país da casa, notas de saída, coração e fundo, acordes principais com a força de cada um (0 a 100), votos da comunidade (fixação, projeção, estações, dia e noite, ocasiões), número de votos, formato e cor da tampa do frasco, URL da foto oficial e os sites consultados.` }], { pesquisar: true, temperatura: 0.2 });
     } catch (e) {
+      ultimoErroFicha = `pesquisa: ${e instanceof Error ? e.message.slice(0, 160) : e}`;
+      console.error("gerarFicha pesquisa", e);
+    }
+    // 2) organiza no formato da ficha (com ou sem a pesquisa)
+    try {
+      const f = await geminiJSON<FichaIA>([{ text: `Monte a ficha do perfume ${alvo} no formato pedido.
+${pesquisa ? `Use estas anotações da pesquisa:\n${pesquisa}\n` : "Use o que você sabe sobre ele e marque em \"revisar\" o que tiver pouca certeza.\n"}
+Regras:
+- Tudo em português do Brasil, inclusive os nomes das notas ("Bergamota", "Almíscar", "Baunilha", "Âmbar cinzento").
+- "acorde" é o principal, um de: ${ACORDE_PRINCIPAL}.
+- Cada item de "acordes" usa um destes nomes: ${ACORDES_OK}. Valor de 0 a 100.
+- fixacaoH em horas (ex.: 7.5) e projecaoM em metros (ex.: 1.4).
+- votos.fixacao: 5 porcentagens (muito fraca, fraca, moderada, duradoura, muito longa). votos.projecao: 4 (íntima, moderada, forte, enorme). Estações, dia e noite de 0 a 100.
+- ocasioes: Trabalho, Dia a dia, Encontro, Festa, Formal e Esporte, de 0 a 100.
+- descricao: 1 ou 2 frases curtas, sem exagero. genero: Masculino, Feminino ou Unissex.
+- forma do frasco: alto, ret, redondo ou largo. tampa: cor em hex (#RRGGBB).
+- fontes: os sites usados e o que veio de cada um. revisar: campos com pouca certeza.` }], { schema: SCHEMA_FICHA, temperatura: 0.2 });
+      return { ...f, perfumistas: f.perfumistas ?? [], revisar: f.revisar ?? [], fontes: f.fontes ?? [], forma: f.forma ?? "ret", tampa: /^#[0-9a-f]{6}$/i.test(f.tampa ?? "") ? f.tampa : "#141417", imagem: f.imagem || null };
+    } catch (e) {
+      ultimoErroFicha = `${ultimoErroFicha ? ultimoErroFicha + " · " : ""}ficha: ${e instanceof Error ? e.message.slice(0, 160) : e}`;
       console.error("gerarFicha", e);
     }
   }

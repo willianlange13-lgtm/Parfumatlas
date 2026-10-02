@@ -1,11 +1,13 @@
 import { NextResponse } from "next/server";
 import { createClient, supabaseConfigurado } from "@/lib/supabase/server";
 import { geminiConfigurado, geminiJSON } from "@/lib/gemini";
+import { gerarFicha, ultimoErroFicha } from "@/lib/ficha";
+import type { NextRequest } from "next/server";
 
 export const maxDuration = 60;
 
 /** Mostra o que está ligado (sem revelar chaves). Abra /api/diagnostico no navegador. */
-export async function GET() {
+export async function GET(request: NextRequest) {
   const r: Record<string, string> = {};
   r.supabase = supabaseConfigurado() ? "chaves ok" : "FALTA NEXT_PUBLIC_SUPABASE_URL ou NEXT_PUBLIC_SUPABASE_ANON_KEY";
   if (supabaseConfigurado()) {
@@ -25,6 +27,13 @@ export async function GET() {
     } catch (e) {
       r.gemini = `ERRO: ${e instanceof Error ? e.message.slice(0, 200) : "desconhecido"}`;
     }
+  }
+  // teste da ficha: /api/diagnostico?ficha=Pacific Aura|Rayhaan
+  const teste = request.nextUrl.searchParams.get("ficha");
+  if (teste && geminiConfigurado()) {
+    const [nome, casa = ""] = teste.split("|");
+    const f = await gerarFicha({ nome, casa });
+    r.ficha = f ? `ok: ${f.nome} (${f.casa}), ${f.notas.saida.length + f.notas.coracao.length + f.notas.fundo.length} notas, ${f.acordes.length} acordes` : `ERRO: ${ultimoErroFicha || "sem detalhe"}`;
   }
   r.avisos = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY && process.env.VAPID_PRIVATE_KEY ? "chaves ok" : "desligado (faltam as chaves VAPID)";
   r.servico = process.env.SUPABASE_SERVICE_ROLE_KEY ? "chave ok" : "FALTA SUPABASE_SERVICE_ROLE_KEY (avisos e Alexa)";
