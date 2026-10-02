@@ -4,6 +4,9 @@ import { carregarAcervo } from "@/lib/dados";
 import { createClient, supabaseConfigurado } from "@/lib/supabase/server";
 import { t } from "@/desenho/h2";
 
+/** A IA pode levar alguns segundos pesquisando. */
+export const maxDuration = 60;
+
 export async function POST(request: NextRequest) {
   const corpo = (await request.json()) as { mensagens: MsgEntrada[]; filtros?: Filtros; foto?: { mime: string; base64: string }; perfumeId?: string; conversaId?: string };
   const r = await responder(corpo.mensagens ?? [], corpo.filtros ?? {}, corpo.foto, corpo.perfumeId);

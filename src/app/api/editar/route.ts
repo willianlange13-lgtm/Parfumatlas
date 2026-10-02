@@ -6,6 +6,9 @@ import type { Perfume } from "@/lib/tipos";
 type Corpo = { perfume: Perfume; situacao?: string; anotacao?: string; minhaFixacao?: number | null; minhaProjecao?: number | null; minhaNota?: number | null };
 
 /** Salva a edição da ficha e da sua entrada na coleção. */
+/** A IA pode levar alguns segundos pesquisando. */
+export const maxDuration = 60;
+
 export async function POST(request: NextRequest) {
   const b = (await request.json()) as Corpo;
   if (!supabaseConfigurado()) return NextResponse.json({ erro: "O banco ainda não está ligado. Configure o Supabase para salvar." }, { status: 400 });

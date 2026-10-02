@@ -4,6 +4,9 @@ import { linhaDoPerfume } from "@/lib/dados";
 import type { FichaIA } from "@/lib/ficha";
 
 /** Salva a ficha (ou reaproveita a que já existe) e cria a entrada na coleção. */
+/** A IA pode levar alguns segundos pesquisando. */
+export const maxDuration = 60;
+
 export async function POST(request: NextRequest) {
   const b = (await request.json()) as { ficha: FichaIA; situacao: string; anotacao?: string; foto?: { mime: string; base64: string } };
   if (!supabaseConfigurado()) return NextResponse.json({ erro: "O banco ainda não está ligado. Configure o Supabase para salvar." }, { status: 400 });

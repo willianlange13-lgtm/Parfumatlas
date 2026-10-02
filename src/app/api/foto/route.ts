@@ -2,6 +2,9 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createClient, supabaseConfigurado } from "@/lib/supabase/server";
 
 /** Troca a foto do frasco de um perfume da coleção. */
+/** A IA pode levar alguns segundos pesquisando. */
+export const maxDuration = 60;
+
 export async function POST(request: NextRequest) {
   const b = (await request.json()) as { perfume: string; foto: { mime: string; base64: string } };
   if (!supabaseConfigurado()) return NextResponse.json({ erro: "O banco ainda não está ligado. Configure o Supabase para salvar fotos." }, { status: 400 });

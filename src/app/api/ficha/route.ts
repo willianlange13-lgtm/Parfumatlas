@@ -1,6 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { gerarFicha } from "@/lib/ficha";
 
+/** A IA pode levar alguns segundos pesquisando. */
+export const maxDuration = 60;
+
 export async function POST(request: NextRequest) {
   const c = (await request.json()) as { nome: string; casa: string; concentracao?: string; link?: string };
   const f = await gerarFicha(c);

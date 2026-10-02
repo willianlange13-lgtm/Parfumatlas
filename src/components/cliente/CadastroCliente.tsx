@@ -57,7 +57,7 @@ export function CadastroCliente({ base, modoInicial }: { base: Record<string, un
       const j = await r.json();
       setLido(j.lido ?? []);
       setCands(j.candidatos ?? []);
-      if (!j.candidatos?.length) setErro("Não encontrei esse perfume. Tente o nome completo com a casa, ou cole o link do Fragrantica.");
+      if (!j.candidatos?.length) setErro(j.ia === false ? "A IA ainda não está ligada (falta a chave do Gemini na Vercel). Sem ela, só acho os perfumes do catálogo de exemplo." : "Não encontrei esse perfume. Tente o nome completo com a casa, ou cole o link do Fragrantica.");
       else if (j.candidatos[0].pct >= 90) escolher(j.candidatos[0], 0);
     } catch {
       setErro("Não consegui identificar agora. Tente de novo.");
