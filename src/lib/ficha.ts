@@ -45,30 +45,38 @@ function doLink(url: string): Candidato | null {
   }
 }
 
+const SCHEMA_ID = { type: "OBJECT", properties: { lido: { type: "ARRAY", items: { type: "STRING" } }, candidatos: { type: "ARRAY", items: { type: "OBJECT", properties: { nome: { type: "STRING" }, casa: { type: "STRING" }, concentracao: { type: "STRING" }, por: { type: "STRING" }, pct: { type: "INTEGER" } }, required: ["nome", "casa", "concentracao", "por", "pct"] } } }, required: ["lido", "candidatos"] };
+
+/**
+ * Descobre qual é o perfume. Para economizar a cota da IA:
+ * link → lido do próprio endereço, sem IA; nome → catálogo primeiro, IA sem pesquisa só se precisar; foto → IA lendo a imagem.
+ */
 export async function identificar(modo: "foto" | "link" | "nome", texto?: string, foto?: { mime: string; base64: string }): Promise<Identificacao> {
+  if (modo === "link" && texto) {
+    const c = doLink(texto);
+    if (c) {
+      const local = await buscaLocal(`${c.nome} ${c.casa}`);
+      const igual = local.find((x) => normal(x.nome) === normal(c.nome));
+      return { lido: [], candidatos: [igual ? { ...igual, pct: 97, link: texto } : { ...c, pct: 95 }] };
+    }
+  }
+  if (modo === "nome" && texto) {
+    const local = await buscaLocal(texto);
+    if (local[0]?.pct >= 90 || !geminiConfigurado()) return { lido: [], candidatos: local };
+  }
   if (geminiConfigurado()) {
     try {
       if (modo === "foto" && foto) {
         return await geminiJSON<Identificacao>(
           [{ text: `Identifique o perfume da foto. Leia o que estiver escrito no frasco e descreva frasco e tampa. Dê até 3 candidatos, do mais provável ao menos, com a confiança em %. Em "por", explique em poucas palavras por que (ex.: "Rótulo e frasco batem com a foto", "Mesmo frasco da casa, rótulo diferente"). Concentração em maiúsculas (ex.: EAU DE PARFUM). Responda em português.` }, { inlineData: { mimeType: foto.mime, data: foto.base64 } }],
-          { schema: { type: "OBJECT", properties: { lido: { type: "ARRAY", items: { type: "STRING" } }, candidatos: { type: "ARRAY", items: { type: "OBJECT", properties: { nome: { type: "STRING" }, casa: { type: "STRING" }, concentracao: { type: "STRING" }, por: { type: "STRING" }, pct: { type: "INTEGER" } }, required: ["nome", "casa", "concentracao", "por", "pct"] } } }, required: ["lido", "candidatos"] } },
+          { schema: SCHEMA_ID },
         );
       }
-      const pedido = modo === "link"
-        ? `Abra este link e diga qual perfume é: ${texto}`
-        : `O usuário digitou ou falou: "${texto}". Encontre os perfumes que ele pode querer dizer (pesquise se precisar).`;
-      const r = await geminiJSON<Identificacao>([{ text: `${pedido}
-Responda só com JSON: {"lido": [], "candidatos": [{"nome": "...", "casa": "...", "concentracao": "EAU DE PARFUM", "por": "motivo curto em português", "pct": 0-100}]}. Até 3 candidatos, do mais provável ao menos.` }], { pesquisar: true });
-      if (modo === "link" && r.candidatos[0]) r.candidatos[0].link = texto;
+      const r = await geminiJSON<Identificacao>([{ text: `O usuário digitou ou falou: "${texto}". Liste até 3 perfumes que existem de verdade e que ele pode querer dizer, do mais provável ao menos, com nome, casa e concentração (em maiúsculas). Em "por", um motivo curto em português. Se não reconhecer, devolva a lista vazia.` }], { schema: SCHEMA_ID, leve: true });
       if (r.candidatos?.length) return r;
     } catch (e) {
       console.error("identificar", e);
     }
-  }
-  if (modo === "link" && texto) {
-    const c = doLink(texto);
-    const local = c ? await buscaLocal(`${c.nome} ${c.casa}`) : [];
-    return { lido: [], candidatos: local.length ? local.map((x) => ({ ...x, link: texto })) : c ? [c] : [] };
   }
   return { lido: [], candidatos: texto ? await buscaLocal(texto) : [] };
 }
@@ -110,7 +118,7 @@ export async function gerarFicha(c: { nome: string; casa: string; concentracao?:
     let pagina: Pagina | null = c.link ? await lerPagina(c.link) : null;
     // 2) pesquisa na internet, se não houver página ou para completar
     let pesquisa = "";
-    try {
+    if (!pagina) try {
       pesquisa = await geminiTexto([{ text: `Pesquise o perfume ${alvo}.${c.link ? ` A página dele: ${c.link}.` : ""} Use o Fragrantica, o Parfumo e o site oficial da marca.
 Anote só o que encontrar nas fontes: ano, concentração, perfumistas, família olfativa, gênero, país da casa, notas de saída, coração e fundo, acordes principais com a força de cada um (0 a 100), votos da comunidade (fixação, projeção, estações, dia e noite, ocasiões), número de votos, formato e cor da tampa do frasco.
 No fim, escreva o endereço completo da página do perfume no Fragrantica (linha "FRAGRANTICA: https://...").` }], { pesquisar: true, temperatura: 0.1 });
@@ -141,7 +149,7 @@ Regras:
 - ocasioes: Trabalho, Dia a dia, Encontro, Festa, Formal e Esporte, de 0 a 100.
 - descricao: 1 ou 2 frases curtas, sem exagero. genero: Masculino, Feminino ou Unissex.
 - forma do frasco: alto, ret, redondo ou largo. tampa: cor em hex (#RRGGBB).
-- fontes: os sites usados e o que veio de cada um.` }], { schema: SCHEMA_FICHA, temperatura: 0.1 });
+- fontes: os sites usados e o que veio de cada um.` }], { schema: SCHEMA_FICHA, temperatura: 0.1, leve: Boolean(pagina) });
       const imagem = pagina?.imagem ?? (f.imagem && /^https:\/\/fimgs\.net\//.test(f.imagem) ? f.imagem : null);
       const fontes = f.fontes?.length ? f.fontes : pagina ? [{ nome: new URL(pagina.url).hostname.replace("www.", ""), url: pagina.url, oQue: "notas, acordes e votos" }] : [];
       return { ...f, perfumistas: f.perfumistas ?? [], revisar: f.revisar ?? [], fontes, forma: f.forma ?? "ret", tampa: /^#[0-9a-f]{6}$/i.test(f.tampa ?? "") ? f.tampa : "#141417", imagem };

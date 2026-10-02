@@ -3,7 +3,7 @@ import "server-only";
 export const geminiConfigurado = () => Boolean(process.env.GEMINI_API_KEY);
 /** "gemini-flash-latest" sempre aponta para o Flash mais novo, então não sai de linha. */
 /** Se um modelo estiver fora de linha, sem cota ou sobrecarregado, tenta o seguinte. */
-const MODELOS = () => [...new Set([process.env.GEMINI_MODEL, "gemini-flash-latest", "gemini-flash-lite-latest"].filter(Boolean) as string[])];
+const MODELOS = (leve = false) => [...new Set([process.env.GEMINI_MODEL, ...(leve ? ["gemini-flash-lite-latest", "gemini-flash-latest"] : ["gemini-flash-latest", "gemini-flash-lite-latest"])].filter(Boolean) as string[])];
 const espera = (ms: number) => new Promise((ok) => setTimeout(ok, ms));
 
 type Parte = { text: string } | { inlineData: { mimeType: string; data: string } };
@@ -12,7 +12,7 @@ type Parte = { text: string } | { inlineData: { mimeType: string; data: string }
  * Chama o Gemini e devolve JSON. Com `pesquisar`, liga a busca do Google e a leitura de links
  * (nesse modo a API não aceita schema, então o JSON vem pedido no próprio texto).
  */
-export async function geminiJSON<T>(partes: Parte[], opcoes: { schema?: object; pesquisar?: boolean; sistema?: string; temperatura?: number } = {}): Promise<T> {
+export async function geminiJSON<T>(partes: Parte[], opcoes: { schema?: object; pesquisar?: boolean; sistema?: string; temperatura?: number; leve?: boolean } = {}): Promise<T> {
   const texto = await chamar(partes, opcoes, true);
   const limpo = texto.replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/i, "").trim();
   const ini = limpo.search(/[[{]/);
@@ -25,7 +25,7 @@ export async function geminiTexto(partes: Parte[], opcoes: { pesquisar?: boolean
   return chamar(partes, opcoes, false);
 }
 
-async function chamar(partes: Parte[], opcoes: { schema?: object; pesquisar?: boolean; sistema?: string; temperatura?: number }, json: boolean): Promise<string> {
+async function chamar(partes: Parte[], opcoes: { schema?: object; pesquisar?: boolean; sistema?: string; temperatura?: number; leve?: boolean }, json: boolean): Promise<string> {
   const chave = process.env.GEMINI_API_KEY;
   if (!chave) throw new Error("GEMINI_API_KEY não configurada");
   const corpo: Record<string, unknown> = {
@@ -36,7 +36,7 @@ async function chamar(partes: Parte[], opcoes: { schema?: object; pesquisar?: bo
   if (opcoes.pesquisar) corpo.tools = [{ google_search: {} }, { url_context: {} }];
   let r: Response | null = null;
   let ultimo = "";
-  externo: for (const modelo of MODELOS()) {
+  externo: for (const modelo of MODELOS(opcoes.leve)) {
     for (let tentativa = 0; tentativa < 2; tentativa++) {
       r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent`, {
         method: "POST",

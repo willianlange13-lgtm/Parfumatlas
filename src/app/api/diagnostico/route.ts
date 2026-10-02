@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient, supabaseConfigurado } from "@/lib/supabase/server";
 import { geminiConfigurado, geminiJSON } from "@/lib/gemini";
 import { gerarFicha, ultimoErroFicha } from "@/lib/ficha";
+import { lerPagina } from "@/lib/pagina";
 import type { NextRequest } from "next/server";
 
 export const maxDuration = 120;
@@ -20,6 +21,7 @@ export async function GET(request: NextRequest) {
     r.fotos = eb ? `ERRO: ${eb.message}` : `pasta de fotos ok${b ? "" : ""}`;
   }
   if (!geminiConfigurado()) r.gemini = "FALTA GEMINI_API_KEY";
+  else if (request.nextUrl.searchParams.get("pagina")) r.gemini = "chave ok (não testada)";
   else {
     try {
       const t = await geminiJSON<{ ok: string }>([{ text: 'Responda {"ok":"sim"}' }], { schema: { type: "OBJECT", properties: { ok: { type: "STRING" } }, required: ["ok"] } });
@@ -27,6 +29,13 @@ export async function GET(request: NextRequest) {
     } catch (e) {
       r.gemini = `ERRO: ${e instanceof Error ? e.message.slice(0, 200) : "desconhecido"}`;
     }
+  }
+  // teste da leitura de página (não gasta a cota da IA): /api/diagnostico?pagina=https://...
+  const url = request.nextUrl.searchParams.get("pagina");
+  if (url) {
+    const pg = await lerPagina(url);
+    r.pagina = pg ? `lida: ${pg.texto.length} letras, foto ${pg.imagem ? "achada" : "não achada"}, início: ${pg.texto.slice(0, 120).replace(/\s+/g, " ")}` : "o site bloqueou a leitura";
+    return NextResponse.json(r, { headers: { "Cache-Control": "no-store", "Content-Type": "application/json; charset=utf-8" } });
   }
   // teste da ficha: /api/diagnostico?ficha=Pacific Aura|Rayhaan
   const teste = request.nextUrl.searchParams.get("ficha");
