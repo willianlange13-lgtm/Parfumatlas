@@ -1,0 +1,152 @@
+/* Parfum Atlas · sistema visual (base preta, prata e ouro champanhe) */
+:root {
+  --bg: #050506;
+  --surface: #0d0d10;
+  --surface-2: #17171b;
+  --line: rgba(255, 255, 255, 0.08);
+  --line-2: rgba(255, 255, 255, 0.2);
+  --ink: #ffffff;
+  --ink-2: rgba(255, 255, 255, 0.8);
+  --ink-3: rgba(255, 255, 255, 0.6);
+  --prata: #c9d1de;
+  --prata-txt: #eceef2;
+  --ouro: #d8b970;
+  --ouro-bg: rgba(216, 185, 112, 0.16);
+  --erro: #e58c7a;
+  --pill: rgba(255, 255, 255, 0.07);
+  --chip: rgba(255, 255, 255, 0.09);
+  --chip-2: rgba(255, 255, 255, 0.11);
+  --btn: linear-gradient(135deg, #f3f5f9 0%, #c9d1de 50%, #9ca6b8 100%);
+  --on-btn: #050506;
+  --tile: linear-gradient(160deg, #0d0d10 0%, #18181c 60%, #2b2b32 100%);
+  --tile-2: linear-gradient(160deg, #0d0d10 0%, #141418 60%, #232329 100%);
+  --barra: linear-gradient(180deg, #e4e9f1 0%, #8e99ad 100%);
+  --pico: linear-gradient(180deg, #f2e2b8 0%, #b8955a 100%);
+  --glow: rgba(201, 209, 222, 0.13);
+  --sans: "Instrument Sans", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, monospace;
+  --script: "Pinyon Script", cursive;
+  --marca: "Montserrat", "Instrument Sans", sans-serif;
+  --tab-h: 0px;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink); }
+body { font-family: var(--sans); font-size: 15px; line-height: 1.5; -webkit-font-smoothing: antialiased; min-height: 100dvh; }
+a { color: inherit; text-decoration: none; }
+button { font-family: var(--sans); cursor: pointer; }
+input, textarea { font-family: var(--sans); }
+img { display: block; max-width: 100%; }
+
+/* ---------- tipografia ---------- */
+.rotulo { font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em; color: var(--prata-txt); text-transform: uppercase; margin: 0; font-weight: 400; }
+.mono { font-family: var(--mono); }
+.titulo-1 { font-size: clamp(28px, 4vw, 44px); font-weight: 500; letter-spacing: -0.02em; line-height: 1.05; margin: 0; }
+.titulo-2 { font-size: clamp(20px, 2.4vw, 26px); font-weight: 500; letter-spacing: -0.01em; line-height: 1.15; margin: 0; }
+.texto-2 { color: var(--ink-2); }
+.texto-3 { color: var(--ink-3); }
+
+/* ---------- estrutura ---------- */
+.pagina { position: relative; max-width: 1440px; margin: 0 auto; padding: 28px 64px 96px; display: flex; flex-direction: column; gap: 24px; }
+.brilho { position: fixed; left: 50%; top: -260px; width: 820px; height: 820px; border-radius: 50%; background: radial-gradient(circle, var(--glow) 0%, rgba(0, 0, 0, 0) 65%); pointer-events: none; z-index: 0; }
+.grade { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 24px; }
+
+/* ---------- blocos ---------- */
+.card { position: relative; border-radius: 28px; background: var(--surface); border: 1px solid var(--line); padding: 28px; display: flex; flex-direction: column; gap: 14px; }
+.card.destaque { background: var(--tile); }
+.card.vinho { background: var(--tile-2); }
+
+.btn { height: 46px; padding: 0 22px; border-radius: 23px; border: none; background: var(--btn); color: var(--on-btn); font-size: 14.5px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; gap: 8px; white-space: nowrap; }
+.btn.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line-2); font-weight: 400; }
+.btn.perigo { background: transparent; color: var(--erro); border: 1px solid rgba(229, 140, 122, 0.5); }
+.btn:disabled { opacity: 0.5; cursor: default; }
+.btn-redondo { flex-shrink: 0; width: 44px; height: 44px; border-radius: 50%; border: none; background: var(--pill); color: var(--ink); display: inline-flex; align-items: center; justify-content: center; padding: 0; position: relative; }
+.btn-redondo.claro { background: var(--btn); color: var(--on-btn); }
+
+.pill { height: 36px; padding: 0 15px; border-radius: 18px; background: var(--pill); color: var(--ink-2); font-size: 13.5px; font-weight: 500; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; border: none; }
+.pill.ativo { background: var(--btn); color: var(--on-btn); }
+.chip { display: inline-flex; align-items: center; gap: 7px; padding: 4px 12px 4px 4px; border-radius: 20px; background: var(--chip); font-size: 13px; white-space: nowrap; }
+.selo { display: inline-flex; padding: 4px 10px; border-radius: 10px; font-size: 11.5px; background: var(--chip); }
+.selo.ouro { background: var(--ouro-bg); color: var(--ouro); }
+.tracejado { border: 1px dashed var(--line-2); border-radius: 14px; font-family: var(--mono); font-size: 11px; color: var(--ink-3); padding: 6px 12px; }
+
+.campo { display: flex; align-items: center; gap: 10px; height: 48px; padding: 0 8px 0 18px; border-radius: 24px; background: var(--pill); color: var(--ink-3); }
+.campo input { flex: 1; min-width: 0; background: transparent; border: none; outline: none; color: var(--ink); font-size: 14.5px; }
+
+.icone { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+
+/* ---------- topo do computador ---------- */
+.topo { position: sticky; top: 0; z-index: 20; height: 80px; padding: 0 64px; display: flex; align-items: center; gap: 28px; background: rgba(5, 5, 6, 0.82); backdrop-filter: blur(16px); border-bottom: 1px solid var(--line); }
+.marca { display: flex; align-items: center; gap: 12px; }
+.marca { flex-shrink: 0; }
+.marca span { white-space: nowrap; }
+.menu { display: flex; gap: 2px; padding: 4px; border-radius: 26px; background: var(--pill); }
+.menu a { height: 40px; padding: 0 18px; border-radius: 20px; display: flex; align-items: center; white-space: nowrap; font-size: 14px; color: var(--ink-2); }
+.menu a.ativo { background: var(--btn); color: var(--on-btn); font-weight: 500; }
+.topo .acoes { margin-left: auto; display: flex; gap: 10px; }
+
+/* ---------- barra do celular ---------- */
+.barra-app, .topo-app { display: none; }
+
+@media (max-width: 900px) {
+  :root { --tab-h: 96px; }
+  .topo { display: none; }
+  .topo-app { display: flex; align-items: center; gap: 8px; height: 60px; padding: 0 20px; position: sticky; top: 0; z-index: 20; background: rgba(5, 5, 6, 0.86); backdrop-filter: blur(16px); }
+
+  .pagina { padding: 8px 20px calc(var(--tab-h) + 32px); gap: 18px; }
+  .grade { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+  .grade > * { grid-column: auto !important; }
+  .card { padding: 18px; border-radius: 24px; }
+  .barra-app { display: flex; position: fixed; left: 14px; right: 14px; bottom: calc(14px + env(safe-area-inset-bottom)); height: 64px; z-index: 30; border-radius: 32px; background: rgba(24, 24, 28, 0.94); border: 1px solid var(--line); align-items: center; justify-content: space-around; padding: 0 6px; backdrop-filter: blur(16px); }
+  .barra-app a { width: 64px; display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--ink-3); font-size: 10.5px; }
+  .barra-app a.ativo { color: var(--ink); font-weight: 600; }
+  .barra-app .mais { padding: 0; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; touch-action: manipulation; width: 58px; height: 58px; margin-top: -26px; border-radius: 50%; border: 4px solid var(--bg); background: var(--btn); color: var(--on-btn); display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 24px rgba(0, 0, 0, 0.55); }
+  .so-computador { display: none !important; }
+}
+@media (min-width: 901px) {
+  .so-celular { display: none !important; }
+}
+
+/* ---------- app (celular), fiel às pranchas App* ---------- */
+.c-tela { position: relative; display: flex; flex-direction: column; gap: 18px; padding: 0 20px calc(var(--tab-h) + 36px); min-height: 100dvh; overflow-x: clip; }
+.c-tela.sem-barra { padding-bottom: 130px; }
+.c-tela::before { content: ""; position: fixed; left: 30%; top: -160px; width: 420px; height: 420px; border-radius: 50%; background: radial-gradient(circle, var(--glow) 0%, rgba(0,0,0,0) 65%); pointer-events: none; z-index: -1; }
+.c-card { position: relative; border-radius: 24px; background: var(--surface); border: 1px solid var(--line); display: flex; flex-direction: column; flex-shrink: 0; min-width: 0; }
+.c-card.destaque { background: var(--tile); }
+.c-card.vinho { background: var(--tile-2); }
+.c-rot { font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em; color: var(--prata-txt); text-transform: uppercase; }
+.c-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 0 20px; border: none; background: var(--btn); color: var(--on-btn); font-size: 15px; font-weight: 600; white-space: nowrap; flex-shrink: 0; }
+.c-btn.sec { background: transparent; color: var(--ink); border: 1px solid var(--line-2); font-weight: 400; padding: 0 18px; }
+.c-btn:disabled { opacity: .55; }
+.c-circ { position: relative; flex-shrink: 0; border-radius: 50%; border: none; background: var(--pill); color: var(--ink); display: inline-flex; align-items: center; justify-content: center; padding: 0; }
+.c-pill { padding: 0 14px; background: var(--pill); color: var(--ink-2); font-weight: 500; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; flex-shrink: 0; border: none; font-family: var(--sans); }
+.c-pill.on { background: var(--btn); color: var(--on-btn); }
+.c-topo { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: 10px; height: 52px; flex-shrink: 0; margin: 0 -20px; padding: 0 20px; border-bottom: 1px solid var(--line); background: rgba(5, 5, 6, 0.86); backdrop-filter: blur(16px); }
+.c-topo-tit { flex-grow: 1; text-align: center; font-size: 15px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.c-rolar { display: flex; flex-shrink: 0; overflow-x: auto; margin-right: -20px; padding-right: 20px; scrollbar-width: none; scroll-snap-type: x proximity; }
+.c-rolar::-webkit-scrollbar { display: none; }
+.c-rolar > * { scroll-snap-align: start; }
+.c-campo { display: flex; align-items: center; gap: 10px; height: 46px; padding: 0 7px 0 16px; border-radius: 23px; background: var(--pill); color: var(--ink-3); flex-shrink: 0; }
+.c-campo input { flex: 1; min-width: 0; background: transparent; border: none; outline: none; color: var(--ink); font-size: 14.5px; }
+.c-campo input::placeholder { color: var(--ink-3); }
+.c-seg { display: flex; padding: 4px; border-radius: 26px; background: var(--pill); flex-shrink: 0; }
+.c-seg > * { flex: 1; height: 38px; border-radius: 19px; display: flex; align-items: center; justify-content: center; font-size: 14px; color: var(--ink-2); border: none; background: transparent; font-family: var(--sans); }
+.c-seg > .on { background: var(--btn); color: var(--on-btn); font-weight: 500; }
+.c-rodape { position: fixed; left: 0; right: 0; bottom: 0; z-index: 25; padding: 18px 20px calc(24px + env(safe-area-inset-bottom)); background: linear-gradient(180deg, rgba(5,5,6,0) 0%, rgba(5,5,6,.96) 30%); display: flex; gap: 10px; }
+.c-folha-fundo { position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 40; }
+.c-folha { position: fixed; left: 0; right: 0; bottom: 0; z-index: 41; border-radius: 30px 30px 0 0; background: #121215; border-top: 1px solid var(--line-2); padding: 12px 20px calc(30px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 20px; max-height: 88dvh; overflow-y: auto; }
+.c-folha::before { content: ""; align-self: center; width: 40px; height: 5px; border-radius: 3px; background: var(--line-2); flex-shrink: 0; }
+.c-grade2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px 12px; flex-shrink: 0; }
+.c-tog { width: 44px; height: 26px; border-radius: 13px; background: var(--chip-2); position: relative; flex-shrink: 0; border: none; padding: 0; }
+.c-tog::after { content: ""; position: absolute; left: 3px; top: 3px; width: 20px; height: 20px; border-radius: 10px; background: var(--ink-3); transition: left .15s; }
+.c-tog.on { background: var(--ouro); }
+.c-tog.on::after { left: 21px; background: #fff; }
+@media (max-width: 900px) {
+  .topo-app.so-inicio-esconde { display: none; }
+}
+@keyframes onda { 0%, 100% { transform: scaleY(.45); } 50% { transform: scaleY(1); } }
+.onda { animation: onda .9s ease-in-out infinite; }
+@media (min-width: 901px) {
+  .c-topo { top: 80px; }
+}

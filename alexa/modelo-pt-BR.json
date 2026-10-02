@@ -1,0 +1,18 @@
+{
+  "interactionModel": {
+    "languageModel": {
+      "invocationName": "parfum atlas",
+      "intents": [
+        { "name": "AMAZON.CancelIntent", "samples": [] },
+        { "name": "AMAZON.HelpIntent", "samples": [] },
+        { "name": "AMAZON.StopIntent", "samples": [] },
+        { "name": "AMAZON.NavigateHomeIntent", "samples": [] },
+        { "name": "PerfumeDoDiaIntent", "slots": [], "samples": ["o que eu uso hoje", "qual perfume eu uso hoje", "que perfume usar hoje", "me sugere um perfume", "perfume do dia"] },
+        { "name": "UsouIntent", "slots": [{ "name": "perfume", "type": "AMAZON.SearchQuery" }], "samples": ["eu usei o {perfume}", "usei o {perfume} hoje", "marca que eu usei o {perfume}", "hoje eu fui de {perfume}"] },
+        { "name": "DuracaoIntent", "slots": [{ "name": "perfume", "type": "AMAZON.SearchQuery" }], "samples": ["quanto dura o {perfume}", "quanto tempo dura o {perfume} no calor", "o {perfume} dura quanto hoje"] },
+        { "name": "LancamentosIntent", "slots": [], "samples": ["tem lançamento novo", "tem lançamento para mim", "quais são as novidades"] }
+      ],
+      "types": []
+    }
+  }
+}

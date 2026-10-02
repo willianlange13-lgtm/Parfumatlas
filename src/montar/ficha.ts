@@ -1,0 +1,159 @@
+import { buscarEntrada } from "@/lib/dados";
+import { semelhantes, naColecao } from "@/lib/analise";
+import { CASAS, nota as refNota, tipoNota } from "@/data/referencia";
+import { corDoAcorde } from "@/lib/cores";
+import base from "@/data/desenho/FichaAzulPreto.json";
+import { arc, circ, glifo, hexA, P, t } from "@/desenho/h2";
+import type { Perfume } from "@/lib/tipos";
+
+const PALETA = ["#D8B970", "#DCECFD", "#9099AC", "#B4BDCC", "#7F8AA0", "#A3ADBE", "#6E7A90", "#C9D1DE"];
+const hm = (h: number) => { let hh = Math.floor(h), mm = Math.round((h - hh) * 60); if (mm === 60) { hh++; mm = 0; } return `${hh}h${mm < 10 ? "0" : ""}${mm}`; };
+
+function notaCor(n: string, cor: string) {
+  const r = refNota(n);
+  return { nome: n, d: r.icone, cor, bg: r.foto ? "#FFFFFF" : hexA(cor, 0.14), borda: hexA(cor, 0.45), img: r.foto ?? "", semImg: !r.foto, foto: r.foto ? "#FFFFFF" : `radial-gradient(circle at 35% 30%, ${hexA(cor, 0.95)} 0%, ${hexA(cor, 0.55)} 45%, #050506 100%)` };
+}
+
+const PALAVRA: Record<string, string> = { fruta: "frutado", citrico: "cítrico", baga: "frutado", flor: "floral", folha: "verde", madeira: "fumaça", gota: "aquático", especiaria: "especiado", resina: "resina", baunilha: "doce", nuvem: "almíscar" };
+function frase(p: Perfume) {
+  const pal = (lista: string[]) => PALAVRA[tipoNota(lista[0] ?? "")];
+  const fundo = p.notas.fundo[1] ?? p.notas.fundo[0] ?? "almíscar";
+  return `Abre ${pal(p.notas.saida)}, vira ${pal(p.notas.coracao)}, termina em ${fundo.toLowerCase()}.`;
+}
+
+const FORM: Record<string, [number, number, string]> = { alto: [30, 50, "6px"], ret: [38, 44, "7px"], redondo: [44, 40, "20px"], largo: [46, 36, "8px"] };
+function sem(p: Perfume, sim: number, por: string, tag: string, tagCor: string, corN: string) {
+  const f = FORM[p.forma] ?? FORM.ret, cor = corDoAcorde(p.acorde);
+  return {
+    sim, nome: p.nome, marca: p.casa, por, tag, tagCor, corN, bw: f[0], bh: f[1], br: f[2], lw: f[0] - 8, capW: Math.round(f[0] * 0.5), tampa: p.tampa, rot: p.casa.split(" ")[0].toUpperCase().slice(0, 7),
+    fundo: `linear-gradient(160deg, ${hexA(cor, 0.22)} 0%, ${hexA(cor, 0.04)} 100%)`, vidro: `linear-gradient(160deg, rgba(255,255,255,.3) 0%, ${hexA(cor, 0.25)} 50%, ${hexA(cor, 0.45)} 100%)`,
+    href: `/colecao/${p.id}`,
+  };
+}
+
+export async function montarFicha(id: string) {
+  const { acervo, entrada, perfume: p } = await buscarEntrada(id);
+  if (!p) return null;
+  const todos = [...acervo.perfumes.values()];
+  const meus = naColecao(acervo.colecao);
+
+  // radar e espectro com os 8 acordes mais fortes
+  const AC = [...p.acordes].sort((a, b) => b.valor - a.valor).slice(0, 8);
+  while (AC.length < 3) AC.push({ nome: "—", valor: 10 });
+  const cores = AC.map((a, i) => (i === 0 ? "#D8B970" : corDoAcorde(a.nome) === "#9099AC" ? PALETA[(i + 1) % PALETA.length] : corDoAcorde(a.nome)));
+  const n = AC.length;
+  const eixos = AC.map((a, i) => { const an = (i * 2 * Math.PI) / n - Math.PI / 2; return { x: P(250 + Math.cos(an) * 232), y: P(250 + Math.sin(an) * 226), nome: a.nome.toUpperCase(), v: a.valor, cor: cores[i] }; });
+
+  // desempenho
+  const VF = p.votos?.fixacao ?? [3, 8, 32, 41, 16], HF = [1, 2.5, 5, 9, 13];
+  const VP = p.votos?.projecao ?? [10, 46, 34, 10], MP = [0.3, 1, 2, 3];
+  const horas = p.fixacaoH ?? VF.reduce((s, v, i) => s + (v / 100) * HF[i], 0);
+  const metros = p.projecaoM ?? VP.reduce((s, v, i) => s + (v / 100) * MP[i], 0);
+  const mesmaFam = todos.filter((x) => x.familia.split(" ")[0] === p.familia.split(" ")[0] && x.fixacaoH);
+  const hFam = mesmaFam.length ? mesmaFam.reduce((s, x) => s + (x.fixacaoH ?? 0), 0) / mesmaFam.length - 0.4 : 6.8;
+  const mFam = mesmaFam.length ? mesmaFam.reduce((s, x) => s + (x.projecaoM ?? 1.2), 0) / mesmaFam.length - 0.15 : 1.2;
+  const gauge = (frac: number, fracRef: number, cor: string) => { const cx = 120, cy = 118, r = 96, aC = Math.PI + Math.PI * Math.min(1, fracRef); return { trilho: arc(cx, cy, r, Math.PI, 2 * Math.PI), valor: arc(cx, cy, r, Math.PI, Math.PI + Math.PI * Math.min(0.999, frac)), marca: `M ${P(cx + Math.cos(aC) * (r - 14))} ${P(cy + Math.sin(aC) * (r - 14))} L ${P(cx + Math.cos(aC) * (r + 14))} ${P(cy + Math.sin(aC) * (r + 14))}`, cor }; };
+  const famNome = p.familia.split(" ")[0].toLowerCase() + "s " + (p.familia.split(" ")[1] ?? "") ;
+  const g1 = gauge(horas / 12, hFam / 12, t.sup[0]), g2 = gauge(metros / 3, mFam / 3, t.sup[1]);
+
+  // quando funciona
+  const e = p.votos?.estacoes ?? { primavera: 60, verao: 50, outono: 60, inverno: 50 };
+  const rc = 140, rcy = 130, ri = 34, rmax = 104;
+  const saz: [string, number, string][] = [["Primavera", e.primavera, t.saz[0]], ["Verão", e.verao, t.saz[1]], ["Outono", e.outono, t.saz[2]], ["Inverno", e.inverno, t.saz[3]]];
+  const seg = saz.map((s, i) => {
+    const a0 = -Math.PI / 2 + (i * Math.PI) / 2 + 0.02, a1 = a0 + Math.PI / 2 - 0.04, ro = ri + (s[1] / 100) * (rmax - ri);
+    const d = `M ${P(rc + Math.cos(a0) * ri)} ${P(rcy + Math.sin(a0) * ri)} L ${P(rc + Math.cos(a0) * ro)} ${P(rcy + Math.sin(a0) * ro)} A ${P(ro)} ${P(ro)} 0 0 1 ${P(rc + Math.cos(a1) * ro)} ${P(rcy + Math.sin(a1) * ro)} L ${P(rc + Math.cos(a1) * ri)} ${P(rcy + Math.sin(a1) * ri)} A ${ri} ${ri} 0 0 0 ${P(rc + Math.cos(a0) * ri)} ${P(rcy + Math.sin(a0) * ri)} Z`;
+    const am = a0 + Math.PI / 4 - 0.02;
+    return { d, cor: s[2], nome: s[0], v: s[1], lx: P(rc + Math.cos(am) * 120), ly: P(rcy + Math.sin(am) * 112) };
+  });
+  const votos = (nomes: string[], pcts: number[], cor: string) => { const mx = Math.max(...pcts); return nomes.map((nm, i) => ({ nome: nm, pct: pcts[i], cor: pcts[i] === mx ? cor : t.ink3, txt: pcts[i] === mx ? t.ink : t.ink2 })); };
+
+  // fixação × temperatura
+  const raw = (p.clima?.pontos ?? []).map((x, i) => [x.t, x.h, x.seco ? 0 : 1, 10 + ((i * 7) % 9)] as [number, number, number, number]);
+  const W = 640, px = (tc: number) => 44 + ((tc - 12) / 24) * W, py = (h: number) => 236 - ((Math.max(3, Math.min(11, h)) - 3) / 8) * 226;
+  const media = (a: typeof raw) => (a.length ? a.reduce((s2, x) => s2 + x[1], 0) / a.length : horas);
+  const nR = raw.length || 1;
+  let sx = 0, sy = 0, sxy = 0, sxx = 0;
+  raw.forEach((x) => { sx += x[0]; sy += x[1]; sxy += x[0] * x[1]; sxx += x[0] * x[0]; });
+  const bb = (nR * sxy - sx * sy) / Math.max(1e-6, nR * sxx - sx * sx), a0 = (sy - bb * sx) / nR;
+  const clima = {
+    n: p.clima?.n ?? 0,
+    frio: hm(media(raw.filter((x) => x[0] < 25))), quente: hm(media(raw.filter((x) => x[0] > 28))),
+    faixaF: P(px(25) - 44), qx: P(px(28)), faixaQ: P(px(36) - px(28)),
+    tend: raw.length ? `M ${P(px(13))} ${P(py(a0 + bb * 13))} L ${P(px(35.5))} ${P(py(a0 + bb * 35.5))}` : "",
+    pts: raw.map((x) => ({ x: P(px(x[0])), y: P(py(x[1])), cor: x[2] ? t.umido : t.seco, r: x[3] })),
+    gy: [4, 6, 8, 10].map((h) => ({ y: P(py(h)), t: h + "h" })),
+    gx: [15, 20, 25, 30, 35].map((tc) => ({ x: P(px(tc)), t: tc + "°" })),
+  };
+
+  // semelhantes
+  const s = semelhantes(p, todos, acervo.colecao);
+  const quero = new Set(acervo.colecao.filter((x) => x.situacao === "quero").map((x) => x.perfumeId));
+  const porQue = (x: Perfume) => [x.notas.saida[0], x.notas.coracao[0]].filter(Boolean).map((y) => y.toLowerCase()).join(" e ");
+  const colunas = [
+    { nome: "INSPIRADOS NELE", sub: "contratipos e releituras", bg: t.surface, borda: t.line, itens: s.inspirados.slice(0, 3).map((x) => sem(x.p, x.sim, porQue(x.p), x.tem ? "Na sua coleção" : "", t.ink, t.sup[1])) },
+    { nome: "NA SUA COLEÇÃO", sub: "semelhantes que você já tem", bg: t.bg, borda: t.line2, itens: s.naColecao.map((x) => sem(x.p, x.sim, porQue(x.p), "", t.ink, t.ink)) },
+    { nome: "FORA DA COLEÇÃO", sub: "para conhecer", bg: t.surface, borda: t.line, itens: s.fora.map((x) => sem(x.p, x.sim, x.p.descricao?.split(".")[0].toLowerCase().slice(0, 40) || porQue(x.p), quero.has(x.p.id) ? "Quero" : "", t.sup[1], t.sup[2])) },
+  ];
+  if (!colunas[0].itens.length) { colunas[0].nome = "INSPIROU-SE EM"; colunas[0].sub = "o original e as releituras"; const orig = p.inspiradoEm ? acervo.perfumes.get(p.inspiradoEm) : null; colunas[0].itens = orig ? [sem(orig, 94, porQue(orig), meus.some((m) => m.perfumeId === orig.id) ? "Na sua coleção" : "", t.ink, t.sup[1])] : []; }
+
+  const inspNaColecao = s.inspirados.filter((x) => x.tem).length;
+  const relacao = s.inspirados.length ? `Original · ${inspNaColecao || s.inspirados.length} inspirado${(inspNaColecao || s.inspirados.length) > 1 ? "s" : ""} ${inspNaColecao ? "na sua coleção" : "conhecidos"}` : p.inspiradoEm ? `Inspirado em ${acervo.perfumes.get(p.inspiradoEm)?.nome ?? "outro perfume"}` : "";
+  const casaInfo = CASAS[p.casa];
+  const sitAtual = entrada?.situacao ?? null;
+  const cor = corDoAcorde(p.acorde);
+  const melhorFora = s.fora[0]?.p.nome.split(" ").slice(0, 2).join(" ");
+  const qs = (q: string) => `/sommelier?perfume=${p.id}&q=${encodeURIComponent(q)}`;
+  const perguntas = ["Faz layering com o que eu tenho?", s.inspirados.length ? "Qual inspirado chega mais perto?" : "O que combina com ele?", melhorFora ? `Vale comprar o ${melhorFora}?` : "Para que ocasião ele vai melhor?"];
+
+  const dia = p.votos?.dia ?? 70, noite = p.votos?.noite ?? 60;
+  return {
+    ...base,
+    t,
+    demo: acervo.demo,
+    clima,
+    ocasioes: (p.votos?.ocasioes ?? base.ocasioes).map((o, i) => ({ nome: o.nome, v: o.v, cor: i < 2 ? t.sup[0] : i < 4 ? t.sup[1] : t.sup[2] })),
+    glifo: glifo(AC.map((a) => a.valor), cores),
+    eixos,
+    topFam: AC.slice(0, 3).map((a, i) => ({ nome: a.nome, cor: cores[i], bg: hexA(cores[i], 0.22) })),
+    marcas: [["tenho", "Tenho"], ["tive", "Tive"], ["quero", "Quero"], ["assinatura", "★ Assinatura"]].map(([k, nm]) => ({ chave: k, nome: sitAtual === k ? (k === "assinatura" ? nm : "✓ " + nm) : nm, bg: sitAtual === k ? t.btn : "transparent", cor: sitAtual === k ? t.onBtn : t.ink2 })),
+    fatos: [
+      { l: "FAMÍLIA", v: p.familia, c: "segundo a casa" },
+      { l: "CONCENTRAÇÃO", v: p.concentracao ?? "—", c: p.concentracao === "Eau de Parfum" ? "a versão mais comum" : "concentração da casa" },
+      { l: "LANÇAMENTO", v: p.ano ? String(p.ano) : "—", c: p.ano ? `há ${new Date().getFullYear() - p.ano} anos` : "ano a confirmar" },
+      { l: "PERFUMISTAS", v: p.perfumistas.length ? p.perfumistas.map((x) => x.split(" ").slice(-1)[0]).join(" e ") : "a confirmar", c: p.perfumistas[0] ?? "a casa não divulga" },
+      { l: "INSPIRADOS", v: s.inspirados.length ? `${s.inspirados.length} conhecido${s.inspirados.length > 1 ? "s" : ""}` : p.inspiradoEm ? "é um deles" : "nenhum conhecido", c: s.inspirados.length ? `${inspNaColecao} deles na sua coleção` : p.inspiradoEm ? `de ${acervo.perfumes.get(p.inspiradoEm)?.nome ?? ""}` : "por enquanto" },
+    ],
+    piramide: [
+      { nome: "Saída", tempo: "PRIMEIROS 30 MIN", notas: p.notas.saida.slice(0, 4).map((x, i) => notaCor(x, PALETA[i % PALETA.length])) },
+      { nome: "Coração", tempo: "30 MIN A 3 H", notas: p.notas.coracao.slice(0, 4).map((x, i) => notaCor(x, PALETA[(i + 3) % PALETA.length])) },
+      { nome: "Fundo", tempo: "DEPOIS DE 3 H", notas: p.notas.fundo.slice(0, 4).map((x, i) => notaCor(x, PALETA[(i + 5) % PALETA.length])) },
+    ],
+    gauges: [
+      { nome: "Fixação", txt: hm(horas), sub: `média ponderada de ${(p.votos?.total ?? 0).toLocaleString("pt-BR")} votos`, ref: `Traço fino: ${famNome.trim()}, ${hm(hFam)}`, trilho: g1.trilho, valor: g1.valor, marca: g1.marca, cor: g1.cor },
+      { nome: "Projeção", txt: metros.toFixed(1).replace(".", ",") + " m", sub: "alcance médio nas 2 primeiras horas", ref: `Traço fino: ${famNome.trim()}, ${mFam.toFixed(1).replace(".", ",")} m`, trilho: g2.trilho, valor: g2.valor, marca: g2.marca, cor: g2.cor },
+    ],
+    espectro: AC.map((a, i) => ({ curto: a.nome, v: a.valor, h: Math.round((a.valor / 100) * 190), cor: cores[i] })),
+    roda: { guia: circ(rc, rcy, ri) + " " + circ(rc, rcy, rmax), seg },
+    votos: [
+      { nome: "Fixação", itens: votos(["Muito fraca", "Fraca", "Moderada", "Duradoura", "Muito longa"], VF, t.sup[0]) },
+      { nome: "Projeção", itens: votos(["Íntima", "Moderada", "Forte", "Enorme"], VP, t.sup[1]) },
+    ],
+    colunas,
+    perguntas: perguntas.map((q) => ({ t: q, href: qs(q) })),
+    casa: todos.filter((x) => x.casa === p.casa && x.id !== p.id).slice(0, 3).map((x) => ({ nome: x.nome, fam: x.familia, href: `/colecao/${x.id}` })),
+    cab: {
+      id: p.id, nome: p.nome, nomeUp: p.nome.toUpperCase(), acordeUp: p.acorde.toUpperCase(), tampa: p.tampa,
+      vidro: `linear-gradient(160deg, rgba(255,255,255,.28) 0%, ${hexA(cor, 0.2)} 45%, ${hexA(cor, 0.4)} 100%)`,
+      rot: p.casa.split(" ")[0].toUpperCase(), rotNome: p.nome.length > 14 ? p.nome.split(" ").slice(0, 2).join(" ") : p.nome,
+      casaCidade: [p.casa.toUpperCase(), (casaInfo?.cidade ?? p.pais ?? "").toUpperCase()].filter(Boolean).join(" · "),
+      desc: p.descricao ?? `${p.familia}${p.ano ? ` de ${p.ano}` : ""}.`,
+      relacao, som: `/sommelier?perfume=${p.id}`, comparar: `/comparar?a=${p.id}`, blind: `/blind?a=${p.id}`,
+      frase: frase(p), dia, noite, pergunte: `pergunte sobre o ${p.nome}, por texto ou voz`, voz: `/sommelier?perfume=${p.id}&voz=1`,
+      anotacao: entrada?.anotacao ?? "",
+    },
+    conv: acervo.demo && p.id === "aventus"
+      ? { p: "Serve para um jantar hoje à noite? Vai fazer uns 18 °C.", r: "Serve. Com 18 °C o abacaxi abre mais contido e a bétula aparece cedo, o que deixa o Aventus mais sério. Se quiser algo mais quente para a mesma noite, o Layton da sua coleção vai melhor." }
+      : null,
+  };
+}

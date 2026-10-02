@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120"><defs><mask id="atlas-folga" maskUnits="userSpaceOnUse" x="0" y="0" width="100" height="120"><rect x="0" y="0" width="100" height="120" fill="#fff"></rect><rect x="47.09" y="0" width="5.82" height="120" fill="#000"></rect></mask></defs>
+<g mask="url(#atlas-folga)" style="fill: none; stroke: #E6EAF0; stroke-linecap: round">
+<circle cx="50" cy="62" r="30" style="stroke-width: 1.265"></circle>
+<ellipse cx="50" cy="62" rx="16.8" ry="21.6" style="stroke-width: 0.935"></ellipse>
+<ellipse cx="50" cy="62" rx="40.5" ry="9" style="stroke-width: 1.1"></ellipse>
+</g>
+<rect x="49.34" y="20" width="1.32" height="80" style="fill: #E6EAF0"></rect>
+<path d="M50 9 Q50.784 21.216 55.6 22 Q50.784 22.784 50 27 Q49.216 22.784 44.4 22 Q49.216 21.216 50 9 Z" style="fill: #E6EAF0"></path>
+<path d="M50 94 Q50.672 98.328 54.8 99 Q50.672 99.672 50 111 Q49.328 99.672 45.2 99 Q49.328 98.328 50 94 Z" style="fill: #E6EAF0"></path>
+<path d="M50 50 C53 55.5 54.6 58.6 54.6 61.6 a4.6 4.6 0 0 1 -9.2 0 C45.4 58.6 47 55.5 50 50 Z" style="fill: #D8B970"></path></svg>
