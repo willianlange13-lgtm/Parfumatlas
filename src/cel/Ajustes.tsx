@@ -140,6 +140,7 @@ export function Ajustes({ cfg, classe, total, pcts, podeSalvar, sair }: Props) {
       <Rot>Coleção</Rot>
       <Card pad="4px 14px" gap={0}>
         <Item ic="link" titulo="Fontes da ficha" sub="Fragrantica, Parfumo e site da marca" borda={false} dir={<Seta txt="3" />} />
+        <Item ic="colecao" titulo="Acervo de perfumes" sub="importar o lote do ChatGPT" href="/configuracoes/acervo" dir={<Seta />} />
         <Item ic="seta" titulo="Exportar coleção" sub="planilha (abre no Excel)" href="/api/exportar" dir={<Seta />} />
         <Item ic="check" titulo="Cópia de segurança" sub={podeSalvar ? "o banco guarda cópias todo dia" : "liga junto com o banco"} dir={<span style={{ fontSize: 13, color: "var(--ink-2)" }}>Automática</span>} />
       </Card>

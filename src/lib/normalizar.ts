@@ -38,11 +38,18 @@ const NOTA: Record<string, string> = {
 
 /** "Damasco/Alperce (apricot) (em algumas fontes)" → "Damasco". */
 /** A nota está na tabela de tradução? (as que não estão vão para a tradução automática) */
+// nomes já em português (os valores das tabelas) também contam como conhecidos: não precisam de tradução
+let notasPT_: Set<string> | null = null, acordesPT_: Set<string> | null = null;
 export function notaConhecida(n: string) {
   const limpa = n.replace(/\([^)]*\)/g, "").split(/\s*\/\s*/)[0].replace(/\s+/g, " ").trim();
-  return Boolean(NOTA[tira(limpa)] ?? NOTA[limpa.toLowerCase()]);
+  notasPT_ ??= new Set(Object.values(NOTA).map(tira));
+  return Boolean(NOTA[tira(limpa)] ?? NOTA[limpa.toLowerCase()]) || notasPT_.has(tira(limpa));
 }
-export const acordeConhecido = (a: string) => Boolean(ACORDE[tira(a.replace(/\([^)]*\)/g, ""))]);
+export const acordeConhecido = (a: string) => {
+  const t = tira(a.replace(/\([^)]*\)/g, ""));
+  acordesPT_ ??= new Set(Object.values(ACORDE).map(tira));
+  return Boolean(ACORDE[t]) || acordesPT_.has(t);
+};
 
 export function notaPT(n: string) {
   const limpa = n.replace(/\([^)]*\)/g, "").split(/\s*\/\s*/)[0].replace(/\s+/g, " ").trim();

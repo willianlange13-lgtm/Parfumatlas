@@ -11,8 +11,11 @@ export interface Votos {
   dia: number;
   noite: number;
   ocasioes: { nome: string; v: number }[];
-  /** "fragrantica" quando veio da contagem real; "estimativa" quando a IA estimou pelas resenhas */
-  origem?: "fragrantica" | "estimativa";
+  /** "fragrantica" quando veio da contagem real; "estimativa" quando a IA estimou pelas resenhas; "acervo" = só o nível mais votado */
+  origem?: "fragrantica" | "estimativa" | "acervo";
+  /** só com origem "acervo": nível mais votado no Fragrantica (sem distribuição) */
+  nivelFixacao?: string;
+  nivelProjecao?: string;
 }
 
 export interface PontoClima { t: number; h: number; seco: boolean }

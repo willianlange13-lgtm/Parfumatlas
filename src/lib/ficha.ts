@@ -10,6 +10,8 @@ import { acordeConhecido, familiaAtlas, acordePT, acordePrincipal, horasDosVotos
 
 export type Candidato = { nome: string; casa: string; concentracao: string; por: string; pct: number; link?: string; imagem?: string | null };
 export type Identificacao = { lido: string[]; candidatos: Candidato[] };
+import { acharNoAcervo, buscarNoAcervo, fichaDoAcervo, notasSemTraducao } from "@/lib/acervo-global";
+
 export type FichaIA = Omit<Perfume, "id" | "clima"> & { revisar: string[]; completar?: boolean; fragrantica?: string };
 
 const ACORDES_OK = "Frutado, Cítrico, Fresco, Aromático, Lavanda, Aquático, Mineral, Floral, Verde, Amadeirado, Oud, Esfumaçado, Couro, Patchouli, Incenso, Âmbar, Especiado, Almíscar, Tabaco, Baunilha, Doce, Gourmand, Mel, Café";
@@ -65,17 +67,27 @@ export async function identificar(modo: "foto" | "link" | "nome", texto?: string
     }
   }
   if (modo === "nome" && texto) {
+    // ordem: coleção/catálogo → acervo global → só então IA paga (docs/DECISOES.md §16)
     const local = await buscaLocal(texto);
-    // enquanto digita: só o catálogo, sem gastar IA
-    if (rapido || !geminiConfigurado()) return { lido: [], candidatos: local };
+    const doAcervo = (await buscarNoAcervo(texto)).filter((a) => !local.some((l) => normal(l.nome) === normal(a.nome) && normal(l.casa) === normal(a.casa)))
+      .map((a) => ({ nome: a.nome, casa: a.casa, concentracao: "", por: "Do acervo", pct: a.pct, link: a.fragrantica ?? undefined, imagem: fotoDoFragrantica(a.fragrantica) }));
+    const juntos = [...local, ...doAcervo].sort((a, b) => b.pct - a.pct).slice(0, 5);
+    // enquanto digita: sem gastar IA; e se o acervo/catálogo já achou com segurança, também não
+    if (rapido || !geminiConfigurado() || juntos.some((c) => c.pct >= 90)) return { lido: [], candidatos: juntos };
   }
   if (geminiConfigurado()) {
     try {
       if (modo === "foto" && foto) {
-        return await geminiJSON<Identificacao>(
+        const lida = await geminiJSON<Identificacao>(
           [{ text: `Identifique o perfume da foto. Leia o que estiver escrito no frasco e descreva frasco e tampa. Dê até 3 candidatos, do mais provável ao menos, com a confiança em %. Em "por", explique em poucas palavras por que (ex.: "Rótulo e frasco batem com a foto", "Mesmo frasco da casa, rótulo diferente"). Concentração em maiúsculas (ex.: EAU DE PARFUM). Responda em português.` }, { inlineData: { mimeType: foto.mime, data: foto.base64 } }],
           { schema: SCHEMA_ID },
         );
+        // o que foi lido no rótulo e está no acervo ganha link e foto sem pesquisa
+        const cands = await Promise.all((lida.candidatos ?? []).map(async (x) => {
+          const a = x?.nome ? await acharNoAcervo(x.nome, x.casa) : null;
+          return a ? { ...x, por: `${x.por} · do acervo`, link: a.fragrantica ?? x.link, imagem: fotoDoFragrantica(a.fragrantica) } : x;
+        }));
+        return { ...lida, candidatos: cands };
       }
       if (usaOpenAI() && texto) {
         // modelo leve com pesquisa: só a lista de opções, a ficha vem depois que a pessoa escolhe
@@ -187,7 +199,7 @@ function invalidarVotos(f: FichaIA): FichaIA {
   const revisar = new Set(f.revisar ?? []); revisar.add("votos");
   return { ...f, votos: votosVazios(f.votos), fixacaoH: undefined, projecaoM: undefined, revisar: [...revisar], completar: true };
 }
-async function votosDuplicadosNoAcervo(nome: string, casa: string, votos?: VetoresVotos & { total?: number | null; origem?: "fragrantica" | "estimativa" | null }) {
+async function votosDuplicadosNoAcervo(nome: string, casa: string, votos?: VetoresVotos & { total?: number | null; origem?: "fragrantica" | "estimativa" | "acervo" | null }) {
   const ePacificAura = normal(nome) === "pacific aura" && normal(casa).includes("rayhaan");
   if (ePacificAura || votos?.origem !== "fragrantica" || !Number(votos?.total) || !temVotos(votos?.fixacao ?? undefined) || !temVotos(votos?.projecao ?? undefined)) return false;
   const fx = assinaturaVotos(votos.fixacao), pj = assinaturaVotos(votos.projecao), total = Number(votos.total);
@@ -238,6 +250,10 @@ export async function gerarFicha(c: { nome: string; casa: string; concentracao?:
   const local = [...perfumes.values()].find((p) => normal(p.nome) === normal(c.nome) && normal(p.casa) === normal(c.casa));
   const salva = await fichaSalva(c.nome, c.casa);
   if (salva) return salva;
+  // acervo global: ficha sem IA (só traduz nota que sobrou em inglês, com o modelo leve)
+  const doAcervo = await acharNoAcervo(c.nome, c.casa);
+  const fa = doAcervo ? fichaDoAcervo(doAcervo) : null;
+  if (fa) return geminiConfigurado() && notasSemTraducao(doAcervo!).length ? traduzirSobras(fa) : fa;
   if (geminiConfigurado()) {
     ultimoErroFicha = "";
     const alvo = `"${c.nome}"${c.casa ? ` da casa "${c.casa}"` : ""}${c.concentracao ? ` (${c.concentracao})` : ""}`;

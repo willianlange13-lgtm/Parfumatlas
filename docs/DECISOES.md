@@ -223,3 +223,15 @@ Enquanto a nova arquitetura por tarefa não estiver validada, a configuração s
 `AI_PROVIDER=openai`
 
 Isso é uma medida de estabilidade, não a arquitetura final desejada.
+
+## 16. Acervo global de perfumes
+
+Tabela `acervo` (SQL em `supabase/migrations/0002_acervo.sql`), global e não por usuário. O Willian monta os lotes no ChatGPT (assinatura dele, sem custo de API) lendo o Fragrantica e importa em **Configurações › Acervo de perfumes** (`/configuracoes/acervo`). A importação não usa IA.
+
+- formato: JSON Lines com chaves curtas `n, c, u, s, m, f, a, fx, pj` (também aceita lista JSON e chaves por extenso);
+- chave = nome + casa normalizados; repetido é mesclado sem apagar dado bom;
+- link só é guardado se for do Fragrantica e tiver o nome do perfume no endereço (senão a foto pode ser de outro);
+- ordem de procura na busca por nome: catálogo/coleção → acervo → IA paga. Se o acervo ou o catálogo achar com 90% ou mais, a IA não é chamada;
+- na foto, o rótulo lido pela IA é conferido no acervo para ganhar link e foto sem pesquisa;
+- ficha a partir do acervo sem IA (`fichaDoAcervo`): pirâmide, acordes, família, foto; fixação/projeção vêm só do nível mais votado (`votos.origem = "acervo"`), sem distribuição inventada. Ano, concentração e país ficam para revisar;
+- a tabela `perfumes` continua sendo o cache das fichas completas (`fichaSalva`).
