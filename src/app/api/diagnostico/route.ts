@@ -9,6 +9,7 @@ export const maxDuration = 120;
 
 /** Mostra o que está ligado (sem revelar chaves). Abra /api/diagnostico no navegador. */
 export async function GET(request: NextRequest) {
+  if (request.nextUrl.searchParams.get("votos")) return votosSuspeitosNoBanco();
   const r: Record<string, string> = {};
   r.supabase = supabaseConfigurado() ? "chaves ok" : "FALTA NEXT_PUBLIC_SUPABASE_URL ou NEXT_PUBLIC_SUPABASE_ANON_KEY";
   if (supabaseConfigurado()) {
@@ -60,4 +61,43 @@ export async function GET(request: NextRequest) {
   r.servico = process.env.SUPABASE_SERVICE_ROLE_KEY ? "chave ok" : "FALTA SUPABASE_SERVICE_ROLE_KEY (avisos e Alexa)";
   r.alexa = process.env.ALEXA_SKILL_ID && process.env.ATLAS_USER_ID ? "configurada" : "não configurada (opcional)";
   return NextResponse.json(r, { headers: { "Cache-Control": "no-store", "Content-Type": "application/json; charset=utf-8" } });
+}
+
+/**
+ * Só leitura: lista os perfumes com votos copiados (limpeza histórica, ver docs/DECISOES.md).
+ * Abra /api/diagnostico?votos=1 logado. Não altera nada nem chama IA.
+ */
+async function votosSuspeitosNoBanco() {
+  const json = (x: unknown) => NextResponse.json(x, { headers: { "Cache-Control": "no-store", "Content-Type": "application/json; charset=utf-8" } });
+  if (!supabaseConfigurado()) return json({ erro: "Banco não configurado." });
+  const sb = await createClient();
+  const { data: u } = await sb.auth.getUser();
+  if (!u.user) return json({ erro: "Entre no Atlas antes de abrir este endereço." });
+  const { data, error } = await sb.from("perfumes").select("id, nome, casa, votos");
+  if (error) return json({ erro: error.message });
+  const n = (s: unknown) => String(s ?? "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim();
+  const ass = (l: unknown) => (Array.isArray(l) ? l.map((x) => Math.round(Number(x) || 0)).join(",") : "");
+  // assinatura do Pacific Aura já normalizada em porcentagem por votosDe() (é assim que fica no banco)
+  const PACIFIC = "3,15,66,14,2|12,61,24,3";
+  const PADRAO = new Set(["0,0,100,0,0", "5,15,55,20,5"]);
+  type Item = { id: string; nome: string; casa: string; fixacao: string; projecao: string; total: number; origem: string };
+  const itens: Item[] = (data ?? []).map((p) => {
+    const v = (p.votos ?? {}) as Record<string, unknown>;
+    return { id: p.id as string, nome: p.nome as string, casa: p.casa as string, fixacao: ass(v.fixacao), projecao: ass(v.projecao), total: Number(v.total) || 0, origem: String(v.origem ?? "") };
+  });
+  const comVotos = itens.filter((x) => /[1-9]/.test(x.fixacao) && /[1-9]/.test(x.projecao));
+  const dono = (x: Item) => n(x.nome) === "pacific aura" && n(x.casa).includes("rayhaan");
+  const grupos = new Map<string, Item[]>();
+  for (const x of comVotos) grupos.set(`${x.fixacao}|${x.projecao}`, [...(grupos.get(`${x.fixacao}|${x.projecao}`) ?? []), x]);
+  const suspeitos = comVotos.flatMap((x) => {
+    const chave = `${x.fixacao}|${x.projecao}`;
+    const motivo = chave === PACIFIC && !dono(x) ? "cópia do Pacific Aura"
+      : PADRAO.has(x.fixacao) ? "vetor padrão do prompt antigo"
+      : (grupos.get(chave)?.filter((y) => n(y.nome) !== n(x.nome) || n(y.casa) !== n(x.casa)).length ?? 0) > 0 && !dono(x) ? "votos idênticos a outro perfume"
+      : null;
+    return motivo ? [{ ...x, motivo }] : [];
+  });
+  const repetidos = [...grupos.entries()].filter(([, l]) => new Set(l.map((y) => `${n(y.nome)}|${n(y.casa)}`)).size > 1)
+    .map(([chave, l]) => ({ fixacao: chave.split("|")[0], projecao: chave.split("|")[1], perfumes: l.map((y) => `${y.nome} (${y.casa}) · ${y.origem || "sem origem"} · total ${y.total}`) }));
+  return json({ analisados: itens.length, comVotos: comVotos.length, suspeitos: suspeitos.length, lista: suspeitos, gruposRepetidos: repetidos });
 }
