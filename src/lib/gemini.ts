@@ -17,11 +17,28 @@ type Parte = { text: string } | { inlineData: { mimeType: string; data: string }
  */
 export async function geminiJSON<T>(partes: Parte[], opcoes: { schema?: object; pesquisar?: boolean; sistema?: string; temperatura?: number; leve?: boolean } = {}): Promise<T> {
   const texto = await chamar(partes, opcoes, true);
+  const lido = lerJSON<T>(texto);
+  if (lido !== null) return lido;
+  // às vezes a IA responde com uma pergunta ("Posso fazer…?") em vez do JSON: pede de novo, sem conversa
+  const denovo = await chamar([...partes, { text: `Sua resposta anterior foi: "${texto.slice(0, 300)}". Isso não serve. Ninguém vai responder perguntas. Faça a pesquisa agora e devolva SOMENTE o objeto JSON, começando com { e terminando com }.` }], opcoes, true);
+  const lido2 = lerJSON<T>(denovo);
+  if (lido2 !== null) return lido2;
+  throw new Error(`a IA não devolveu a ficha no formato certo (respondeu: "${denovo.slice(0, 80)}…")`);
+}
+
+function lerJSON<T>(texto: string): T | null {
   const limpo = texto.replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/i, "").trim();
   const ini = limpo.search(/[[{]/);
   const fim = Math.max(limpo.lastIndexOf("}"), limpo.lastIndexOf("]"));
-  return JSON.parse(ini >= 0 && fim > ini ? limpo.slice(ini, fim + 1) : limpo) as T;
+  if (ini < 0 || fim <= ini) return null;
+  try {
+    return JSON.parse(limpo.slice(ini, fim + 1)) as T;
+  } catch {
+    return null;
+  }
 }
+
+const SEM_PERGUNTAS = "Você é um serviço automático, sem pessoa do outro lado. Nunca faça perguntas, nunca peça confirmação e nunca ofereça opções: pesquise e entregue o resultado completo na primeira resposta. Quando pedirem JSON, a resposta inteira é um único objeto JSON, sem texto antes ou depois.";
 
 /** Chama o Gemini e devolve o texto livre (usado na pesquisa antes de montar o JSON). */
 export async function geminiTexto(partes: Parte[], opcoes: { pesquisar?: boolean; sistema?: string; temperatura?: number } = {}): Promise<string> {
@@ -86,7 +103,7 @@ async function chamarOpenAI(partes: Parte[], opcoes: { schema?: object; pesquisa
   if (json) conteudo.push({ type: "input_text", text: `Responda só com um JSON válido${opcoes.schema ? ` neste formato (JSON Schema): ${JSON.stringify(schemaComum(opcoes.schema))}` : ""}.` });
   const corpo: Record<string, unknown> = {
     input: [{ role: "user", content: conteudo }],
-    ...(opcoes.sistema ? { instructions: opcoes.sistema } : {}),
+    ...(opcoes.sistema || json ? { instructions: [json ? SEM_PERGUNTAS : "", opcoes.sistema ?? ""].filter(Boolean).join("\n\n") } : {}),
     ...(opcoes.pesquisar ? { tools: [{ type: "web_search" }] } : {}),
     ...(json && !opcoes.pesquisar ? { text: { format: { type: "json_object" } } } : {}),
   };
