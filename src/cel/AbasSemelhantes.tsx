@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { MONO, OURO, Pill, Rolar, Rot } from "./kit";
 
@@ -21,9 +22,23 @@ export function FrascoMini({ it, w = 52, h = 58 }: { it: Pick<Item, "bw" | "bh" 
   );
 }
 
-export function AbasSemelhantes({ colunas }: { colunas: Coluna[] }) {
+export function AbasSemelhantes({ colunas, perfumeId }: { colunas: Coluna[]; perfumeId?: string }) {
   const [i, setI] = useState(0);
+  const [busca, setBusca] = useState<"" | "buscando" | string>("");
+  const router = useRouter();
   const col = colunas[i];
+  async function refazer() {
+    if (!perfumeId) return;
+    setBusca("buscando");
+    try {
+      const r = await fetch("/api/parecidos", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: perfumeId }), signal: AbortSignal.timeout(130000) });
+      const j = await r.json();
+      if (!r.ok) setBusca(j.erro ?? "Não consegui buscar agora.");
+      else { setBusca(""); router.refresh(); }
+    } catch {
+      setBusca("A busca demorou demais. Tente de novo.");
+    }
+  }
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12, flexShrink: 0 }}>
       <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>
@@ -47,6 +62,12 @@ export function AbasSemelhantes({ colunas }: { colunas: Coluna[] }) {
           </Link>
         ))}
       </div>
+      {perfumeId && (
+        <button type="button" onClick={refazer} disabled={busca === "buscando"} style={{ alignSelf: "flex-start", background: "none", border: "none", padding: 0, color: "var(--ink-3)", fontSize: 13, textDecoration: "underline", textUnderlineOffset: 3 }}>
+          {busca === "buscando" ? "Buscando parecidos… (até 1 minuto)" : "Buscar os parecidos de novo"}
+        </button>
+      )}
+      {busca && busca !== "buscando" && <span style={{ fontSize: 13, color: "#E0A08F" }}>{busca}</span>}
     </div>
   );
 }

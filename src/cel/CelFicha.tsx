@@ -210,7 +210,7 @@ export function CelFicha({ v, x }: { v: V; x: ExtraFicha }) {
           </div>
         ))}
       </Card>
-      <AbasSemelhantes colunas={v.colunas} />
+      <AbasSemelhantes colunas={v.colunas} perfumeId={p.id} />
 
       {/* 08 · sommelier e anotações */}
       <Card pad={16} gap={12}>

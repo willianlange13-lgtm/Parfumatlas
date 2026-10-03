@@ -109,8 +109,15 @@ export async function montarFicha(id: string) {
 
   // parecidos que a IA trouxe do Fragrantica e da comunidade (podem não estar no catálogo)
   const norm = (x: string) => x.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
+  // com parecidos pesquisados para este perfume, a lista "fora da coleção" usa só eles
+  // (o cálculo pelo catálogo de exemplo trazia perfumes sem relação); "na sua coleção" só mostra os bem próximos
+  const pesquisados = (p.parecidos ?? []).filter((x) => (Number(x.pct) || 0) >= 60);
+  if (pesquisados.length) {
+    colunas[2].itens = [];
+    colunas[1].itens = colunas[1].itens.filter((i) => i.sim >= 80);
+  }
   const jaListado = new Set(colunas.flatMap((c) => c.itens.map((i) => norm(i.nome))));
-  for (const pr of p.parecidos ?? []) {
+  for (const pr of pesquisados) {
     if (jaListado.has(norm(pr.nome))) continue;
     jaListado.add(norm(pr.nome));
     const achado = todos.find((x) => norm(x.nome) === norm(pr.nome) && (!pr.casa || norm(x.casa) === norm(pr.casa)));
@@ -121,7 +128,7 @@ export async function montarFicha(id: string) {
     else if (tem) colunas[1].itens.push(item);
     else colunas[2].itens.push(item);
   }
-  if ((p.parecidos ?? []).some((x) => x.tipo === "inspirou") && !s.inspirados.length) { colunas[0].nome = "INSPIROU-SE EM"; colunas[0].sub = "o original e as releituras"; }
+  if (pesquisados.some((x) => x.tipo === "inspirou") && !s.inspirados.length) { colunas[0].nome = "INSPIROU-SE EM"; colunas[0].sub = "o original e as releituras"; }
   colunas.forEach((c) => { c.itens.sort((a, b) => b.sim - a.sim); c.itens = c.itens.slice(0, 6); });
 
   const inspNaColecao = s.inspirados.filter((x) => x.tem).length;
