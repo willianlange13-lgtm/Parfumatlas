@@ -1,6 +1,6 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { useState, type ReactNode } from "react";
+import { useId, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { reduzirFoto } from "./voz";
 
@@ -38,6 +38,7 @@ export function OpcoesPerfume({ id, nome, casa, entradaId, situacao, numero }: {
   const [aberto, setAberto] = useState<"" | "menu" | "remover">("");
   const [ocupado, setOcupado] = useState(false);
   const naColecao = Boolean(entradaId);
+  const idFoto = `trocar-foto-${useId().replace(/:/g, "")}`; // a ficha tem este menu no celular e no computador
 
   async function moverTive() {
     setOcupado(true);
@@ -77,7 +78,7 @@ export function OpcoesPerfume({ id, nome, casa, entradaId, situacao, numero }: {
       <button type="button" className="c-circ" style={{ width: 36, height: 36 }} aria-label="Opções do perfume" onClick={() => setAberto("menu")}>
         <svg viewBox="0 0 24 24" style={{ width: 18, height: 18, fill: "none", stroke: "currentColor", strokeWidth: 2.4, strokeLinecap: "round" }}><path d="M5 12h.01 M12 12h.01 M19 12h.01" /></svg>
       </button>
-      <input id="trocar-foto" type="file" accept="image/*" capture="environment" hidden onChange={trocarFoto} />
+      <input id={idFoto} type="file" accept="image/*" capture="environment" hidden onChange={trocarFoto} />
       {/* a folha vai direto para o <body>: dentro do topo (que tem desfoque) ela ficaria presa lá em cima */}
       {aberto && typeof document !== "undefined" ? createPortal(<>
       {aberto === "menu" && (
@@ -89,7 +90,7 @@ export function OpcoesPerfume({ id, nome, casa, entradaId, situacao, numero }: {
               <span style={{ fontFamily: "var(--mono)", fontSize: 10, letterSpacing: ".1em", color: "var(--ink-3)" }}>{casa.toUpperCase()}{numero ? ` · ENTRADA Nº ${String(numero).padStart(3, "0")}` : ""}</span>
             </div>
             <Item ic="editar" titulo="Editar ficha" sub="nome, notas, foto e anotação" onClick={() => router.push(`/editar/${id}`)} />
-            <Item ic="foto" titulo={ocupado ? "Enviando…" : "Trocar foto do frasco"} sub="tirar outra ou usar a oficial" onClick={() => document.getElementById("trocar-foto")?.click()} />
+            <Item ic="foto" titulo={ocupado ? "Enviando…" : "Trocar foto do frasco"} sub="tirar outra ou usar a oficial" onClick={() => document.getElementById(idFoto)?.click()} />
             {naColecao && situacao !== "tive" && <Item ic="tive" titulo="Mover para Tive" sub="acabou ou vendeu, o histórico fica" onClick={moverTive} />}
             <Item ic="share" titulo="Compartilhar ficha" sub="imagem ou link" onClick={compartilhar} />
             {naColecao && <Item ic="lixo" titulo="Remover da coleção" sub="apaga a entrada e as anotações" perigo onClick={() => setAberto("remover")} />}

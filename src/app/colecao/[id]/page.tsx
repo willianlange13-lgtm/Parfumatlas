@@ -6,6 +6,8 @@ import { buscarEntrada } from "@/lib/dados";
 import { obterClima } from "@/lib/clima";
 import { graficoClima } from "@/lib/analise";
 import { CelFicha } from "@/cel/CelFicha";
+import { OpcoesPerfume } from "@/cel/OpcoesPerfume";
+import Link from "next/link";
 
 export default async function Ficha({ params }: PageProps<"/colecao/[id]">) {
   await connection();
@@ -19,7 +21,13 @@ export default async function Ficha({ params }: PageProps<"/colecao/[id]">) {
   return (
     <>
       <div className="so-computador">
-        <DesFicha v={v} />
+        <DesFicha v={v} acoes={p?.id ? (
+          // editar e o menu (trocar foto, Tive, compartilhar, remover) também no computador
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 8, fontFamily: "var(--fonte, inherit)", letterSpacing: 0 }}>
+            <Link href={`/editar/${p.id}`} prefetch={false} className="c-btn sec" style={{ height: 36, borderRadius: 18, padding: "0 16px", fontSize: 13, display: "inline-flex", alignItems: "center", textDecoration: "none" }}>Editar</Link>
+            <OpcoesPerfume id={p.id} nome={p.nome} casa={p.casa} entradaId={entrada?.id ?? null} situacao={entrada?.situacao ?? null} numero={entrada?.numero} />
+          </span>
+        ) : null} />
       </div>
       <div className="so-celular">
         <CelFicha v={v} x={{ p: p!, entradaId: entrada?.id ?? null, numero: entrada?.numero, situacao: entrada?.situacao ?? null, foto: entrada?.foto ?? null, hoje }} />
