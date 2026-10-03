@@ -1,5 +1,5 @@
 import "server-only";
-import { geminiJSON, iniciarPesquisaFundo } from "@/lib/gemini";
+import { iniciarPesquisaFundo } from "@/lib/gemini";
 import { bonusCasa, casaPermitida, nivelCasa } from "@/data/casas";
 import type { Perfume } from "@/lib/tipos";
 
@@ -30,7 +30,6 @@ const SCHEMA = {
 
 export type Resultado = { mesmaCasa?: { nome: string; link: string }[]; original?: { nome: string; casa: string; link: string; pctMin?: number; pctMax?: number } | null; parentes: { nome: string; casa: string; paisCasa?: string; link: string; relacao: string; radar: boolean; pctMin: number; pctMax: number; relevancia?: number; semelhanca: string; diferenca: string }[] };
 
-/** Método de parentesco olfativo, em versão curta (o texto de entrada também custa). */
 function pedido(p: Perfume) {
   const notas = [...p.notas.saida, ...p.notas.coracao, ...p.notas.fundo].slice(0, 12).join(", ");
   const orig = (p.parecidos ?? []).find((x) => x.tipo === "inspirou");
@@ -47,43 +46,65 @@ Como pesquisar (em português, nas fontes que o brasileiro usa):
 4) Só entram casas brasileiras, americanas ou árabes (o original pode ser de qualquer país).
 5) Nunca use "quem gosta deste também gosta de" e nunca inclua um perfume só por ser da mesma família.
 
-RELEVÂNCIA é o que a comunidade brasileira mais cita, recomenda e compra como alternativa (os nomes que aparecem em vários vídeos, comentários e lojas brasileiras). Os mais citados vêm primeiro; perfume quase desconhecido no Brasil só entra se o cheiro for muito próximo.
+RELEVÂNCIA é o que a comunidade brasileira mais cita, recomenda e compra como alternativa. Os mais citados vêm primeiro; perfume quase desconhecido no Brasil só entra se o cheiro for muito próximo.
 
 Devolva "parentes": os 10 melhores (sem o próprio perfume nem o original), cada um com:
 - nome (sem a casa), casa, "paisCasa", "link" (página dele no Fragrantica, para a foto);
 - relacao: "clone direto", "dupe", "mesmo DNA", "interpretação" ou "similar por acordes";
-- pctMin e pctMax: faixa de parecença com o "${p.nome}" (ex.: 88 e 92), sem inventar precisão;
-- relevancia de 1 a 5 NA COMUNIDADE BRASILEIRA (5 = citado em quase todo vídeo/lista de contratipos; 1 = quase ninguém no Brasil cita);
+- pctMin e pctMax: faixa de parecença com o "${p.nome}";
+- relevancia de 1 a 5 na comunidade brasileira;
 - radar: true só para perfume pouco citado (relevancia 1 ou 2) mas com cheiro muito próximo;
 - semelhanca e diferenca: no máximo 12 palavras cada, em português.
-LINKS: copie o endereço do Fragrantica exatamente como apareceu na busca (o número no fim identifica a foto). Se não viu a página, deixe "link" vazio; nunca monte um endereço.`
+LINKS: copie o endereço do Fragrantica exatamente como apareceu na busca. Se não viu a página, deixe "link" vazio; nunca monte um endereço.`
 }
 
-/** Pesquisa direta usando o provedor principal do Atlas. Sem OPENAI_API_KEY, usa Gemini. */
-export const buscarSemelhantesGratis = (p: Perfume) =>
-  geminiJSON<Resultado>([{ text: pedido(p) }], {
-    schema: SCHEMA,
-    pesquisar: true,
-    temperatura: 0.25,
-    leve: true,
-    tempo: 55000,
+function lerJson<T>(texto: string): T {
+  const limpo = texto.replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/i, "").trim();
+  const ini = limpo.indexOf("{");
+  const fim = limpo.lastIndexOf("}");
+  if (ini < 0 || fim <= ini) throw new Error("Gemini não devolveu JSON válido");
+  return JSON.parse(limpo.slice(ini, fim + 1)) as T;
+}
+
+/**
+ * Pesquisa gratuita/baixo custo diretamente no Gemini, sem passar pelo roteador que prioriza OpenAI.
+ * Assim uma OPENAI_API_KEY esquecida na Vercel não transforma esta ação em uma chamada paga.
+ */
+export async function buscarSemelhantesGratis(p: Perfume): Promise<Resultado> {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) throw new Error("GEMINI_API_KEY não configurada");
+  const modelo = process.env.GEMINI_MODEL_FREE || process.env.GEMINI_MODEL || "gemini-flash-lite-latest";
+  const texto = `${pedido(p)}\n\nDevolva SOMENTE um objeto JSON válido compatível com este esquema: ${JSON.stringify(SCHEMA)}.`;
+  const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
+    body: JSON.stringify({
+      contents: [{ role: "user", parts: [{ text: texto }] }],
+      generationConfig: { temperature: 0.25 },
+      tools: [{ google_search: {} }, { url_context: {} }],
+    }),
+    signal: AbortSignal.timeout(55000),
   });
+  if (!r.ok) throw new Error(`Gemini ${r.status}: ${(await r.text()).slice(0, 240)}`);
+  const j = await r.json();
+  const resposta: string = (j.candidates?.[0]?.content?.parts ?? []).map((x: { text?: string }) => x.text ?? "").join("");
+  if (!resposta) throw new Error("Gemini respondeu vazio");
+  return lerJson<Resultado>(resposta);
+}
 
 /** Pesquisa premium opcional em segundo plano na OpenAI. */
 export const iniciarBuscaSemelhantes = (p: Perfume) =>
-  iniciarPesquisaFundo(pedido(p), SCHEMA, "medium", 8, "gpt-5-mini");
+  iniciarPesquisaFundo(pedido(p), SCHEMA, "low", 6, "gpt-5-mini");
 
 const fotoFragrantica = (url?: string | null) => {
   const id = url?.match(/fragrantica\.com(?:\.br)?\/perfume\/[^?#]*-(\d+)\.html/i)?.[1];
   return id ? `https://fimgs.net/mdimg/perfume/375x500.${id}.jpg` : null;
 };
-/** Só usa a foto se o nome do perfume estiver no endereço (evita frasco de outro perfume). */
 const foto = (url: string | null | undefined, nome: string) => {
   const u = chave(decodeURIComponent(url ?? ""));
   return url && u.includes(chave(nome)) ? fotoFragrantica(url) : null;
 };
 
-/** Ordem final: parentesco manda; a casa desempata (até ~5 pontos). Fica com 7, idealmente 2 ⭐. */
 export function ordenar(lista: Parecido[]): Parecido[] {
   const nota = (x: Parecido) => x.pct + bonusCasa(x.casa) + ((x.relevancia ?? 3) - 3) * 4;
   const ord = [...lista].filter((x) => x.tipo !== "inspirou").sort((a, b) => nota(b) - nota(a));
@@ -105,7 +126,6 @@ export function ordenar(lista: Parecido[]): Parecido[] {
   return [...original, ...final, ...manuais];
 }
 
-/** Converte o resultado da IA nos semelhantes da ficha (mantém os que a pessoa adicionou). */
 export function converter(r: Resultado, p: Perfume): { parecidos: Parecido[]; dnaOriginal: string | null } {
   const eu = chave(p.nome);
   const anterior = (p.parecidos ?? []).find((x) => x.tipo === "inspirou");
@@ -131,7 +151,6 @@ export function converter(r: Resultado, p: Perfume): { parecidos: Parecido[]; dn
   return { parecidos: ordenar([...lista, ...manuais]), dnaOriginal: orig ? chave(orig.nome) : null };
 }
 
-/** Lista reaproveitada de outro perfume com o mesmo original (sem nova pesquisa). */
 export function reaproveitar(de: Perfume, para: Perfume): Parecido[] {
   const eu = chave(para.nome);
   const lista = (de.parecidos ?? []).filter((x) => chave(x.nome) !== eu && x.trecho !== "adicionado por você" && (x.tipo === "inspirou" || casaPermitida(x.casa)));
