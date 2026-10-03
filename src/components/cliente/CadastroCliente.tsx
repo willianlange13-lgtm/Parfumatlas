@@ -6,6 +6,7 @@ import { CelCadastro } from "@/cel/CelCadastro";
 import { nota as refNota } from "@/data/referencia";
 import { hexA } from "@/lib/cores";
 import type { Perfume } from "@/lib/tipos";
+import { NIVEIS_FIXACAO, NIVEIS_PROJECAO } from "@/lib/normalizar";
 
 type Modo = "foto" | "link" | "nome" | "voz";
 type Cand = { nome: string; casa: string; concentracao: string; por: string; pct: number; link?: string; imagem?: string | null };
@@ -198,6 +199,12 @@ export function CadastroCliente({ base, modoInicial }: { base: Record<string, un
     fontes: [] as { nome: string; info: string; ic: string; bg: string }[], // "fontes lidas" saiu da ficha
     como: [["tenho", "Tenho"], ["quero", "Quero"], ["tive", "Tive"], ["assinatura", "★ Assinatura"]].map(([k, nome]) => ({ nome, bg: k === situacao ? t.btn : t.chip, cor: k === situacao ? t.onBtn : t.ink2, pick: () => setSituacao(k) })),
     mudarAnotacao: (e: React.ChangeEvent<HTMLInputElement>) => setAnotacao(e.target.value),
+    // "como fica em você": toque de novo no mesmo nível para desmarcar
+    minhas: ([["FIXAÇÃO NA SUA PELE", NIVEIS_FIXACAO.map((n) => `${n.nome} · ${n.faixa}`), minhaFixacao, setMinhaFixacao], ["PROJEÇÃO NA SUA PELE", NIVEIS_PROJECAO.map((n) => `${n.nome} · ${n.faixa}`), minhaProjecao, setMinhaProjecao]] as const).map(([titulo, nomes, val, set]) => ({
+      titulo,
+      niveis: nomes.map((nome, i) => ({ nome, bg: val && i < val ? t.amber : t.chip2, pick: () => set(val === i + 1 ? null : i + 1) })),
+      txt: val ? nomes[val - 1] : "toque para marcar · senão vale a média da comunidade",
+    })),
     salvar,
     salvarTxt: ocupado === "salvando" ? "Salvando…" : "Salvar na coleção",
     erro,

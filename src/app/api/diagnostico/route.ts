@@ -3,6 +3,7 @@ import { createClient, supabaseConfigurado } from "@/lib/supabase/server";
 import { geminiConfigurado, geminiJSON, nomeIA } from "@/lib/gemini";
 import { completarFicha, gerarFicha, ultimoErroFicha } from "@/lib/ficha";
 import { perfumeDaLinha } from "@/lib/dados";
+import { clienteServico } from "@/lib/supabase/servico";
 import { horasDosVotos, metrosDosVotos, temVotos, votosDe } from "@/lib/normalizar";
 import type { Votos } from "@/lib/tipos";
 import { lerPagina } from "@/lib/pagina";
@@ -14,6 +15,8 @@ export const maxDuration = 120;
 export async function GET(request: NextRequest) {
   const votos = request.nextUrl.searchParams.get("votos");
   if (votos === "gravar") return gravarVotosReais(request);
+  const dup = request.nextUrl.searchParams.get("duplicados");
+  if (dup) return duplicados(dup === "juntar");
   if (votos) return votosSuspeitosNoBanco(votos === "corrigir");
   const r: Record<string, string> = {};
   r.supabase = supabaseConfigurado() ? "chaves ok" : "FALTA NEXT_PUBLIC_SUPABASE_URL ou NEXT_PUBLIC_SUPABASE_ANON_KEY";
@@ -152,4 +155,53 @@ async function gravarVotosReais(request: NextRequest) {
     if (e) return json({ erro: e.message });
   }
   return json({ perfume: `${data[0].nome} (${data[0].casa})`, copiasGravadas: data.length, fixacao: novos.fixacao, projecao: novos.projecao, horas: horasDosVotos(novos.fixacao), metros: metrosDosVotos(novos.projecao) });
+}
+
+/**
+ * Fichas repetidas do mesmo perfume (mesmo nome + casa, concentração escrita de outro jeito).
+ * /api/diagnostico?duplicados=1 → só lista.
+ * /api/diagnostico?duplicados=juntar → fica a ficha que está na coleção (ou a mais recente); coleção,
+ * lançamentos e "inspirado em" passam para ela e as cópias são apagadas. Usa a chave de serviço.
+ */
+async function duplicados(juntar: boolean) {
+  const json = (x: unknown) => NextResponse.json(x, { headers: { "Cache-Control": "no-store", "Content-Type": "application/json; charset=utf-8" } });
+  if (!supabaseConfigurado()) return json({ erro: "Banco não configurado." });
+  const sessao = await createClient();
+  const { data: u } = await sessao.auth.getUser();
+  if (!u.user) return json({ erro: "Entre no Atlas antes de abrir este endereço." });
+  const sb = clienteServico();
+  if (!sb) return json({ erro: "Falta SUPABASE_SERVICE_ROLE_KEY na Vercel." });
+  const n = (s: unknown) => String(s ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
+  const [{ data: ps, error }, { data: col }, { data: lan }] = await Promise.all([
+    sb.from("perfumes").select("id, nome, casa, concentracao, atualizado_em"),
+    sb.from("colecao").select("id, user_id, perfume_id"),
+    sb.from("lancamentos").select("id, perfume_id"),
+  ]);
+  if (error) return json({ erro: error.message });
+  const grupos = new Map<string, NonNullable<typeof ps>>();
+  for (const p of ps ?? []) grupos.set(`${n(p.nome)}|${n(p.casa)}`, [...(grupos.get(`${n(p.nome)}|${n(p.casa)}`) ?? []), p]);
+  const repetidos = [...grupos.values()].filter((g) => g.length > 1).map((g) => {
+    const naColecao = (id: string) => (col ?? []).filter((c) => c.perfume_id === id);
+    const fica = [...g].sort((a, b) => naColecao(b.id).length - naColecao(a.id).length || String(b.atualizado_em).localeCompare(String(a.atualizado_em)))[0];
+    return { fica, sai: g.filter((x) => x.id !== fica.id), naColecao };
+  });
+  const resumo = repetidos.map((r) => ({ perfume: `${r.fica.nome} (${r.fica.casa})`, fica: `${r.fica.id} · ${r.fica.concentracao ?? "sem concentração"} · ${r.naColecao(r.fica.id).length} na coleção`, sai: r.sai.map((x) => `${x.id} · ${x.concentracao ?? "sem concentração"} · ${r.naColecao(x.id).length} na coleção`) }));
+  if (!juntar) return json({ grupos: resumo.length, lista: resumo });
+
+  const feito: string[] = [], pulado: string[] = [];
+  for (const r of repetidos) {
+    const donosFica = new Set(r.naColecao(r.fica.id).map((c) => c.user_id));
+    // mesma pessoa com as duas fichas na coleção: juntar mexeria nos registros de uso; fica para decisão manual
+    if (r.sai.some((x) => r.naColecao(x.id).some((c) => donosFica.has(c.user_id)))) { pulado.push(`${r.fica.nome}: a mesma pessoa tem as duas fichas na coleção`); continue; }
+    for (const x of r.sai) {
+      await sb.from("colecao").update({ perfume_id: r.fica.id }).eq("perfume_id", x.id);
+      if ((lan ?? []).some((l) => l.perfume_id === r.fica.id)) await sb.from("lancamentos").delete().eq("perfume_id", x.id);
+      else await sb.from("lancamentos").update({ perfume_id: r.fica.id }).eq("perfume_id", x.id);
+      await sb.from("perfumes").update({ inspirado_em: r.fica.id }).eq("inspirado_em", x.id);
+      const { error: e } = await sb.from("perfumes").delete().eq("id", x.id);
+      if (e) return json({ erro: `${r.fica.nome}: ${e.message}`, feito });
+    }
+    feito.push(`${r.fica.nome} (${r.fica.casa}): ${r.sai.length} cópia(s) juntada(s)`);
+  }
+  return json({ feito, pulado });
 }
