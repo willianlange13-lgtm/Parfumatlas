@@ -6,7 +6,7 @@ import { Frasco } from "@/components/Frasco";
 import type { Perfume } from "@/lib/tipos";
 import { FAMILIAS } from "@/lib/normalizar";
 import { Card, MONO, NotaChip, OURO, Rot } from "./kit";
-import { ouvirUmaVez, reduzirFoto } from "./voz";
+import { reduzirFoto } from "./voz";
 
 type E = { situacao: string; anotacao: string; foto: string | null; minhaFixacao: number | null; minhaProjecao: number | null; minhaNota: number | null };
 const NF = ["Muito fraca", "Fraca", "Moderada", "Longa", "Eterna"];
