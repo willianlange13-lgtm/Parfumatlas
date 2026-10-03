@@ -35,26 +35,34 @@ function pedido(p: Perfume) {
   const notas = [...p.notas.saida, ...p.notas.coracao, ...p.notas.fundo].slice(0, 12).join(", ");
   const orig = (p.parecidos ?? []).find((x) => x.tipo === "inspirou");
   const original = orig ? `${orig.nome} (${orig.casa})` : null;
-  return `Encontre os parentes olfativos do perfume "${p.nome}" da casa "${p.casa}"${notas ? ` (notas: ${notas})` : ""}.${original ? ` Ele é inspirado no ${original}.` : ""}
+  const ref = orig ? orig.nome : "<original>";
+  return `Você é um especialista da COMUNIDADE BRASILEIRA de perfumaria (quem compra árabes e contratipos no Brasil).
+Encontre os perfumes mais parecidos com "${p.nome}" da casa "${p.casa}"${notas ? ` (notas: ${notas})` : ""}.${original ? ` Ele é inspirado no ${original}.` : " Descubra se ele é inspirado num original famoso e informe em \"original\"."}
 
-Método (poucas buscas, bem escolhidas):
-1) ${original ? `PRIMEIRO pesquise as listas de clones e alternativas do ${original}: "${orig!.nome} clone", "best ${orig!.nome} dupes", "${orig!.nome} alternative" (Reddit, Fragrantica, YouTube, blogs, lojas). Todo clone citado em 2 ou mais fontes TEM que entrar.` : `Descubra se ele é inspirado num original famoso ("original"). Se for, PRIMEIRO pesquise as listas de clones e alternativas desse original ("<original> clone", "best <original> dupes"). Todo clone citado em 2 ou mais fontes TEM que entrar.`}
-2) Depois: "${p.nome} clone", "${p.nome} vs", comparações lado a lado e lançamentos recentes de casas árabes com a mesma combinação de notas.
-3) Nunca use listas "quem gosta deste também gosta de" e nunca inclua um perfume só por ser da mesma família.
-4) TRAVA DE CASAS: só entram perfumes de casas BRASILEIRAS (ex.: O Boticário, Natura, Thera), AMERICANAS/EUA (ex.: Montagne, Alt Fragrances, Dossier) ou ÁRABES (Emirados, Arábia Saudita, Kuwait, Catar, Omã; ex.: Al Haramain, Afnan, Lattafa, Armaf, Rasasi, French Avenue, Maison Alhambra, Bidaya, Al Absar). Casas europeias ou de outros países ficam de fora (o original pode ser de qualquer país).
+Como pesquisar (em português, nas fontes que o brasileiro usa):
+1) Fragrantica Brasil (fragrantica.com.br): página do perfume, comentários e "Este perfume me lembra do".
+2) YouTube e Instagram de perfumaria brasileiros, blogs brasileiros e lojas brasileiras de perfumes importados/árabes.
+3) Buscas como: "contratipo ${ref}", "alternativa ao ${ref}", "árabe parecido com ${ref}", "${p.nome} parecido", "${p.nome} vs".
+4) Só entram casas brasileiras, americanas ou árabes (o original pode ser de qualquer país).
+5) Nunca use "quem gosta deste também gosta de" e nunca inclua um perfume só por ser da mesma família.
 
-Devolva "parentes": os 12 melhores (sem o próprio perfume nem o original), cada um com:
-- nome (sem a casa), casa, "paisCasa" (país da casa), "link" (página dele no Fragrantica, para a foto);
+RELEVÂNCIA é o que a comunidade brasileira mais cita, recomenda e compra como alternativa (os nomes que aparecem em vários vídeos, comentários e lojas brasileiras). Os mais citados vêm primeiro; perfume quase desconhecido no Brasil só entra se o cheiro for muito próximo.
+
+Devolva "parentes": os 10 melhores (sem o próprio perfume nem o original), cada um com:
+- nome (sem a casa), casa, "paisCasa", "link" (página dele no Fragrantica, para a foto);
 - relacao: "clone direto", "dupe", "mesmo DNA", "interpretação" ou "similar por acordes";
-- pctMin e pctMax: faixa estimada de parentesco no cheiro (ex.: 88 e 92), sem inventar precisão;
-- relevancia de 1 a 5: quanto a comunidade conhece e recomenda esse perfume como alternativa (5 = aparece na maioria das listas de clones e resenhas; 1 = quase ninguém cita);
-- radar: true se for um achado pouco citado (relevancia 1 ou 2) mas com cheiro muito próximo;
-- semelhanca e diferenca: no máximo 12 palavras cada.
-Se não houver original, "original" fica null.`;
+- pctMin e pctMax: faixa de parentesco no cheiro (ex.: 88 e 92), sem inventar precisão;
+- relevancia de 1 a 5 NA COMUNIDADE BRASILEIRA (5 = citado em quase todo vídeo/lista de contratipos; 1 = quase ninguém no Brasil cita);
+- radar: true só para perfume pouco citado (relevancia 1 ou 2) mas com cheiro muito próximo;
+- semelhanca e diferenca: no máximo 12 palavras cada, em português.`;
 }
 
 /** Começa a pesquisa em segundo plano na OpenAI (devolve o código para consultar depois). */
-export const iniciarBuscaSemelhantes = (p: Perfume) => iniciarPesquisaFundo(pedido(p), SCHEMA, "medium", 10);
+// mesmo modelo do ChatGPT (o mini errou a lista em todos os testes); OPENAI_MODEL_PESQUISA troca, se quiser
+export const iniciarBuscaSemelhantes = (p: Perfume) =>
+  iniciarPesquisaFundo(pedido(p), SCHEMA, "medium", 12, "gpt-5").catch((e) =>
+    // conta sem acesso ao gpt-5: usa o mini
+    /\b(404|403)\b|model/i.test(String(e)) ? iniciarPesquisaFundo(pedido(p), SCHEMA, "medium", 12, "gpt-5-mini") : Promise.reject(e));
 
 const fotoFragrantica = (url?: string | null) => {
   const id = url?.match(/fragrantica\.com(?:\.br)?\/perfume\/[^?#]*-(\d+)\.html/i)?.[1];
@@ -69,7 +77,7 @@ const foto = (url: string | null | undefined, nome: string) => {
 /** Ordem final: parentesco manda; a casa desempata (até ~5 pontos). Fica com 7, idealmente 2 ⭐. */
 export function ordenar(lista: Parecido[]): Parecido[] {
   // parentesco manda; casa (até +5) e reconhecimento na comunidade (−5 a +5) desempatam
-  const nota = (x: Parecido) => x.pct + bonusCasa(x.casa) + ((x.relevancia ?? 3) - 3) * 2.5;
+  const nota = (x: Parecido) => x.pct + bonusCasa(x.casa) + ((x.relevancia ?? 3) - 3) * 4;
   const ord = [...lista].filter((x) => x.tipo !== "inspirou").sort((a, b) => nota(b) - nota(a));
   const original = lista.filter((x) => x.tipo === "inspirou");
   const manuais = ord.filter((x) => x.trecho === "adicionado por você");

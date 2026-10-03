@@ -171,10 +171,10 @@ async function chamarOpenAI(partes: Parte[], opcoes: { schema?: object; pesquisa
 // ("background") e o app consulta o resultado depois, quantas vezes precisar.
 
 /** Começa a pesquisa e devolve o código dela na OpenAI. */
-export async function iniciarPesquisaFundo(texto: string, schema: object, esforco: "low" | "medium" | "high" = "low", maxBuscas = 8): Promise<string> {
+export async function iniciarPesquisaFundo(texto: string, schema: object, esforco: "low" | "medium" | "high" = "low", maxBuscas = 8, modeloPadrao = "gpt-5-mini"): Promise<string> {
   const chave = process.env.OPENAI_API_KEY;
   if (!chave) throw new Error("OPENAI_API_KEY não configurada");
-  const modelo = process.env.OPENAI_MODEL_PESQUISA || "gpt-5-mini";
+  const modelo = process.env.OPENAI_MODEL_PESQUISA || modeloPadrao;
   const base = {
     model: modelo,
     input: [{ role: "user", content: [{ type: "input_text", text: `${texto}\n\nResponda só com um JSON válido neste formato (JSON Schema): ${JSON.stringify(schemaComum(schema))}.` }] }],
