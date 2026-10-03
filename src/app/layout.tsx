@@ -23,6 +23,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
         {/* eslint-disable-next-line @next/next/no-page-custom-font */}
+        {/* no computador, o desenho (1440 px) ocupa a largura toda da tela */}
+        <script dangerouslySetInnerHTML={{ __html: "(function(){function f(){var w=document.documentElement.clientWidth;document.documentElement.style.setProperty('--zoom',w>900?Math.min(1.8,Math.max(0.62,w/1440)).toFixed(4):'1')}f();addEventListener('resize',f)})()" }} />
         <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Montserrat:wght@400&family=JetBrains+Mono:wght@400;500&family=Pinyon+Script&display=swap" rel="stylesheet" />
       </head>
       <body>

@@ -150,3 +150,17 @@ img { display: block; max-width: 100%; }
 @media (min-width: 901px) {
   .c-topo { top: 80px; }
 }
+
+/* ---------- computador: o desenho acompanha a largura da tela ---------- */
+@media (min-width: 901px) {
+  .so-computador { zoom: var(--zoom, 1); }
+}
+
+/* ---------- celular: respeita o entalhe e a barra de status do iPhone ---------- */
+@media (max-width: 900px) {
+  .topo-app { padding-top: env(safe-area-inset-top); height: calc(60px + env(safe-area-inset-top)); }
+  .c-tela { padding-top: env(safe-area-inset-top); }
+  .c-topo { margin-top: calc(-1 * env(safe-area-inset-top)); padding-top: env(safe-area-inset-top); height: calc(52px + env(safe-area-inset-top)); }
+  body:has(.topo-app:not(.so-inicio-esconde)) .c-tela { padding-top: 0; }
+  .c-folha { max-height: calc(88dvh - env(safe-area-inset-top)); }
+}

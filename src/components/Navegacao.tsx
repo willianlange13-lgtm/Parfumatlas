@@ -50,7 +50,7 @@ export function Navegacao({ iniciais = "WL" }: { iniciais?: string }) {
         <div className="acoes">
           <Link href="/buscar" className="btn-redondo" aria-label="Buscar"><Icone nome="busca" /></Link>
           <Link href="/sommelier" className="btn-redondo" aria-label="Falar com o sommelier"><Icone nome="mic" /></Link>
-          <Link href="/adicionar" className="btn-redondo claro" aria-label="Adicionar perfume"><Icone nome="camera" /></Link>
+          <Link href="/adicionar?modo=link" className="btn" style={{ height: 44, padding: "0 18px 0 14px" }}><Icone nome="mais" tamanho={18} traco={2.2} />Adicionar perfume</Link>
           <Link href="/configuracoes" className="btn-redondo" aria-label="Configurações" style={{ fontSize: 13, fontWeight: 600 }}>{iniciais}</Link>
         </div>
       </header>
