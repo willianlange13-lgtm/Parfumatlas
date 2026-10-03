@@ -92,7 +92,11 @@ export async function buscarSemelhantesGratis(p: Perfume): Promise<Resultado> {
   return lerJson<Resultado>(resposta);
 }
 
-/** Pesquisa premium opcional em segundo plano na OpenAI. */
+/**
+ * Pesquisa premium opcional em segundo plano na OpenAI.
+ * Histórico: modelos mini erraram a lista em todos os testes relevantes; se o premium voltar a ser usado,
+ * revalidar o modelo antes de assumir que o mini substitui o modelo completo que passou nos testes.
+ */
 export const iniciarBuscaSemelhantes = (p: Perfume) =>
   iniciarPesquisaFundo(pedido(p), SCHEMA, "low", 6, "gpt-5-mini");
 
@@ -106,6 +110,7 @@ const foto = (url: string | null | undefined, nome: string) => {
 };
 
 export function ordenar(lista: Parecido[]): Parecido[] {
+  // Parentesco manda; casa (até +5) e reconhecimento na comunidade (-5 a +5) entram apenas como desempate.
   const nota = (x: Parecido) => x.pct + bonusCasa(x.casa) + ((x.relevancia ?? 3) - 3) * 4;
   const ord = [...lista].filter((x) => x.tipo !== "inspirou").sort((a, b) => nota(b) - nota(a));
   const original = lista.filter((x) => x.tipo === "inspirou");
@@ -114,6 +119,7 @@ export function ordenar(lista: Parecido[]): Parecido[] {
   const top = auto.slice(0, 7);
   const estrelasFora = auto.slice(7).filter((x) => x.radar);
   for (const e of estrelasFora) {
+    // Regra de produto: no máximo 2 referências "fora do radar" na lista principal de 7.
     if (top.filter((x) => x.radar).length >= 2) break;
     const sai = [...top].reverse().find((x) => !x.radar);
     if (!sai) break;
@@ -123,6 +129,7 @@ export function ordenar(lista: Parecido[]): Parecido[] {
   top.sort((a, b) => nota(b) - nota(a));
   let estrelas = 0;
   const final = top.map((x) => (x.radar && ++estrelas > 2 ? { ...x, radar: false } : x));
+  // O original nunca some: se já estava conhecido e a pesquisa não o devolveu, o converter preserva o anterior.
   return [...original, ...final, ...manuais];
 }
 

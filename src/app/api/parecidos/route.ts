@@ -95,6 +95,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ estado: "falhou", erro: `A pesquisa falhou (${r.erro ?? "sem motivo"}).` });
     }
     const { parecidos: brutos, dnaOriginal } = converter(r.dados, perfume);
+    // Fotos conferidas: abre a página do Fragrantica de cada item quando possível.
+    // Isso existe porque links/IDs inventados pelo modelo já fizeram o Atlas mostrar o frasco de outro perfume.
     const parecidos = await Promise.all(brutos.map(async (x) => (x.trecho === "adicionado por você" ? x : { ...x, imagem: (await fotoConferida(x.link, x.nome)) ?? (x.tipo === "inspirou" ? x.imagem ?? null : null) })));
     await salvar({ ...perfume, parecidos, dnaOriginal: dnaOriginal ?? perfume.dnaOriginal ?? null, buscaParecidos: null });
     return NextResponse.json({ estado: "pronta", n: parecidos.length, provedor: "openai-premium" });
