@@ -1,5 +1,5 @@
 import "server-only";
-import { iniciarPesquisaFundo } from "@/lib/gemini";
+import { geminiJSON, iniciarPesquisaFundo } from "@/lib/gemini";
 import { bonusCasa, casaPermitida, nivelCasa } from "@/data/casas";
 import type { Perfume } from "@/lib/tipos";
 
@@ -59,12 +59,19 @@ Devolva "parentes": os 10 melhores (sem o próprio perfume nem o original), cada
 LINKS: copie o endereço do Fragrantica exatamente como apareceu na busca (o número no fim identifica a foto). Se não viu a página, deixe "link" vazio; nunca monte um endereço.`
 }
 
-/** Começa a pesquisa em segundo plano na OpenAI (devolve o código para consultar depois). */
-// mesmo modelo do ChatGPT (o mini errou a lista em todos os testes); OPENAI_MODEL_PESQUISA troca, se quiser
+/** Pesquisa direta usando o provedor principal do Atlas. Sem OPENAI_API_KEY, usa Gemini. */
+export const buscarSemelhantesGratis = (p: Perfume) =>
+  geminiJSON<Resultado>([{ text: pedido(p) }], {
+    schema: SCHEMA,
+    pesquisar: true,
+    temperatura: 0.25,
+    leve: true,
+    tempo: 55000,
+  });
+
+/** Pesquisa premium opcional em segundo plano na OpenAI. */
 export const iniciarBuscaSemelhantes = (p: Perfume) =>
-  iniciarPesquisaFundo(pedido(p), SCHEMA, "medium", 12, "gpt-5").catch((e) =>
-    // conta sem acesso ao gpt-5: usa o mini
-    /\b(404|403)\b|model/i.test(String(e)) ? iniciarPesquisaFundo(pedido(p), SCHEMA, "medium", 12, "gpt-5-mini") : Promise.reject(e));
+  iniciarPesquisaFundo(pedido(p), SCHEMA, "medium", 8, "gpt-5-mini");
 
 const fotoFragrantica = (url?: string | null) => {
   const id = url?.match(/fragrantica\.com(?:\.br)?\/perfume\/[^?#]*-(\d+)\.html/i)?.[1];
@@ -78,13 +85,11 @@ const foto = (url: string | null | undefined, nome: string) => {
 
 /** Ordem final: parentesco manda; a casa desempata (até ~5 pontos). Fica com 7, idealmente 2 ⭐. */
 export function ordenar(lista: Parecido[]): Parecido[] {
-  // parentesco manda; casa (até +5) e reconhecimento na comunidade (−5 a +5) desempatam
   const nota = (x: Parecido) => x.pct + bonusCasa(x.casa) + ((x.relevancia ?? 3) - 3) * 4;
   const ord = [...lista].filter((x) => x.tipo !== "inspirou").sort((a, b) => nota(b) - nota(a));
   const original = lista.filter((x) => x.tipo === "inspirou");
   const manuais = ord.filter((x) => x.trecho === "adicionado por você");
   const auto = ord.filter((x) => x.trecho !== "adicionado por você");
-  // 7 automáticos: os 5 melhores e, se houver, garante até 2 ⭐ entre os 7 (sem empurrá-los para o fim)
   const top = auto.slice(0, 7);
   const estrelasFora = auto.slice(7).filter((x) => x.radar);
   for (const e of estrelasFora) {
@@ -95,7 +100,6 @@ export function ordenar(lista: Parecido[]): Parecido[] {
     top.push(e);
   }
   top.sort((a, b) => nota(b) - nota(a));
-  // no máximo 2 ⭐ (os dois mais parecidos entre os fora do radar)
   let estrelas = 0;
   const final = top.map((x) => (x.radar && ++estrelas > 2 ? { ...x, radar: false } : x));
   return [...original, ...final, ...manuais];
@@ -108,13 +112,12 @@ export function converter(r: Resultado, p: Perfume): { parecidos: Parecido[]; dn
   const orig = r.original?.nome ? r.original : anterior ? { nome: anterior.nome, casa: anterior.casa, link: anterior.link ?? "", pctMin: undefined, pctMax: undefined } : null;
   const lista: Parecido[] = [];
   if (orig && chave(orig.nome) !== eu) {
-    // o original nunca some: se a pesquisa não devolver, fica o que já estava
     const oMin = Number(orig.pctMin) || 0, oMax = Number(orig.pctMax) || oMin;
     const faixa = oMin ? (oMin === oMax ? `~${oMin}%` : `${oMin}–${oMax}%`) : anterior?.faixa && anterior.faixa !== "o original" ? anterior.faixa : null;
     lista.push({ nome: orig.nome, casa: orig.casa, tipo: "inspirou", pct: oMin ? Math.round((oMin + oMax) / 2) : (anterior?.pct ?? 95), link: orig.link || anterior?.link || null, imagem: foto(orig.link, orig.nome) ?? anterior?.imagem ?? null, faixa, relacao: "original" });
   }
   for (const x of r.parentes ?? []) {
-    if (!x?.nome || !casaPermitida(x.casa, x.paisCasa)) continue; // trava: só casas brasileiras, americanas e árabes
+    if (!x?.nome || !casaPermitida(x.casa, x.paisCasa)) continue;
     if (chave(x.nome) === eu || (orig && chave(x.nome) === chave(orig.nome)) || lista.some((y) => chave(y.nome) === chave(x.nome))) continue;
     const min = Math.max(40, Math.min(99, Math.round(Number(x.pctMin) || 70))), max = Math.max(min, Math.min(99, Math.round(Number(x.pctMax) || min)));
     lista.push({
@@ -132,7 +135,6 @@ export function converter(r: Resultado, p: Perfume): { parecidos: Parecido[]; dn
 export function reaproveitar(de: Perfume, para: Perfume): Parecido[] {
   const eu = chave(para.nome);
   const lista = (de.parecidos ?? []).filter((x) => chave(x.nome) !== eu && x.trecho !== "adicionado por você" && (x.tipo === "inspirou" || casaPermitida(x.casa)));
-  // o perfume de onde veio a lista também é parente deste
   if (!lista.some((x) => chave(x.nome) === chave(de.nome))) lista.push({ nome: de.nome, casa: de.casa, tipo: "clone", pct: 88, imagem: de.imagem ?? null, faixa: "~88%", relacao: "mesmo DNA", radar: nivelCasa(de.casa) === 3, semelhanca: "clone do mesmo original", diferenca: null });
   const manuais = (para.parecidos ?? []).filter((x) => x.trecho === "adicionado por você");
   return ordenar([...lista, ...manuais]);
