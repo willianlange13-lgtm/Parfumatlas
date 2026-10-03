@@ -117,7 +117,13 @@ const SCHEMA_FICHA = {
   required: ["nome", "casa", "familia", "acorde", "notas", "acordes", "votos", "forma", "tampa", "fontes", "revisar"],
 };
 
-const REGRA_PARECIDOS = `REGRAS DOS PARECIDOS: só entra perfume que o Fragrantica ("Este perfume me lembra"/"This perfume reminds me of"), o Parfumo, resenhas, vídeos ou lojas de contratipos comparam DIRETAMENTE com este perfume, ou que é clone/releitura do mesmo original que ele imita (ex.: se ele é inspirado no Pacific Chill, entram os outros clones do Pacific Chill). Nunca inclua um perfume só por ser da mesma família ou por também ser cítrico/fresco. "pct" é a semelhança apontada pelas fontes; abaixo de 60 não inclua. Para cada um, "fonte" é o endereço exato da página onde a comparação aparece e "trecho" é a frase copiada dessa página que cita os dois perfumes. Cada um será conferido abrindo a página: se a página não citar os dois, ele é descartado, então não chute.`;
+const REGRA_PARECIDOS = `REGRAS DOS PARECIDOS:
+1) A fonte principal é a lista "Este Perfume me Lembra do" (em inglês "This perfume reminds me of") da página deste perfume no Fragrantica. Copie TODOS os perfumes dessa lista, na ordem em que aparecem, com nome e casa exatamente como no Fragrantica (costumam ser de 6 a 15).
+2) NUNCA use a lista "Quem gosta deste, também gosta de" ("People who like this also like"): ela não fala de semelhança.
+3) Só se a lista tiver menos de 5, complete com perfumes que o Parfumo, resenhas ou vídeos comparam DIRETAMENTE com este. Nunca inclua um perfume só por ser da mesma família ou também ser cítrico/fresco.
+4) "tipo": "inspirou" só para o original famoso que ele imita (ex.: o perfume de grife da lista); os outros da lista são "parecido".
+5) "pct": pela ordem da lista, o primeiro 95 e cada seguinte 3 a menos (mínimo 60).
+6) "fonte": o endereço da página do Fragrantica deste perfume (ou da página onde está a comparação); "trecho": "Este perfume me lembra do: <nome>" ou a frase copiada da página.`
 
 const fotoDoFragrantica = (url?: string | null) => {
   const id = url?.match(/fragrantica\.com(?:\.br)?\/perfume\/[^?#]*-(\d+)\.html/i)?.[1];
@@ -160,7 +166,7 @@ function finalizar(f: FichaIA): FichaIA {
     fixacaoH: votos && temVotos(votos.fixacao) ? horasDosVotos(votos.fixacao) : f.fixacaoH,
     projecaoM: votos && temVotos(votos.projecao) ? metrosDosVotos(votos.projecao) : f.projecaoM,
     revisar: [...revisar],
-    parecidos: (f.parecidos ?? []).filter((x) => x?.nome && x?.casa && x.nome.toLowerCase() !== (f.nome ?? "").toLowerCase() && (Number(x.pct) || 70) >= 60).slice(0, 10).map((x) => ({ ...x, pct: Math.max(40, Math.min(99, Math.round(Number(x.pct) || 70))) })),
+    parecidos: (f.parecidos ?? []).filter((x) => x?.nome && x?.casa && x.nome.toLowerCase() !== (f.nome ?? "").toLowerCase() && (Number(x.pct) || 70) >= 60).slice(0, 15).map((x) => ({ ...x, pct: Math.max(40, Math.min(99, Math.round(Number(x.pct) || 70))) })),
   };
 }
 
@@ -267,7 +273,7 @@ ${semVotos ? `- "fixacao": as 5 contagens de votos de "Longevidade"/"Longevity" 
 - "total": o número de votos da avaliação.
 Exemplo do formato: {"fixacao": [42, 194, 855, 179, 23], "projecao": [120, 610, 240, 35], "total": 1971, "origem": "fragrantica"}. Números inteiros, como aparecem na página.
 Se o Fragrantica não mostrar os números, procure no Parfumo (nota de fixação e de rastro), em resenhas e em lojas, transforme em porcentagens que somam 100 e use "origem": "estimativa". Nunca devolva zerado.` : ""}
-${poucos ? `- "parecidos": de 5 a 10 perfumes, cada um com nome, casa, tipo ("inspirou" para o original que ele imita, "clone" para releituras dele ou do mesmo original, "parecido" nos outros casos) e pct de 0 a 100.
+${poucos ? `- "parecidos": a lista completa, cada um com nome, casa, tipo, pct, fonte e trecho, seguindo as regras abaixo.
 ${REGRA_PARECIDOS}` : ""}` }], { schema: SCHEMA_EXTRA, pesquisar: true, tempo: 75000 });
   const out: FichaIA = { ...f, completar: false };
   const novos = votosDe({ ...(f.votos ?? {}), fixacao: x.fixacao ?? undefined, projecao: x.projecao ?? undefined, total: x.total || f.votos?.total, origem: x.origem ?? "estimativa" } as Partial<Votos>, f.votos?.ocasioes?.length ? f.votos.ocasioes : OCASIOES);
@@ -281,7 +287,7 @@ ${REGRA_PARECIDOS}` : ""}` }], { schema: SCHEMA_EXTRA, pesquisar: true, tempo: 7
   if (poucos && x.parecidos?.length) {
     const ja = new Set((f.parecidos ?? []).map((p) => p.nome.toLowerCase()));
     out.parecidos = [...(f.parecidos ?? []), ...x.parecidos.filter((p) => p?.nome && p?.casa && !ja.has(p.nome.toLowerCase()) && p.nome.toLowerCase() !== f.nome.toLowerCase() && (Number(p.pct) || 70) >= 60)]
-      .slice(0, 10).map((p) => ({ ...p, pct: Math.max(40, Math.min(99, Math.round(Number(p.pct) || 70))) }));
+      .slice(0, 15).map((p) => ({ ...p, pct: Math.max(40, Math.min(99, Math.round(Number(p.pct) || 70))) }));
   }
   return out;
 }
@@ -290,10 +296,10 @@ ${REGRA_PARECIDOS}` : ""}` }], { schema: SCHEMA_EXTRA, pesquisar: true, tempo: 7
 export async function buscarParecidos(nome: string, casa: string): Promise<NonNullable<FichaIA["parecidos"]>> {
   const SCHEMA_P = { type: "OBJECT", properties: { parecidos: SCHEMA_FICHA.properties.parecidos }, required: ["parecidos"] };
   const r = await geminiJSON<{ parecidos: FichaIA["parecidos"] }>([{ text: `Pesquise na internet perfumes parecidos com "${nome}"${casa ? ` da casa "${casa}"` : ""}. Fontes: Fragrantica, Parfumo, resenhas, vídeos e lojas de contratipos.
-Devolva "parecidos": de 5 a 10 perfumes, cada um com nome, casa, tipo ("inspirou" para o original que ele imita, "clone" para releituras dele ou do mesmo original, "parecido" nos outros casos) e pct de 0 a 100, do mais parecido ao menos.
+Abra a página dele no Fragrantica e devolva "parecidos": a lista completa, cada um com nome, casa, tipo, pct, fonte e trecho, seguindo as regras abaixo.
 ${REGRA_PARECIDOS}` }], { schema: SCHEMA_P, pesquisar: true, tempo: 90000 });
   const ok = await verificarParecidos(nome, r.parecidos);
-  return ok.filter((x) => x?.nome && x?.casa && x.nome.toLowerCase() !== nome.toLowerCase() && (Number(x.pct) || 70) >= 60).slice(0, 10).map((x) => ({ ...x, pct: Math.min(99, Math.round(Number(x.pct) || 70)) }));
+  return ok.filter((x) => x?.nome && x?.casa && x.nome.toLowerCase() !== nome.toLowerCase() && (Number(x.pct) || 70) >= 60).slice(0, 15).map((x) => ({ ...x, pct: Math.min(99, Math.round(Number(x.pct) || 70)) }));
 }
 
 /** ChatGPT: uma única chamada com pesquisa na internet monta a ficha inteira (como no chat). */
@@ -327,7 +333,7 @@ Pirâmide, acordes e família vêm do Fragrantica, sem misturar. Os outros campo
 - "pais": o país de origem da marca (ex.: Rayhaan, Lattafa, Armaf → "Emirados Árabes Unidos"; Dior, Chanel → "França"). Pesquise se não souber.
 - Ano, perfumistas, gênero e uma descricao de 1 ou 2 frases curtas sobre o cheiro, em português.
 - forma do frasco: alto, ret, redondo ou largo. tampa: cor da tampa em hex.
-- "parecidos": de 5 a 10 perfumes. Para cada um: nome, casa, "tipo" ("inspirou" se é o original em que este se inspira, "clone" se é uma releitura dele ou do mesmo original, "parecido" nos outros casos) e "pct", a semelhança de 0 a 100.
+- "parecidos": a lista completa, cada um com nome, casa, tipo, pct, fonte e trecho, seguindo as regras abaixo.
 ${REGRA_PARECIDOS}
 - "fragrantica": endereço completo da página do perfume no Fragrantica.
 - fontes: sites usados e o que veio de cada um. O que não encontrar fica vazio e entra em "revisar".` }], { schema: { ...SCHEMA_FICHA, properties: { ...SCHEMA_FICHA.properties, fragrantica: { type: "STRING" } } }, pesquisar: !paginaCompleta });

@@ -132,7 +132,7 @@ export async function montarFicha(id: string) {
     else colunas[2].itens.push(item);
   }
   if (pesquisados.some((x) => x.tipo === "inspirou") && !s.inspirados.length) { colunas[0].nome = "INSPIROU-SE EM"; colunas[0].sub = "o original e as releituras"; }
-  colunas.forEach((c) => { c.itens.sort((a, b) => b.sim - a.sim); c.itens = c.itens.slice(0, 6); });
+  colunas.forEach((c) => { c.itens.sort((a, b) => b.sim - a.sim); c.itens = c.itens.slice(0, 15); });
 
   const inspNaColecao = s.inspirados.filter((x) => x.tem).length;
   const relacao = s.inspirados.length ? `Original · ${inspNaColecao || s.inspirados.length} inspirado${(inspNaColecao || s.inspirados.length) > 1 ? "s" : ""} ${inspNaColecao ? "na sua coleção" : "conhecidos"}` : p.inspiradoEm ? `Inspirado em ${acervo.perfumes.get(p.inspiradoEm)?.nome ?? "outro perfume"}` : "";

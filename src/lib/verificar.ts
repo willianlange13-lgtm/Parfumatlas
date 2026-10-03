@@ -36,6 +36,9 @@ export async function verificarParecidos<T extends Parecido>(nome: string, lista
   const conferidos = await Promise.all(
     itens.map(async (x) => {
       const pagina = await textoDaPagina(x.fonte!);
+      // a fonte é a própria página deste perfume (lista "Este perfume me lembra do"): basta citar o parecido
+      const paginaDele = cita(normal(decodeURIComponent(x.fonte!)), nome);
+      if (paginaDele) return (pagina ? cita(pagina, x.nome) : cita(normal(x.trecho ?? ""), x.nome) && CONFIAVEIS.test(x.fonte!)) ? x : null;
       const outros = [nome, ...(x.tipo === "clone" && original ? [original] : [])];
       if (pagina) return cita(pagina, x.nome) && outros.some((o) => cita(pagina, o)) ? x : null;
       // página não abriu: aceita só de site conhecido e com trecho citando os dois
