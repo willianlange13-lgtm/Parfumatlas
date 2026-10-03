@@ -82,7 +82,10 @@ export function ordenar(lista: Parecido[]): Parecido[] {
     top.push(e);
   }
   top.sort((a, b) => nota(b) - nota(a));
-  return [...original, ...top, ...manuais];
+  // no máximo 2 ⭐ (os dois mais parecidos entre os fora do radar)
+  let estrelas = 0;
+  const final = top.map((x) => (x.radar && ++estrelas > 2 ? { ...x, radar: false } : x));
+  return [...original, ...final, ...manuais];
 }
 
 /** Converte o resultado da IA nos semelhantes da ficha (mantém os que a pessoa adicionou). */

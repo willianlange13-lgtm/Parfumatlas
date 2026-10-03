@@ -143,7 +143,8 @@ export async function montarFicha(id: string) {
       manual: pr.trecho === "adicionado por você",
       href: achado ? `/colecao/${achado.id}` : `/buscar/resultado?nome=${encodeURIComponent(pr.nome)}&casa=${encodeURIComponent(pr.casa)}`,
     };
-  }).sort((a, b) => Number(b.original) - Number(a.original)); // a ordem salva já é a do ranking
+  }).sort((a, b) => Number(b.original) - Number(a.original)) // a ordem salva já é a do ranking
+    .map((x, _i, l) => (x.radar && l.filter((y) => y.radar).indexOf(x) >= 2 ? { ...x, radar: false } : x)); // no máximo 2 ⭐
 
   const inspNaColecao = s.inspirados.filter((x) => x.tem).length;
   const relacao = s.inspirados.length ? `Original · ${inspNaColecao || s.inspirados.length} inspirado${(inspNaColecao || s.inspirados.length) > 1 ? "s" : ""} ${inspNaColecao ? "na sua coleção" : "conhecidos"}` : p.inspiradoEm ? `Inspirado em ${acervo.perfumes.get(p.inspiradoEm)?.nome ?? "outro perfume"}` : "";
