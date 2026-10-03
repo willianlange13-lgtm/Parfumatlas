@@ -212,10 +212,6 @@ export function CelCadastro({ c, modoInicial }: { c: CadCel; modoInicial?: strin
             <button key={k} type="button" className={`c-pill ${c.situacao === k ? "on" : ""}`} style={{ height: 36, borderRadius: 18 }} onClick={() => c.setSituacao(k)}>{nome}</button>
           ))}
         </div>
-        <Rot>Anotação (opcional)</Rot>
-        <label className="c-campo" style={{ height: "auto", minHeight: 90, alignItems: "flex-start", padding: 14, borderRadius: 18, border: "1px solid var(--line-2)", background: "transparent" }}>
-          <textarea value={c.anotacao} onChange={(e) => c.setAnotacao(e.target.value)} placeholder="Ex.: presente de aniversário" rows={3} style={{ flex: 1, background: "transparent", border: "none", outline: "none", color: "var(--ink)", fontSize: 14.5, resize: "none", fontFamily: "var(--sans)" }} />
-        </label>
         {c.prog.rev > 0 && (
           <div style={{ display: "flex", gap: 10, padding: "12px 14px", borderRadius: 16, background: "var(--chip)", fontSize: 12.5, lineHeight: 1.45, color: "var(--ink-2)" }}>
             <Icone nome="check" tamanho={16} />Ficha com {c.prog.ok} de {c.prog.tot} campos. Os campos marcados para revisar ficam guardados para você conferir depois.

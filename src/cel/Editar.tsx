@@ -101,11 +101,6 @@ export function Editar({ p: p0, e: e0, podeSalvar }: { p: Perfume; e: E; podeSal
           <button key={k} type="button" className={`c-pill ${e.situacao === k ? "on" : ""}`} style={{ height: 34, borderRadius: 17 }} onClick={() => setE({ ...e, situacao: k })}>{n}</button>
         ))}
       </div>
-      <Rot>Anotação</Rot>
-      <label className="c-campo" style={{ height: "auto", minHeight: 80, alignItems: "flex-start", padding: 14, borderRadius: 16, border: "1px solid var(--line-2)", background: "transparent" }}>
-        <textarea value={e.anotacao} onChange={(x) => setE({ ...e, anotacao: x.target.value })} rows={3} placeholder="Como ele fica em você, quando usar, de onde veio…" style={{ flex: 1, background: "transparent", border: "none", outline: "none", color: "var(--ink)", fontSize: 14.5, resize: "none", fontFamily: "var(--sans)" }} />
-        <button type="button" onClick={() => ouvirUmaVez((t) => setE((x) => ({ ...x, anotacao: `${x.anotacao ? x.anotacao + " " : ""}${t}` })))} style={{ background: "none", border: "none", color: "var(--ink-2)" }} aria-label="Ditar anotação"><Icone nome="mic" tamanho={17} /></button>
-      </label>
       <Card pad={14} gap={12}>
         <Rot>Pirâmide</Rot>
         {([["SAÍDA", "saida"], ["CORAÇÃO", "coracao"], ["FUNDO", "fundo"]] as const).map(([nome, k]) => (

@@ -3,7 +3,6 @@ import { Icone } from "@/components/Icone";
 import type { montarFicha } from "@/montar/ficha";
 import { Barra, Bloco, Btn, Camadas, Card, Demo, MONO, NotaChip, OURO, PalcoC, Rot, Topo } from "./kit";
 import { OpcoesPerfume } from "./OpcoesPerfume";
-import { Semelhantes } from "./Semelhantes";
 import type { Perfume } from "@/lib/tipos";
 
 type V = NonNullable<Awaited<ReturnType<typeof montarFicha>>>;
@@ -163,11 +162,7 @@ export function CelFicha({ v, x }: { v: V; x: ExtraFicha }) {
         ))}
       </Card>
 
-      {/* 07 · semelhantes */}
-      <Semelhantes itens={v.semelhantes} perfumeId={p.id} buscando={v.buscandoSemelhantes} nome={p.nome} />
-
-
-      {/* 08 · sommelier e anotações */}
+      {/* 08 · sommelier */}
       <Card pad={16} gap={12}>
         <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}><Rot>Sommelier</Rot><span style={{ fontSize: 12.5, color: "var(--ink-3)" }}>pergunte sobre o {p.nome}</span></div>
         {v.conv ? (
@@ -184,14 +179,6 @@ export function CelFicha({ v, x }: { v: V; x: ExtraFicha }) {
           <input name="q" placeholder="Escreva ou toque no microfone" aria-label="Pergunta para o sommelier" />
           <Link href={cab.voz} className="c-circ" style={{ width: 36, height: 36, background: "var(--btn)", color: "var(--on-btn)" }} aria-label="Falar"><Icone nome="mic" tamanho={16} /></Link>
         </form>
-      </Card>
-      <Card pad={16} gap={12}>
-        <Rot>Minhas anotações</Rot>
-        {cab.anotacao ? (
-          <div style={{ borderLeft: `2px solid ${OURO}`, paddingLeft: 14, fontSize: 15, lineHeight: 1.5 }}>{cab.anotacao}</div>
-        ) : (
-          <Link href={`/editar/${p.id}`} style={{ fontSize: 14, color: "var(--ink-2)" }}>Nenhuma anotação ainda. <span style={{ borderBottom: "1px solid var(--prata)" }}>Escrever uma</span></Link>
-        )}
       </Card>
       {v.demo && <Demo />}
     </div>
