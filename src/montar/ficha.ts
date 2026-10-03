@@ -163,9 +163,9 @@ export async function montarFicha(id: string) {
       { l: "INSPIRADOS", ...inspFato },
     ],
     piramide: [
-      { nome: "Saída", tempo: "PRIMEIROS 30 MIN", notas: p.notas.saida.slice(0, 4).map((x, i) => notaCor(x, PALETA[i % PALETA.length])) },
-      { nome: "Coração", tempo: "30 MIN A 3 H", notas: p.notas.coracao.slice(0, 4).map((x, i) => notaCor(x, PALETA[(i + 3) % PALETA.length])) },
-      { nome: "Fundo", tempo: "DEPOIS DE 3 H", notas: p.notas.fundo.slice(0, 4).map((x, i) => notaCor(x, PALETA[(i + 5) % PALETA.length])) },
+      { nome: "Saída", tempo: "PRIMEIROS 30 MIN", notas: p.notas.saida.slice(0, 8).map((x, i) => notaCor(x, PALETA[i % PALETA.length])) },
+      { nome: "Coração", tempo: "30 MIN A 3 H", notas: p.notas.coracao.slice(0, 8).map((x, i) => notaCor(x, PALETA[(i + 3) % PALETA.length])) },
+      { nome: "Fundo", tempo: "DEPOIS DE 3 H", notas: p.notas.fundo.slice(0, 8).map((x, i) => notaCor(x, PALETA[(i + 5) % PALETA.length])) },
     ],
     gauges: [
       { nome: "Fixação", txt: hm(horas), sub: !temF ? "estimativa (votos do Fragrantica não encontrados)" : p.votos?.origem === "estimativa" ? "estimativa pelas resenhas" : `média ponderada de ${(p.votos?.total ?? 0).toLocaleString("pt-BR")} votos`, ref: `Média da família: ${hm(hFam)}`, trilho: g1.trilho, valor: g1.valor, marca: g1.marca, cor: g1.cor },
