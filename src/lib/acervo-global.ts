@@ -18,8 +18,9 @@ export type LinhaAcervo = {
 export const chaveAcervo = (nome: string, casa: string) => `${nome} ${casa}`.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
 const tira = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z ]/g, " ").replace(/\s+/g, " ").trim();
 
-const FIX: [RegExp, string][] = [[/muito fraca|very weak|poor/, "Muito fraca"], [/fraca|weak/, "Fraca"], [/moderad|moderate/, "Moderada"], [/eterna|eternal|very long/, "Eterna"], [/longa|long/, "Longa"]];
-const PROJ: [RegExp, string][] = [[/intima|intimate|soft/, "Íntima"], [/moderad|moderate/, "Moderada"], [/enorme|enormous|huge/, "Enorme"], [/forte|strong|heavy/, "Forte"]];
+// aceita o português do Fragrantica no masculino ("Duradouro", "Muito duradouro", "Moderado", "Íntimo"), o inglês e os nomes do Atlas
+const FIX: [RegExp, string][] = [[/muito frac|very weak|poor/, "Muito fraca"], [/muito duradour|eterna|eterno|eternal|very long/, "Eterna"], [/frac|weak/, "Fraca"], [/moderad|moderate/, "Moderada"], [/duradour|longa|longo|long/, "Longa"]];
+const PROJ: [RegExp, string][] = [[/intim|intimate|suave|soft|fraca|fraco|weak/, "Íntima"], [/moderad|moderate/, "Moderada"], [/enorme|enormous|huge/, "Enorme"], [/forte|strong|heavy/, "Forte"]];
 const nivel = (v: unknown, tabela: [RegExp, string][]) => { const t = tira(String(v ?? "")); return t ? (tabela.find(([r]) => r.test(t))?.[1] ?? null) : null; };
 
 /** Link só vale se for do Fragrantica e tiver o nome do perfume no endereço (senão a foto pode ser de outro). */
@@ -47,9 +48,12 @@ export function linhaDoImport(o: Record<string, unknown>): LinhaAcervo | { erro:
   };
 }
 
-/** Junta com o que já existe: só preenche o que está vazio ou mais pobre. Nunca apaga dado bom. */
+/**
+ * Junta com o que já existe. Lista nova com pelo menos o mesmo tamanho substitui (é assim que um lote
+ * corrigido entra por cima); lista menor ou vazia nunca apaga a que estava. Link e níveis só preenchem o vazio.
+ */
 export function mesclar(velha: LinhaAcervo, nova: LinhaAcervo): LinhaAcervo {
-  const mais = (a: string[], b: string[]) => (b.length > a.length ? b : a);
+  const mais = (a: string[], b: string[]) => (b.length && b.length >= a.length ? b : a);
   return {
     ...velha,
     fragrantica: velha.fragrantica ?? nova.fragrantica,
@@ -126,7 +130,7 @@ export function fichaDoAcervo(r: LinhaAcervo): FichaIA | null {
     nome: r.nome, casa: r.casa, concentracao: "", perfumistas: [], genero: "", pais: "", descricao: "",
     familia: familiaAtlas(r.acordes.join(" "), acordes[0]?.nome),
     acorde: acordes[0] ? acordePrincipal(acordes[0].nome) : "Amadeirado",
-    notas: { saida: r.notas_saida, coracao: r.notas_coracao, fundo: r.notas_fundo },
+    notas: { saida: notasPT(r.notas_saida), coracao: notasPT(r.notas_coracao), fundo: notasPT(r.notas_fundo) },
     acordes,
     fixacaoH: f?.h, projecaoM: p?.m,
     votos: {

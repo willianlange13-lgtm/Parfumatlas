@@ -5,6 +5,9 @@ const tira = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCa
 
 // nome em inglês ou variação → nome usado no Fragrantica Brasil
 const NOTA: Record<string, string> = {
+  // variações que vieram no primeiro lote do acervo (Rayhaan)
+  "cravo-da-india": "Cravo", "cravo da india": "Cravo", citricos: "Cítricos", citrus: "Cítricos", especiarias: "Especiarias", spices: "Especiarias", davana: "Davana",
+  "flor de toranja": "Flor de toranja", "grapefruit blossom": "Flor de toranja", ladano: "Labdano", "madeira guaiac": "Madeira de guaiaco", "pimenta rosa": "Pimenta-rosa", sapoti: "Sapoti", sapodilla: "Sapoti",
   citron: "Cidra", cidra: "Cidra", mandarin: "Mandarina", "mandarin orange": "Mandarina", tangerine: "Tangerina", mint: "Hortelã", peppermint: "Hortelã", spearmint: "Hortelã",
   bergamot: "Bergamota", lemon: "Limão", "limao siciliano": "Limão", lime: "Lima", grapefruit: "Toranja", orange: "Laranja", "bitter orange": "Laranja amarga", yuzu: "Yuzu", petitgrain: "Petitgrain", neroli: "Neroli",
   blackcurrant: "Groselha-preta", "black currant": "Groselha-preta", "groselha negra": "Groselha-preta", "groselha-negra": "Groselha-preta", "groselha preta": "Groselha-preta", cassis: "Groselha-preta",
