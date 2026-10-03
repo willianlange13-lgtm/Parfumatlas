@@ -1,6 +1,7 @@
 import { buscarEntrada } from "@/lib/dados";
 import { semelhantes, naColecao } from "@/lib/analise";
 import { CASAS, nota as refNota } from "@/data/referencia";
+import { origemCasa } from "@/data/casas";
 import { corDoAcorde } from "@/lib/cores";
 import base from "@/data/desenho/FichaAzulPreto.json";
 import { arc, circ, glifo, hexA, P, t } from "@/desenho/h2";
@@ -135,7 +136,8 @@ export async function montarFicha(id: string) {
   colunas.forEach((c) => { c.itens.sort((a, b) => b.sim - a.sim); c.itens = c.itens.slice(0, 15); });
 
   // semelhantes salvos na ficha (busca sob demanda + edição da pessoa), com foto do frasco
-  const semelhantesLista = (p.parecidos ?? []).map((pr) => {
+  // trava de casas: só brasileiras, americanas e árabes (o original e os que você adicionou ficam)
+  const semelhantesLista = (p.parecidos ?? []).filter((pr) => pr.tipo === "inspirou" || pr.trecho === "adicionado por você" || origemCasa(pr.casa) !== "outra").map((pr) => {
     const achado = todos.find((x) => norm(x.nome) === norm(pr.nome) && (!pr.casa || norm(x.casa) === norm(pr.casa)));
     return {
       nome: pr.nome, casa: pr.casa, pct: pr.pct, original: pr.tipo === "inspirou", imagem: pr.imagem ?? achado?.imagem ?? null,

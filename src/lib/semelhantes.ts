@@ -1,6 +1,6 @@
 import "server-only";
 import { iniciarPesquisaFundo } from "@/lib/gemini";
-import { bonusCasa, nivelCasa } from "@/data/casas";
+import { bonusCasa, casaPermitida, nivelCasa } from "@/data/casas";
 import type { Perfume } from "@/lib/tipos";
 
 type Parecido = NonNullable<Perfume["parecidos"]>[number];
@@ -17,18 +17,18 @@ const SCHEMA = {
       items: {
         type: "OBJECT",
         properties: {
-          nome: T, casa: T, link: T,
+          nome: T, casa: T, paisCasa: T, link: T,
           relacao: { type: "STRING", enum: ["clone direto", "dupe", "mesmo DNA", "interpretação", "similar por acordes"] },
           radar: { type: "BOOLEAN" }, pctMin: I, pctMax: I, relevancia: I, semelhanca: T, diferenca: T,
         },
-        required: ["nome", "casa", "link", "relacao", "radar", "pctMin", "pctMax", "relevancia", "semelhanca", "diferenca"],
+        required: ["nome", "casa", "paisCasa", "link", "relacao", "radar", "pctMin", "pctMax", "relevancia", "semelhanca", "diferenca"],
       },
     },
   },
   required: ["parentes"],
 };
 
-export type Resultado = { original?: { nome: string; casa: string; link: string } | null; parentes: { nome: string; casa: string; link: string; relacao: string; radar: boolean; pctMin: number; pctMax: number; relevancia?: number; semelhanca: string; diferenca: string }[] };
+export type Resultado = { original?: { nome: string; casa: string; link: string } | null; parentes: { nome: string; casa: string; paisCasa?: string; link: string; relacao: string; radar: boolean; pctMin: number; pctMax: number; relevancia?: number; semelhanca: string; diferenca: string }[] };
 
 /** Método de parentesco olfativo, em versão curta (o texto de entrada também custa). */
 function pedido(p: Perfume) {
@@ -41,9 +41,10 @@ Método (poucas buscas, bem escolhidas):
 1) ${original ? `PRIMEIRO pesquise as listas de clones e alternativas do ${original}: "${orig!.nome} clone", "best ${orig!.nome} dupes", "${orig!.nome} alternative" (Reddit, Fragrantica, YouTube, blogs, lojas). Todo clone citado em 2 ou mais fontes TEM que entrar.` : `Descubra se ele é inspirado num original famoso ("original"). Se for, PRIMEIRO pesquise as listas de clones e alternativas desse original ("<original> clone", "best <original> dupes"). Todo clone citado em 2 ou mais fontes TEM que entrar.`}
 2) Depois: "${p.nome} clone", "${p.nome} vs", comparações lado a lado e lançamentos recentes de casas árabes com a mesma combinação de notas.
 3) Nunca use listas "quem gosta deste também gosta de" e nunca inclua um perfume só por ser da mesma família.
+4) TRAVA DE CASAS: só entram perfumes de casas BRASILEIRAS (ex.: O Boticário, Natura, Thera), AMERICANAS/EUA (ex.: Montagne, Alt Fragrances, Dossier) ou ÁRABES (Emirados, Arábia Saudita, Kuwait, Catar, Omã; ex.: Al Haramain, Afnan, Lattafa, Armaf, Rasasi, French Avenue, Maison Alhambra, Bidaya, Al Absar). Casas europeias ou de outros países ficam de fora (o original pode ser de qualquer país).
 
-Devolva "parentes": os 9 melhores (sem o próprio perfume nem o original), cada um com:
-- nome (sem a casa), casa, "link" (página dele no Fragrantica, para a foto);
+Devolva "parentes": os 12 melhores (sem o próprio perfume nem o original), cada um com:
+- nome (sem a casa), casa, "paisCasa" (país da casa), "link" (página dele no Fragrantica, para a foto);
 - relacao: "clone direto", "dupe", "mesmo DNA", "interpretação" ou "similar por acordes";
 - pctMin e pctMax: faixa estimada de parentesco no cheiro (ex.: 88 e 92), sem inventar precisão;
 - relevancia de 1 a 5: quanto a comunidade conhece e recomenda esse perfume como alternativa (5 = aparece na maioria das listas de clones e resenhas; 1 = quase ninguém cita);
@@ -97,7 +98,8 @@ export function converter(r: Resultado, p: Perfume): { parecidos: Parecido[]; dn
   const lista: Parecido[] = [];
   if (orig && chave(orig.nome) !== eu) lista.push({ nome: orig.nome, casa: orig.casa, tipo: "inspirou", pct: 99, link: orig.link, imagem: foto(orig.link, orig.nome), faixa: "o original", relacao: "original" });
   for (const x of r.parentes ?? []) {
-    if (!x?.nome || chave(x.nome) === eu || (orig && chave(x.nome) === chave(orig.nome)) || lista.some((y) => chave(y.nome) === chave(x.nome))) continue;
+    if (!x?.nome || !casaPermitida(x.casa, x.paisCasa)) continue; // trava: só casas brasileiras, americanas e árabes
+    if (chave(x.nome) === eu || (orig && chave(x.nome) === chave(orig.nome)) || lista.some((y) => chave(y.nome) === chave(x.nome))) continue;
     const min = Math.max(40, Math.min(99, Math.round(Number(x.pctMin) || 70))), max = Math.max(min, Math.min(99, Math.round(Number(x.pctMax) || min)));
     lista.push({
       nome: x.nome, casa: x.casa, tipo: x.relacao === "clone direto" ? "clone" : "parecido", pct: Math.round((min + max) / 2),
@@ -113,7 +115,7 @@ export function converter(r: Resultado, p: Perfume): { parecidos: Parecido[]; dn
 /** Lista reaproveitada de outro perfume com o mesmo original (sem nova pesquisa). */
 export function reaproveitar(de: Perfume, para: Perfume): Parecido[] {
   const eu = chave(para.nome);
-  const lista = (de.parecidos ?? []).filter((x) => chave(x.nome) !== eu && x.trecho !== "adicionado por você");
+  const lista = (de.parecidos ?? []).filter((x) => chave(x.nome) !== eu && x.trecho !== "adicionado por você" && (x.tipo === "inspirou" || casaPermitida(x.casa)));
   // o perfume de onde veio a lista também é parente deste
   if (!lista.some((x) => chave(x.nome) === chave(de.nome))) lista.push({ nome: de.nome, casa: de.casa, tipo: "clone", pct: 88, imagem: de.imagem ?? null, faixa: "~88%", relacao: "mesmo DNA", radar: nivelCasa(de.casa) === 3, semelhanca: "clone do mesmo original", diferenca: null });
   const manuais = (para.parecidos ?? []).filter((x) => x.trecho === "adicionado por você");
