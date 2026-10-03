@@ -85,7 +85,7 @@ ${itens.map(resumoPerfume).join("\n")}
 Conversa:
 ${mensagens.map((m) => `${m.papel === "eu" ? "Willian" : "Sommelier"}: ${m.texto}`).join("\n")}`;
       const partes = [{ text: contexto }, ...(foto ? [{ inlineData: { mimeType: foto.mime, data: foto.base64 } }] : [])];
-      const r = await geminiJSON<Resposta>(partes, { schema: SCHEMA, sistema, temperatura: 0.6 });
+      const r = await geminiJSON<Resposta>(partes, { schema: SCHEMA, sistema, temperatura: 0.6, leve: !foto });
       r.sugestoes = (r.sugestoes ?? []).filter((s) => acervo.perfumes.has(s.perfumeId));
       return r;
     } catch (e) {

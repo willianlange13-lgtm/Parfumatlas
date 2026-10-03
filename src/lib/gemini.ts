@@ -66,7 +66,8 @@ async function chamar(partes: Parte[], opcoes: { schema?: object; pesquisar?: bo
 // ---------------- ChatGPT (OpenAI, Responses API) ----------------
 
 /** Modelos do mais barato ao mais capaz. OPENAI_MODEL na Vercel passa na frente. */
-const MODELOS_OPENAI = () => [...new Set([process.env.OPENAI_MODEL, "gpt-5-mini", "gpt-4.1-mini", "gpt-4o-mini"].filter(Boolean) as string[])];
+const MODELOS_OPENAI = (leve = false) =>
+  [...new Set([process.env.OPENAI_MODEL, ...(leve ? ["gpt-5-nano", "gpt-4.1-nano", "gpt-4o-mini"] : ["gpt-5-mini", "gpt-4.1-mini", "gpt-4o-mini"])].filter(Boolean) as string[])];
 
 /** Converte o schema no estilo do Gemini (OBJECT, STRING…) para JSON Schema comum, só para descrever o formato. */
 function schemaComum(o: unknown): unknown {
@@ -79,7 +80,7 @@ function schemaComum(o: unknown): unknown {
   return o;
 }
 
-async function chamarOpenAI(partes: Parte[], opcoes: { schema?: object; pesquisar?: boolean; sistema?: string; temperatura?: number }, json: boolean): Promise<string> {
+async function chamarOpenAI(partes: Parte[], opcoes: { schema?: object; pesquisar?: boolean; sistema?: string; temperatura?: number; leve?: boolean }, json: boolean): Promise<string> {
   const chave = process.env.OPENAI_API_KEY!;
   const conteudo = partes.map((p) => ("text" in p ? { type: "input_text", text: p.text } : { type: "input_image", image_url: `data:${p.inlineData.mimeType};base64,${p.inlineData.data}` }));
   if (json) conteudo.push({ type: "input_text", text: `Responda só com um JSON válido${opcoes.schema ? ` neste formato (JSON Schema): ${JSON.stringify(schemaComum(opcoes.schema))}` : ""}.` });
@@ -90,7 +91,7 @@ async function chamarOpenAI(partes: Parte[], opcoes: { schema?: object; pesquisa
     ...(json && !opcoes.pesquisar ? { text: { format: { type: "json_object" } } } : {}),
   };
   let ultimo = "";
-  for (const modelo of MODELOS_OPENAI()) {
+  for (const modelo of MODELOS_OPENAI(opcoes.leve)) {
     const r = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${chave}` },

@@ -1,6 +1,7 @@
 import "server-only";
 import { geminiConfigurado, geminiJSON, geminiTexto, usaOpenAI } from "@/lib/gemini";
-import { carregarAcervo } from "@/lib/dados";
+import { carregarAcervo, perfumeDaLinha } from "@/lib/dados";
+import { createClient, supabaseConfigurado } from "@/lib/supabase/server";
 import { lerPagina, linkDePerfume, type Pagina } from "@/lib/pagina";
 import type { Perfume, Votos } from "@/lib/tipos";
 import { acordePT, acordePrincipal, horasDosVotos, metrosDosVotos, notasPT, votosDe } from "@/lib/normalizar";
@@ -72,6 +73,10 @@ export async function identificar(modo: "foto" | "link" | "nome", texto?: string
           [{ text: `Identifique o perfume da foto. Leia o que estiver escrito no frasco e descreva frasco e tampa. Dê até 3 candidatos, do mais provável ao menos, com a confiança em %. Em "por", explique em poucas palavras por que (ex.: "Rótulo e frasco batem com a foto", "Mesmo frasco da casa, rótulo diferente"). Concentração em maiúsculas (ex.: EAU DE PARFUM). Responda em português.` }, { inlineData: { mimeType: foto.mime, data: foto.base64 } }],
           { schema: SCHEMA_ID },
         );
+      }
+      if (usaOpenAI() && modo === "nome" && texto) {
+        // economia: não gasta IA para identificar; a ficha já pesquisa o perfume pelo que foi digitado
+        return { lido: [], candidatos: [{ nome: texto.trim(), casa: "", concentracao: "", por: "Vou pesquisar no Fragrantica ao montar a ficha", pct: 92 }] };
       }
       if (usaOpenAI()) {
         const r = await geminiJSON<Identificacao>([{ text: `O usuário digitou ou falou: "${texto}". Pesquise no Fragrantica e liste até 3 perfumes que existem de verdade e que ele pode querer dizer, do mais provável ao menos. Para cada um: nome, casa, concentração (em maiúsculas), um motivo curto em português em "por", a confiança em "pct" (0 a 100) e o endereço da página no Fragrantica em "link".` }], { schema: SCHEMA_ID, pesquisar: true });
@@ -149,9 +154,11 @@ export let ultimoErroFicha = "";
 export async function gerarFicha(c: { nome: string; casa: string; concentracao?: string; link?: string }): Promise<FichaIA | null> {
   const { perfumes } = await carregarAcervo();
   const local = [...perfumes.values()].find((p) => normal(p.nome) === normal(c.nome) && normal(p.casa) === normal(c.casa));
+  const salva = await fichaSalva(c.nome, c.casa);
+  if (salva) return salva;
   if (geminiConfigurado()) {
     ultimoErroFicha = "";
-    const alvo = `"${c.nome}" da casa "${c.casa}"${c.concentracao ? ` (${c.concentracao})` : ""}`;
+    const alvo = `"${c.nome}"${c.casa ? ` da casa "${c.casa}"` : ""}${c.concentracao ? ` (${c.concentracao})` : ""}`;
     if (usaOpenAI()) return fichaChatGPT(c, alvo, local);
     // 1) a página do link, lida direto (dados reais e a foto oficial)
     let pagina: Pagina | null = c.link ? await lerPagina(c.link) : null;
@@ -205,12 +212,31 @@ Regras:
   return null;
 }
 
+/** Ficha que já existe no banco (cadastrada antes): reaproveita sem gastar IA. */
+async function fichaSalva(nome: string, casa: string): Promise<FichaIA | null> {
+  if (!supabaseConfigurado() || !nome) return null;
+  try {
+    const sb = await createClient();
+    let q = sb.from("perfumes").select("*").ilike("nome", nome.trim());
+    if (casa) q = q.ilike("casa", casa.trim());
+    const { data } = await q.limit(1).maybeSingle();
+    if (!data || !(data.notas_saida as string[] | null)?.length) return null;
+    const { id: _i, clima: _c, ...p } = perfumeDaLinha(data);
+    void _i; void _c;
+    return { ...p, revisar: p.revisar ?? [] };
+  } catch {
+    return null;
+  }
+}
+
 /** ChatGPT: uma única chamada com pesquisa na internet monta a ficha inteira (como no chat). */
 async function fichaChatGPT(c: { nome: string; casa: string; concentracao?: string; link?: string }, alvo: string, local?: Perfume): Promise<FichaIA | null> {
   const pagina = c.link ? await lerPagina(c.link) : null;
+  // se a página abriu com pirâmide e votos, não precisa pesquisar (a pesquisa é a parte cara)
+  const paginaCompleta = Boolean(pagina && /notas de topo|top notes/i.test(pagina.texto) && /longevidade|longevity/i.test(pagina.texto));
   try {
     const f = await geminiJSON<FichaIA & { fragrantica?: string }>([{ text: `Pesquise na internet o perfume ${alvo}${c.link ? ` (página: ${c.link})` : ""}. A fonte principal é a página dele no Fragrantica Brasil (fragrantica.com.br). Outras fontes só completam o que o Fragrantica não tiver.
-${pagina ? `Texto da página já baixada:\n${pagina.texto.slice(0, 12000)}\n` : ""}
+${pagina ? `Texto da página já baixada:\n${pagina.texto.slice(0, paginaCompleta ? 20000 : 12000)}\n` : ""}
 Copie do Fragrantica, sem inventar e sem misturar outras fontes:
 - Pirâmide: EXATAMENTE as notas de topo, coração e base do Fragrantica, com os nomes em português como aparecem no Fragrantica Brasil (ex.: "Cidra", "Groselha Preta", "Cenoura"). Uma nota por item, sem parênteses, sem notas citadas em resenhas ou lojas.
 - "acordes": os "Principais acordes" do Fragrantica, na mesma ordem e com os mesmos nomes em português (ex.: "cítrico", "verde", "aromático", "fresco especiado", "frutado", "âmbar"). "valor" é o tamanho da barra, de 0 a 100 (a primeira é 100).
@@ -225,7 +251,7 @@ Copie do Fragrantica, sem inventar e sem misturar outras fontes:
 - forma do frasco: alto, ret, redondo ou largo. tampa: cor da tampa em hex.
 - "parecidos": até 10 perfumes semelhantes, da seção "Este perfume me lembra" do Fragrantica e das comparações da comunidade (resenhas, vídeos, lojas de contratipos). Para cada um: nome, casa, "tipo" ("inspirou" se é o original em que este se inspira, "clone" se é uma releitura inspirada neste, "parecido" nos outros casos) e "pct", a semelhança de 0 a 100.
 - "fragrantica": endereço completo da página do perfume no Fragrantica.
-- fontes: sites usados e o que veio de cada um. O que não encontrar fica vazio e entra em "revisar".` }], { schema: { ...SCHEMA_FICHA, properties: { ...SCHEMA_FICHA.properties, fragrantica: { type: "STRING" } } }, pesquisar: true });
+- fontes: sites usados e o que veio de cada um. O que não encontrar fica vazio e entra em "revisar".` }], { schema: { ...SCHEMA_FICHA, properties: { ...SCHEMA_FICHA.properties, fragrantica: { type: "STRING" } } }, pesquisar: !paginaCompleta });
     const imagem = pagina?.imagem ?? fotoDoFragrantica(c.link) ?? fotoDoFragrantica(f.fragrantica);
     const { fragrantica: _fr, ...resto } = f;
     void _fr;

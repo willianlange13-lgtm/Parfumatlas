@@ -54,7 +54,7 @@ export async function veredito(p: Perfume) {
   else if (pct >= 65) texto = `Fica no meio do caminho: ${pct}% de afinidade. Teste na pele antes, de preferência num dia de ${melhorEm(p).toLowerCase().split(" e ")[1]}.`;
   else texto = `Fica longe do seu gosto (${pct}%). Só vale se a ideia for sair da zona de conforto de propósito.`;
 
-  if (geminiConfigurado() && !tem) {
+  if (process.env.VEREDITO_COM_IA === "1" && geminiConfigurado() && !tem) {
     try {
       const r = await geminiJSON<{ texto: string }>(
         [{ text: `O usuário está numa loja olhando o perfume ${p.nome} (${p.casa}, ${p.familia}). Afinidade com a coleção dele: ${pct}%. ${s ? `O mais parecido que ele tem é o ${s.nome} (${s.familia}), similaridade ${parecido.s}%.` : ""}

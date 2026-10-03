@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
   }
   r.ia = geminiConfigurado() ? nomeIA() : "nenhuma";
   if (!geminiConfigurado()) r.gemini = "FALTA OPENAI_API_KEY (ou GEMINI_API_KEY)";
-  else if (request.nextUrl.searchParams.get("pagina") || request.nextUrl.searchParams.get("nota")) r.gemini = "chave ok (não testada)";
+  else if (!request.nextUrl.searchParams.get("ia")) r.gemini = "chave ok (para testar a IA, abra com ?ia=1; o teste gasta um pouco)";
   else {
     try {
       const t = await geminiJSON<{ ok: string }>([{ text: 'Responda {"ok":"sim"}' }], { schema: { type: "OBJECT", properties: { ok: { type: "STRING" } }, required: ["ok"] } });
