@@ -258,13 +258,13 @@ export async function completarFicha(f: FichaIA): Promise<FichaIA> {
   const alvo = `"${f.nome}"${f.casa ? ` da casa "${f.casa}"` : ""}`;
   type Extra = { fixacao?: number[] | null; projecao?: number[] | null; total?: number | null; origem?: "fragrantica" | "estimativa" | null; parecidos?: FichaIA["parecidos"] | null };
   const SCHEMA_EXTRA = { type: "OBJECT", properties: { fixacao: { type: "ARRAY", items: N }, projecao: { type: "ARRAY", items: N }, total: { type: "INTEGER" }, origem: { type: "STRING", enum: ["fragrantica", "estimativa"] }, parecidos: SCHEMA_FICHA.properties.parecidos }, required: [] };
-  const x = await geminiJSON<Extra>([{ text: `Abra a página do perfume ${alvo} no Fragrantica${f.fragrantica ? ` (${f.fragrantica})` : ""} e copie:
+  const x = await geminiJSON<Extra>([{ text: `Abra a página do perfume ${alvo} no Fragrantica${f.fragrantica ? ` (${f.fragrantica})` : ""} (e, se lá não aparecer, no Parfumo e em resenhas) e copie:
 ${semVotos ? `- "fixacao": as 5 contagens de votos de "Longevidade"/"Longevity" na ordem [muito fraco, fraco, moderado, longo, eterno];
 - "projecao": as 4 contagens de "Rastro"/"Sillage" na ordem [íntimo, moderado, forte, enorme];
 - "total": o número de votos da avaliação.
 Exemplo do formato: {"fixacao": [42, 194, 855, 179, 23], "projecao": [120, 610, 240, 35], "total": 1971, "origem": "fragrantica"}. Números inteiros, como aparecem na página.
-Se não conseguir ver os números, estime pelas resenhas como porcentagens que somam 100 e use "origem": "estimativa". Nunca devolva zerado.` : ""}
-${poucos ? `- "parecidos": de 5 a 10 perfumes parecidos (seção "Este perfume me lembra"/"This perfume reminds me of" e comparações em resenhas e lojas de contratipos), cada um com nome, casa, tipo ("inspirou" para o original que ele imita, "clone" para releituras dele, "parecido" nos outros casos) e pct de 0 a 100.` : ""}` }], { schema: SCHEMA_EXTRA, pesquisar: true, tempo: 75000 });
+Se o Fragrantica não mostrar os números, procure no Parfumo (nota de fixação e de rastro), em resenhas e em lojas, transforme em porcentagens que somam 100 e use "origem": "estimativa". Nunca devolva zerado.` : ""}
+${poucos ? `- "parecidos": de 5 a 10 perfumes parecidos (seção "Este perfume me lembra"/"This perfume reminds me of" do Fragrantica, "parecidos" do Parfumo e comparações em resenhas, vídeos e lojas de contratipos), cada um com nome, casa, tipo ("inspirou" para o original que ele imita, "clone" para releituras dele, "parecido" nos outros casos) e pct de 0 a 100.` : ""}` }], { schema: SCHEMA_EXTRA, pesquisar: true, tempo: 75000 });
   const out: FichaIA = { ...f, completar: false };
   const novos = votosDe({ ...(f.votos ?? {}), fixacao: x.fixacao ?? undefined, projecao: x.projecao ?? undefined, total: x.total || f.votos?.total, origem: x.origem ?? "estimativa" } as Partial<Votos>, f.votos?.ocasioes?.length ? f.votos.ocasioes : OCASIOES);
   if (semVotos && novos && temVotos(novos.fixacao)) {
@@ -290,9 +290,13 @@ async function fichaChatGPT(c: { nome: string; casa: string; concentracao?: stri
   const iLembra = pagina ? pagina.texto.search(/me lembra|reminds me/i) : -1;
   const textoPagina = pagina ? pagina.texto.slice(0, paginaCompleta ? 18000 : 12000) + (iLembra > 12000 ? `\n...\n${pagina.texto.slice(iLembra, iLembra + 2500)}` : "") : "";
   try {
-    const f = await geminiJSON<FichaIA & { fragrantica?: string }>([{ text: `Pesquise na internet o perfume ${alvo}${c.link ? ` (página: ${c.link})` : ""}. A fonte principal é a página dele no Fragrantica Brasil (fragrantica.com.br). Outras fontes só completam o que o Fragrantica não tiver.
+    const f = await geminiJSON<FichaIA & { fragrantica?: string }>([{ text: `Pesquise na internet o perfume ${alvo}${c.link ? ` (página: ${c.link})` : ""}. Use as fontes nesta ordem e passe para a seguinte sempre que a anterior não mostrar o dado:
+1) Fragrantica (fragrantica.com.br e fragrantica.com);
+2) Parfumo (parfumo.com), que mostra nota de fixação e de rastro com número de votos;
+3) site da marca e lojas (concentração, ano, frasco);
+4) resenhas, fóruns e vídeos (desempenho e perfumes parecidos).
 ${pagina ? `Texto da página já baixada:\n${textoPagina}\n` : ""}
-Copie do Fragrantica, sem inventar e sem misturar outras fontes:
+Pirâmide, acordes e família vêm do Fragrantica, sem misturar. Os outros campos podem vir das outras fontes:
 - Pirâmide: EXATAMENTE as notas de topo, coração e base do Fragrantica, com os nomes em português como aparecem no Fragrantica Brasil (ex.: "Cidra", "Groselha Preta", "Cenoura"). Uma nota por item, sem parênteses, sem notas citadas em resenhas ou lojas.
 - "acordes": os "Principais acordes" do Fragrantica, na mesma ordem e com os mesmos nomes em português (ex.: "cítrico", "verde", "aromático", "fresco especiado", "frutado", "âmbar"). "valor" é o tamanho da barra, de 0 a 100 (a primeira é 100).
 - "familia": a família do Fragrantica em português (ex.: "Aromático Aquático").
@@ -302,7 +306,7 @@ Copie do Fragrantica, sem inventar e sem misturar outras fontes:
   · estacoes (inverno, primavera, verao, outono), dia e noite = votos da seção "Quando usar";
   · total = número de votos da avaliação; origem = "fragrantica".
   · exemplo: "fixacao": [42, 194, 855, 179, 23], "projecao": [120, 610, 240, 35], "estacoes": {"inverno": 60, "primavera": 410, "verao": 520, "outono": 170}, "dia": 600, "noite": 150.
-  · Se a página não mostrar esses números, NÃO deixe zerado: estime pelas resenhas e lojas como porcentagens que somam 100 (ex.: fixação moderada com 5 a 7 h → [5, 15, 55, 20, 5]; estações e dia/noite de 0 a 100) e use origem = "estimativa".
+  · Se o Fragrantica não mostrar esses números, NÃO deixe zerado: use a fixação e o rastro do Parfumo, as resenhas e as lojas e transforme em porcentagens que somam 100 (ex.: fixação moderada com 5 a 7 h → [5, 15, 55, 20, 5]; estações e dia/noite de 0 a 100) e use origem = "estimativa".
   · ocasioes: Trabalho, Dia a dia, Encontro, Festa, Formal, Esporte de 0 a 100 (estime pelo perfil).
 - "concentracao": a que está escrita no frasco e no site da marca ou das lojas (ex.: "Eau de Parfum", "Eau de Toilette", "Extrait de Parfum"). O Fragrantica muitas vezes não mostra; nesse caso procure na marca e nas lojas. Nunca escreva "Colônia" sem o frasco dizer "Eau de Cologne".
 - "pais": o país de origem da marca (ex.: Rayhaan, Lattafa, Armaf → "Emirados Árabes Unidos"; Dior, Chanel → "França"). Pesquise se não souber.
