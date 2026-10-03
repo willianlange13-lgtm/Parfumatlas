@@ -3,7 +3,7 @@ import { geminiConfigurado, geminiJSON, geminiTexto, usaOpenAI } from "@/lib/gem
 import { carregarAcervo, perfumeDaLinha } from "@/lib/dados";
 import { createClient, supabaseConfigurado } from "@/lib/supabase/server";
 import { lerPagina, linkDePerfume, type Pagina } from "@/lib/pagina";
-import { conferirParecidos, verificarParecidos } from "@/lib/verificar";
+import { verificarParecidos } from "@/lib/verificar";
 import type { Perfume, Votos } from "@/lib/tipos";
 import { acordePT, acordePrincipal, horasDosVotos, metrosDosVotos, notasPT, votosDe, temVotos } from "@/lib/normalizar";
 
@@ -312,18 +312,20 @@ async function buscarMesmaCasa(nome: string, casa: string, link?: string): Promi
 }
 
 /** Refaz a busca de parecidos (e da mesma casa) de um perfume já salvo (botão na ficha). */
-export async function buscarParecidos(nome: string, casa: string): Promise<{ parecidos: NonNullable<FichaIA["parecidos"]>; mesmaCasa: NonNullable<FichaIA["mesmaCasa"]>; descartados: string[] }> {
-  const SCHEMA_P = { type: "OBJECT", properties: { parecidos: SCHEMA_FICHA.properties.parecidos, mesmaCasa: SCHEMA_FICHA.properties.mesmaCasa }, required: ["parecidos", "mesmaCasa"] };
-  const r = await geminiJSON<{ parecidos: FichaIA["parecidos"]; mesmaCasa: FichaIA["mesmaCasa"] }>([{ text: `Abra a página do perfume "${nome}"${casa ? ` da casa "${casa}"` : ""} no Fragrantica e devolva:
-- "parecidos": a lista completa, cada um com nome, casa, tipo, pct, fonte e trecho, seguindo as regras abaixo.
-- "mesmaCasa": até 8 outros perfumes da mesma marca, da seção "Designer ${casa || "da marca"}" da página, cada um com o nome (sem a marca) e "link", o endereço da página dele no Fragrantica.
-${REGRA_PARECIDOS}` }], { schema: SCHEMA_P, pesquisar: true, tempo: 85000 });
-  const { ok, descartados } = await conferirParecidos(nome, r.parecidos);
-  const parecidos = ok.filter((x) => x?.nome && x?.casa && x.nome.toLowerCase() !== nome.toLowerCase() && (Number(x.pct) || 70) >= 60).slice(0, 15)
-    .map((x) => ({ ...x, pct: Math.min(99, Math.round(Number(x.pct) || 70)), imagem: linkBate(x.link, x.nome) ? fotoDoFragrantica(x.link) : null }));
-  const mesmaCasa = (r.mesmaCasa ?? []).filter((x, i, l) => x?.nome && normal(x.nome) !== normal(nome) && l.findIndex((y) => normal(y.nome) === normal(x.nome)) === i).slice(0, 8)
-    .map((x) => ({ nome: x.nome, link: x.link && /fragrantica\./i.test(x.link) ? x.link : null, imagem: fotoDoFragrantica(x.link) }));
-  return { parecidos, mesmaCasa, descartados };
+export async function buscarParecidos(nome: string, casa: string): Promise<NonNullable<FichaIA["parecidos"]>> {
+  const SCHEMA_P = { type: "OBJECT", properties: { parecidos: SCHEMA_FICHA.properties.parecidos }, required: ["parecidos"] };
+  const r = await geminiJSON<{ parecidos: FichaIA["parecidos"] }>([{ text: `Pesquise perfumes semelhantes a "${nome}"${casa ? ` da casa "${casa}"` : ""} e devolva "parecidos": a lista completa, cada um com nome, casa, tipo, pct, fonte, trecho e link, seguindo as regras abaixo.
+${REGRA_PARECIDOS}` }], { schema: SCHEMA_P, pesquisar: true, tempo: 80000 });
+  // sem conferência automática: a pessoa tira os errados na própria ficha
+  return (r.parecidos ?? []).filter((x, i, l) => x?.nome && x?.casa && normal(x.nome) !== normal(nome) && l.findIndex((y) => normal(y.nome) === normal(x.nome)) === i).slice(0, 15)
+    .map((x) => ({ ...x, pct: Math.max(60, Math.min(99, Math.round(Number(x.pct) || 70))), imagem: linkBate(x.link, x.nome) ? fotoDoFragrantica(x.link) : null }));
+}
+
+/** Semelhante colado pela pessoa: nome, casa e foto lidos do próprio link do Fragrantica. */
+export function parecidoDoLink(url: string): NonNullable<FichaIA["parecidos"]>[number] | null {
+  const c = doLink(url);
+  if (!c || !/fragrantica\./i.test(url)) return null;
+  return { nome: c.nome, casa: c.casa, tipo: "parecido", pct: 85, fonte: url, trecho: "adicionado por você", link: url, imagem: fotoDoFragrantica(url) };
 }
 
 /** ChatGPT: uma única chamada com pesquisa na internet monta a ficha inteira (como no chat). */

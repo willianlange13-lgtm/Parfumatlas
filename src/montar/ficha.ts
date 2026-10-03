@@ -134,6 +134,12 @@ export async function montarFicha(id: string) {
   if (pesquisados.some((x) => x.tipo === "inspirou") && !s.inspirados.length) { colunas[0].nome = "INSPIROU-SE EM"; colunas[0].sub = "o original e as releituras"; }
   colunas.forEach((c) => { c.itens.sort((a, b) => b.sim - a.sim); c.itens = c.itens.slice(0, 15); });
 
+  // semelhantes salvos na ficha (busca sob demanda + edição da pessoa), com foto do frasco
+  const semelhantesLista = (p.parecidos ?? []).map((pr) => {
+    const achado = todos.find((x) => norm(x.nome) === norm(pr.nome) && (!pr.casa || norm(x.casa) === norm(pr.casa)));
+    return { nome: pr.nome, casa: pr.casa, pct: pr.pct, original: pr.tipo === "inspirou", imagem: pr.imagem ?? achado?.imagem ?? null, href: achado ? `/colecao/${achado.id}` : `/buscar/resultado?nome=${encodeURIComponent(pr.nome)}&casa=${encodeURIComponent(pr.casa)}` };
+  }).sort((a, b) => Number(b.original) - Number(a.original) || b.pct - a.pct);
+
   const inspNaColecao = s.inspirados.filter((x) => x.tem).length;
   const relacao = s.inspirados.length ? `Original · ${inspNaColecao || s.inspirados.length} inspirado${(inspNaColecao || s.inspirados.length) > 1 ? "s" : ""} ${inspNaColecao ? "na sua coleção" : "conhecidos"}` : p.inspiradoEm ? `Inspirado em ${acervo.perfumes.get(p.inspiradoEm)?.nome ?? "outro perfume"}` : "";
   const original = (p.parecidos ?? []).find((x) => x.tipo === "inspirou");
@@ -187,7 +193,8 @@ export async function montarFicha(id: string) {
       { nome: !temF ? "Fixação · votos não encontrados" : p.votos?.origem === "estimativa" ? "Fixação · estimativa" : "Fixação", itens: votos(["Muito fraca", "Fraca", "Moderada", "Longa", "Eterna"], VF, t.sup[0]) },
       { nome: !temP ? "Projeção · votos não encontrados" : p.votos?.origem === "estimativa" ? "Projeção · estimativa" : "Projeção", itens: votos(["Íntima", "Moderada", "Forte", "Enorme"], VP, t.sup[1]) },
     ],
-    colunas: [] as typeof colunas, // seção de semelhantes retirada da ficha
+    colunas: [] as typeof colunas, // no computador a seção usa a lista do celular
+    semelhantes: semelhantesLista,
     perguntas: perguntas.map((q) => ({ t: q, href: qs(q) })),
     // da mesma casa: os que já estão no Atlas e os da seção "Designer" do Fragrantica
     casa: [

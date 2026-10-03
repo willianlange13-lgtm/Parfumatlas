@@ -3,6 +3,7 @@ import { Icone } from "@/components/Icone";
 import type { montarFicha } from "@/montar/ficha";
 import { Barra, Bloco, Btn, Camadas, Card, Demo, MONO, NotaChip, OURO, PalcoC, Rolar, Rot, Topo } from "./kit";
 import { OpcoesPerfume } from "./OpcoesPerfume";
+import { Semelhantes } from "./Semelhantes";
 import type { Perfume } from "@/lib/tipos";
 
 type V = NonNullable<Awaited<ReturnType<typeof montarFicha>>>;
@@ -209,6 +210,7 @@ export function CelFicha({ v, x }: { v: V; x: ExtraFicha }) {
           </div>
         ))}
       </Card>
+      <Semelhantes itens={v.semelhantes} perfumeId={p.id} />
       {v.casa.length > 0 && (
         <div style={{ display: "flex", flexDirection: "column", gap: 12, flexShrink: 0 }}>
             <Rot>Da mesma casa</Rot>
