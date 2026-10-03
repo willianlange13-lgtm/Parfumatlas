@@ -3,6 +3,7 @@ import { cache } from "react";
 import { createClient, supabaseConfigurado } from "@/lib/supabase/server";
 import { COLECAO, LANCAMENTOS, PERFUMES } from "@/data/catalogo";
 import type { Entrada, ItemColecao, Lancamento, Perfume } from "@/lib/tipos";
+import { familiaAtlas } from "@/lib/normalizar";
 
 type Linha = Record<string, unknown>;
 
@@ -14,7 +15,7 @@ export function perfumeDaLinha(r: Linha): Perfume {
     ano: (r.ano as number) ?? undefined,
     concentracao: (r.concentracao as string) ?? undefined,
     perfumistas: (r.perfumistas as string[]) ?? [],
-    familia: (r.familia as string) ?? "",
+    familia: familiaAtlas(r.familia as string, (r.acordes as { nome: string }[] | null)?.[0]?.nome),
     acorde: (r.acorde as string) ?? "",
     genero: (r.genero as string) ?? undefined,
     pais: (r.pais as string) ?? undefined,

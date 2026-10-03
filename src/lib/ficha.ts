@@ -6,7 +6,7 @@ import { lerPagina, linkDePerfume, type Pagina } from "@/lib/pagina";
 import { verificarParecidos } from "@/lib/verificar";
 import { fotoConferida } from "@/lib/fotos";
 import type { Perfume, Votos } from "@/lib/tipos";
-import { acordeConhecido, acordePT, acordePrincipal, horasDosVotos, metrosDosVotos, notaConhecida, notasPT, votosDe, temVotos } from "@/lib/normalizar";
+import { acordeConhecido, familiaAtlas, acordePT, acordePrincipal, horasDosVotos, metrosDosVotos, notaConhecida, notasPT, votosDe, temVotos } from "@/lib/normalizar";
 
 export type Candidato = { nome: string; casa: string; concentracao: string; por: string; pct: number; link?: string; imagem?: string | null };
 export type Identificacao = { lido: string[]; candidatos: Candidato[] };
@@ -164,7 +164,8 @@ function finalizar(f: FichaIA): FichaIA {
   const escala = Math.max(...brutos.map((a) => a.valor), 0) <= 1 ? 100 : 1; // veio de 0 a 1
   let acordes = brutos.map((a) => ({ nome: a.nome, valor: Math.max(0, Math.min(100, Math.round(a.valor * escala))) })).filter((a, i, l) => a.nome && l.findIndex((x) => x.nome === a.nome) === i);
   if (acordes.length && acordes.every((a) => !a.valor)) acordes = acordes.map((a, i) => ({ ...a, valor: Math.max(30, 100 - i * 12) }));
-  const familia = (f.familia ?? "").split(/\s+/).map((w) => FAMILIA[w.toLowerCase()] ?? w).join(" ");
+  // uma só família, dentre as 8 do Atlas
+  const familia = familiaAtlas((f.familia ?? "").split(/\s+/).map((w) => FAMILIA[w.toLowerCase()] ?? w).join(" "), acordes[0]?.nome);
   const votos = votosDe(f.votos as Partial<Votos>, f.votos?.ocasioes?.length ? f.votos.ocasioes : OCASIOES);
   if (!votos || !temVotos(votos.fixacao) || !temVotos(votos.projecao)) revisar.add("votos");
   return {
@@ -341,7 +342,7 @@ async function traduzirSobras(f: FichaIA): Promise<FichaIA> {
   const todas = [...f.notas.saida, ...f.notas.coracao, ...f.notas.fundo];
   const notas = [...new Set(todas.filter((n) => !notaConhecida(n) && /[a-z]/i.test(n)))];
   const acordes = [...new Set(f.acordes.map((a) => a.nome).filter((a) => !acordeConhecido(a)))];
-  const familia = f.familia && EM_INGLES.test(f.familia) ? f.familia : null;
+  const familia = null as string | null; // a família já vem como uma das 8
   const descricao = f.descricao && EM_INGLES.test(f.descricao) ? f.descricao : null;
   if (!notas.length && !acordes.length && !familia && !descricao) return f;
   try {
@@ -382,7 +383,7 @@ ${pagina ? `Texto da página já baixada:\n${textoPagina}\n` : ""}
 Pirâmide, acordes e família vêm do Fragrantica, sem misturar. Os outros campos podem vir das outras fontes:
 - Pirâmide: EXATAMENTE as notas de topo, coração e base do Fragrantica, com os nomes em português como aparecem no Fragrantica Brasil (ex.: "Cidra", "Groselha Preta", "Cenoura"). Uma nota por item, sem parênteses, sem notas citadas em resenhas ou lojas.
 - "acordes": os "Principais acordes" do Fragrantica, na mesma ordem e com os mesmos nomes em português (ex.: "cítrico", "verde", "aromático", "fresco especiado", "frutado", "âmbar"). "valor" é o tamanho da barra, de 0 a 100 (a primeira é 100).
-- "familia": a família do Fragrantica em português (ex.: "Aromático Aquático").
+- "familia": UMA só, dentre estas 8: Floral, Cítrica, Amadeirada, Oriental, Aromática, Frutal, Gourmand, Chipre (a família principal do perfume; ex.: Fragrantica "Aromático Aquático" → "Aromática", "Almíscar Floral Amadeirado" → "Floral").
 - "votos": as CONTAGENS de votos do Fragrantica (números inteiros, não porcentagens):
   · fixacao = 5 números [Muito fraco, Fraco, Moderada, Longa, Eterno] da seção "Longevidade";
   · projecao = 4 números [Íntimo, Moderada, Forte, Enorme] da seção "Rastro";

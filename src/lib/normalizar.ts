@@ -127,3 +127,48 @@ export function votosDe(v: Partial<Votos> | undefined, ocasioesPadrao: { nome: s
 export const temVotos = (l?: number[]) => (l ?? []).some((x) => x > 0);
 export const horasDosVotos = (f: number[]) => Math.round(f.reduce((s, x, i) => s + (x / 100) * [1.5, 3, 5.5, 9, 13][i], 0) * 10) / 10;
 export const metrosDosVotos = (p: number[]) => Math.round(p.reduce((s, x, i) => s + (x / 100) * [0.4, 1.2, 2, 3][i], 0) * 10) / 10;
+
+/**
+ * As 8 famílias olfativas do Atlas. A família do Fragrantica ("Almíscar Floral Amadeirado",
+ * "Aromatic Aquatic"…) vira UMA delas: vale a primeira palavra que pertence a uma família.
+ */
+export const FAMILIAS = ["Floral", "Cítrica", "Amadeirada", "Oriental", "Aromática", "Frutal", "Gourmand", "Chipre"] as const;
+export type Familia = (typeof FAMILIAS)[number];
+
+const PALAVRA_FAMILIA: [RegExp, Familia][] = [
+  [/^(floral|florais|flores?|flower|white floral|rosa|rose|jasmim|jasmine|iris|violeta|violet|tuberosa|tuberose)$/, "Floral"],
+  [/^(citric[oa]s?|citrus|hesperidad[oa]|hesperidic|hesperidee)$/, "Cítrica"],
+  [/^(amadeirad[oa]s?|woody|wood|madeira|couro|leather|terros[oa]|earthy|musgos[oa]|mossy|oud|esfumaçad[oa]|smoky)$/, "Amadeirada"],
+  [/^(oriental|orientais|ambar|amber|ambarad[oa]|especiad[oa]s?|spicy|resinos[oa]|balsamic[oa]|balsâmic[oa]|baunilha|vanilla|incenso|incense)$/, "Oriental"],
+  [/^(aromatic[oa]s?|aromatic|fougere|foug[eè]re|verde|green|herbal|aquatic[oa]|aquatic|marinh[oa]|marine|ozonic[oa]|aquatica|fresc[oa]|fresh|lavanda|lavender)$/, "Aromática"],
+  [/^(frutad[oa]s?|frutal|fruity|frutas?|fruit)$/, "Frutal"],
+  [/^(gourmand|doce|sweet|lactonic[oa]|cafe|coffee|chocolate|caramelo|caramel)$/, "Gourmand"],
+  [/^(chipre|chypre)$/, "Chipre"],
+];
+
+/** Converte qualquer família (ou, sem ela, o acorde principal) numa das 8. */
+export function familiaAtlas(familia?: string | null, acordePrincipalNome?: string | null): Familia {
+  const t = (s?: string | null) => (s ?? "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+  if (FAMILIAS.some((f) => t(f) === t(familia))) return FAMILIAS.find((f) => t(f) === t(familia))!;
+  for (const w of t(familia).split(/[^a-z]+/).filter(Boolean)) {
+    const achou = PALAVRA_FAMILIA.find(([re]) => re.test(w));
+    if (achou) return achou[1];
+  }
+  for (const w of t(acordePrincipalNome).split(/[^a-z]+/).filter(Boolean)) {
+    const achou = PALAVRA_FAMILIA.find(([re]) => re.test(w));
+    if (achou) return achou[1];
+  }
+  return "Aromática";
+}
+
+/** Uma linha sobre cada família (aparece na ficha). */
+export const SOBRE_FAMILIA: Record<Familia, string> = {
+  Floral: "flores como jasmim, rosa e violeta",
+  Cítrica: "limão, laranja e bergamota; fresca e leve",
+  Amadeirada: "cedro, sândalo e vetiver; força e calor",
+  Oriental: "resinas, especiarias e baunilha; marcante",
+  Aromática: "ervas como lavanda, alecrim e hortelã",
+  Frutal: "maçã, pera, pêssego ou frutas vermelhas",
+  Gourmand: "lembra comida: chocolate, caramelo, leite",
+  Chipre: "saída cítrica, fundo de madeira e musgo",
+};

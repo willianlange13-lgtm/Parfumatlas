@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Icone } from "@/components/Icone";
 import { Frasco } from "@/components/Frasco";
 import type { Perfume } from "@/lib/tipos";
+import { FAMILIAS } from "@/lib/normalizar";
 import { Card, MONO, NotaChip, OURO, Rot } from "./kit";
 import { ouvirUmaVez, reduzirFoto } from "./voz";
 
@@ -85,7 +86,12 @@ export function Editar({ p: p0, e: e0, podeSalvar }: { p: Perfume; e: E; podeSal
         {campo("CONCENTRAÇÃO", p.concentracao ?? "", (v) => setP({ ...p, concentracao: v }))}
         {campo("ANO", p.ano ? String(p.ano) : "", (v) => setP({ ...p, ano: Number(v) || undefined }))}
         {campo("PERFUMISTA", p.perfumistas.join(", "), (v) => setP({ ...p, perfumistas: v.split(",").map((x) => x.trim()).filter(Boolean) }))}
-        {campo("FAMÍLIA", p.familia, (v) => setP({ ...p, familia: v }))}
+        <label style={{ borderRadius: 14, border: "1px solid var(--line)", background: "var(--surface)", padding: "8px 11px", display: "flex", flexDirection: "column", gap: 3, minWidth: 0 }}>
+          <span style={{ fontFamily: MONO, fontSize: 8.5, letterSpacing: ".1em", color: "var(--ink-3)" }}>FAMÍLIA</span>
+          <select value={p.familia} onChange={(x) => setP({ ...p, familia: x.target.value })} style={{ background: "transparent", border: "none", outline: "none", color: "var(--ink)", fontSize: 14, padding: 0, minWidth: 0, fontFamily: "inherit" }}>
+            {FAMILIAS.map((f) => <option key={f} value={f} style={{ color: "#000" }}>{f}</option>)}
+          </select>
+        </label>
         {campo("GÊNERO", p.genero ?? "", (v) => setP({ ...p, genero: v }))}
         {campo("PAÍS", p.pais ?? "", (v) => setP({ ...p, pais: v }))}
       </div>

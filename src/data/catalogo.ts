@@ -1,4 +1,5 @@
 import type { Forma, Perfume, Votos, ItemColecao, Lancamento } from "@/lib/tipos";
+import { familiaAtlas } from "@/lib/normalizar";
 
 /** Coleção de exemplo. Aparece enquanto o banco estiver vazio. Dados ilustrativos. */
 
@@ -82,7 +83,7 @@ const fotoOficial = (id: string) => (FRAGRANTICA[id] ? `https://fimgs.net/mdimg/
 function p(b: Base): Perfume {
   return {
     id: b.id, nome: b.nome, casa: b.casa, ano: b.ano, concentracao: b.conc ?? "Eau de Parfum", perfumistas: b.perf,
-    familia: b.familia, acorde: b.acorde, genero: b.genero, pais: b.pais, descricao: b.desc,
+    familia: familiaAtlas(b.familia, b.acorde), acorde: b.acorde, genero: b.genero, pais: b.pais, descricao: b.desc,
     notas: { saida: b.saida, coracao: b.coracao, fundo: b.fundo },
     acordes: b.acordes.map(([nome, valor]) => ({ nome, valor })),
     fixacaoH: b.fix, projecaoM: b.proj, votos: votosDe(b), clima: climaDe(b),

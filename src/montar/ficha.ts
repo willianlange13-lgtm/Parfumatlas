@@ -2,6 +2,7 @@ import { buscarEntrada } from "@/lib/dados";
 import { semelhantes, naColecao } from "@/lib/analise";
 import { CASAS, nota as refNota } from "@/data/referencia";
 import { origemCasa } from "@/data/casas";
+import { SOBRE_FAMILIA, type Familia } from "@/lib/normalizar";
 import { corDoAcorde } from "@/lib/cores";
 import base from "@/data/desenho/FichaAzulPreto.json";
 import { arc, circ, glifo, hexA, P, t } from "@/desenho/h2";
@@ -180,7 +181,7 @@ export async function montarFicha(id: string) {
     topFam: AC.slice(0, 3).map((a, i) => ({ nome: a.nome, cor: cores[i], bg: hexA(cores[i], 0.22) })),
     marcas: [["tenho", "Tenho"], ["tive", "Tive"], ["quero", "Quero"], ["assinatura", "★ Assinatura"]].map(([k, nm]) => ({ chave: k, nome: sitAtual === k ? (k === "assinatura" ? nm : "✓ " + nm) : nm, bg: sitAtual === k ? t.btn : "transparent", cor: sitAtual === k ? t.onBtn : t.ink2 })),
     fatos: [
-      { l: "FAMÍLIA", v: p.familia, c: "segundo a casa" },
+      { l: "FAMÍLIA", v: p.familia, c: SOBRE_FAMILIA[p.familia as Familia] ?? "família olfativa" },
       { l: "CONCENTRAÇÃO", v: p.concentracao ?? "—", c: p.concentracao === "Eau de Parfum" ? "a versão mais comum" : "concentração da casa" },
       { l: "LANÇAMENTO", v: p.ano ? String(p.ano) : "—", c: p.ano ? idade(new Date().getFullYear() - p.ano) : "ano a confirmar" },
       { l: "PERFUMISTAS", v: p.perfumistas.length ? p.perfumistas.map((x) => x.split(" ").slice(-1)[0]).join(" e ") : "a confirmar", c: p.perfumistas[0] ?? "a casa não divulga" },
