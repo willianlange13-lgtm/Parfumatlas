@@ -30,6 +30,8 @@ export function perfumeDaLinha(r: Linha): Perfume {
     inspiradoEm: (r.inspirado_em as string) ?? undefined,
     parecidos: ((r.votos as Linha)?.parecidos as Perfume["parecidos"]) ?? undefined,
     mesmaCasa: ((r.votos as Linha)?.mesmaCasa as Perfume["mesmaCasa"]) ?? undefined,
+    buscaParecidos: ((r.votos as Linha)?.buscaParecidos as Perfume["buscaParecidos"]) ?? null,
+    dnaOriginal: ((r.votos as Linha)?.dnaOriginal as string) ?? null,
     imagem: (r.imagem_url as string) ?? null,
     fontes: (r.fontes as Perfume["fontes"]) ?? [],
     revisar: (r.campos_revisar as string[]) ?? [],
@@ -42,7 +44,7 @@ export function linhaDoPerfume(p: Perfume): Linha {
     familia: p.familia, acorde: p.acorde, genero: p.genero ?? null, pais: p.pais ?? null, descricao: p.descricao ?? null,
     notas_saida: p.notas.saida, notas_coracao: p.notas.coracao, notas_fundo: p.notas.fundo, acordes: p.acordes,
     fixacao_h: p.fixacaoH ?? null, projecao_m: p.projecaoM ?? null,
-    votos: { ...(p.votos ?? {}), forma: p.forma, tampa: p.tampa, parecidos: p.parecidos ?? [], mesmaCasa: p.mesmaCasa ?? [] }, clima: p.clima ?? {},
+    votos: { ...(p.votos ?? {}), forma: p.forma, tampa: p.tampa, parecidos: p.parecidos ?? [], mesmaCasa: p.mesmaCasa ?? [], buscaParecidos: p.buscaParecidos ?? null, dnaOriginal: p.dnaOriginal ?? null }, clima: p.clima ?? {},
     imagem_url: p.imagem ?? null, fontes: p.fontes ?? [], campos_revisar: p.revisar ?? [],
   };
 }

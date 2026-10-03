@@ -137,8 +137,13 @@ export async function montarFicha(id: string) {
   // semelhantes salvos na ficha (busca sob demanda + edição da pessoa), com foto do frasco
   const semelhantesLista = (p.parecidos ?? []).map((pr) => {
     const achado = todos.find((x) => norm(x.nome) === norm(pr.nome) && (!pr.casa || norm(x.casa) === norm(pr.casa)));
-    return { nome: pr.nome, casa: pr.casa, pct: pr.pct, original: pr.tipo === "inspirou", imagem: pr.imagem ?? achado?.imagem ?? null, href: achado ? `/colecao/${achado.id}` : `/buscar/resultado?nome=${encodeURIComponent(pr.nome)}&casa=${encodeURIComponent(pr.casa)}` };
-  }).sort((a, b) => Number(b.original) - Number(a.original) || b.pct - a.pct);
+    return {
+      nome: pr.nome, casa: pr.casa, pct: pr.pct, original: pr.tipo === "inspirou", imagem: pr.imagem ?? achado?.imagem ?? null,
+      faixa: pr.faixa ?? `${pr.pct}%`, relacao: pr.relacao ?? null, radar: Boolean(pr.radar), semelhanca: pr.semelhanca ?? null, diferenca: pr.diferenca ?? null,
+      manual: pr.trecho === "adicionado por você",
+      href: achado ? `/colecao/${achado.id}` : `/buscar/resultado?nome=${encodeURIComponent(pr.nome)}&casa=${encodeURIComponent(pr.casa)}`,
+    };
+  }).sort((a, b) => Number(b.original) - Number(a.original)); // a ordem salva já é a do ranking
 
   const inspNaColecao = s.inspirados.filter((x) => x.tem).length;
   const relacao = s.inspirados.length ? `Original · ${inspNaColecao || s.inspirados.length} inspirado${(inspNaColecao || s.inspirados.length) > 1 ? "s" : ""} ${inspNaColecao ? "na sua coleção" : "conhecidos"}` : p.inspiradoEm ? `Inspirado em ${acervo.perfumes.get(p.inspiradoEm)?.nome ?? "outro perfume"}` : "";
@@ -195,6 +200,7 @@ export async function montarFicha(id: string) {
     ],
     colunas: [] as typeof colunas, // no computador a seção usa a lista do celular
     semelhantes: semelhantesLista,
+    buscandoSemelhantes: Boolean(p.buscaParecidos),
     perguntas: perguntas.map((q) => ({ t: q, href: qs(q) })),
     // da mesma casa: os que já estão no Atlas e os da seção "Designer" do Fragrantica
     casa: [

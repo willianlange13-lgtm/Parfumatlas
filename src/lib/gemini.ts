@@ -165,3 +165,51 @@ async function chamarOpenAI(partes: Parte[], opcoes: { schema?: object; pesquisa
   }
   throw new Error(ultimo || "ChatGPT: nenhum modelo disponível");
 }
+
+// ---------------- Pesquisa longa em segundo plano (OpenAI) ----------------
+// A Vercel corta pedidos depois de 2 minutos. Pesquisas profundas rodam na própria OpenAI
+// ("background") e o app consulta o resultado depois, quantas vezes precisar.
+
+/** Começa a pesquisa e devolve o código dela na OpenAI. */
+export async function iniciarPesquisaFundo(texto: string, schema: object, esforco: "low" | "medium" | "high" = "low", maxBuscas = 8): Promise<string> {
+  const chave = process.env.OPENAI_API_KEY;
+  if (!chave) throw new Error("OPENAI_API_KEY não configurada");
+  const modelo = process.env.OPENAI_MODEL_PESQUISA || "gpt-5-mini";
+  const base = {
+    model: modelo,
+    input: [{ role: "user", content: [{ type: "input_text", text: `${texto}\n\nResponda só com um JSON válido neste formato (JSON Schema): ${JSON.stringify(schemaComum(schema))}.` }] }],
+    instructions: SEM_PERGUNTAS,
+    tools: [{ type: "web_search" }],
+    background: true,
+    store: true,
+    ...(modelo.startsWith("gpt-5") || modelo.startsWith("o") ? { reasoning: { effort: esforco } } : {}),
+  };
+  const formato = { text: { format: { type: "json_schema", name: "resposta", strict: true, schema: schemaEstrito(schema) } } };
+  // teto de buscas na internet (economia); se a conta não aceitar algum parâmetro, tenta sem ele
+  const tentativas = [{ ...formato, max_tool_calls: maxBuscas }, formato, {}];
+  for (let i = 0; i < tentativas.length; i++) {
+    const r = await fetch("https://api.openai.com/v1/responses", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${chave}` },
+      body: JSON.stringify({ ...base, ...tentativas[i] }),
+      signal: AbortSignal.timeout(30000),
+    });
+    if (r.ok) return ((await r.json()) as { id: string }).id;
+    const erro = `ChatGPT ${r.status}: ${(await r.text()).slice(0, 300)}`;
+    console.error(erro);
+    if (r.status !== 400 || i === tentativas.length - 1) throw new Error(erro);
+  }
+  throw new Error("não consegui iniciar a pesquisa");
+}
+
+/** Situação da pesquisa: "pendente", "pronta" (com os dados) ou "falhou". */
+export async function lerPesquisaFundo<T>(id: string): Promise<{ estado: "pendente" | "pronta" | "falhou"; dados?: T; erro?: string }> {
+  const r = await fetch(`https://api.openai.com/v1/responses/${encodeURIComponent(id)}`, { headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY}` }, cache: "no-store", signal: AbortSignal.timeout(20000) });
+  if (!r.ok) return { estado: "falhou", erro: `ChatGPT ${r.status}` };
+  const j = await r.json();
+  if (j.status === "queued" || j.status === "in_progress") return { estado: "pendente" };
+  if (j.status !== "completed") return { estado: "falhou", erro: j.error?.message ?? j.incomplete_details?.reason ?? j.status };
+  const texto: string = (j.output ?? []).filter((o: { type: string }) => o.type === "message").flatMap((o: { content?: { type: string; text?: string }[] }) => o.content ?? []).filter((c: { type: string }) => c.type === "output_text").map((c: { text?: string }) => c.text ?? "").join("");
+  const dados = lerJSON<T>(texto);
+  return dados ? { estado: "pronta", dados } : { estado: "falhou", erro: "a resposta não veio no formato certo" };
+}
