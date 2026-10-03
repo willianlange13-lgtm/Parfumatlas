@@ -141,7 +141,7 @@ export async function montarFicha(id: string) {
     const achado = todos.find((x) => norm(x.nome) === norm(pr.nome) && (!pr.casa || norm(x.casa) === norm(pr.casa)));
     return {
       nome: pr.nome, casa: pr.casa, pct: pr.pct, original: pr.tipo === "inspirou", imagem: pr.imagem ?? achado?.imagem ?? null,
-      faixa: pr.faixa ?? `${pr.pct}%`, relacao: pr.relacao ?? null, radar: Boolean(pr.radar), semelhanca: pr.semelhanca ?? null, diferenca: pr.diferenca ?? null,
+      faixa: pr.faixa ?? (pr.tipo === "inspirou" ? "" : `${pr.pct}%`), relacao: pr.relacao ?? null, radar: Boolean(pr.radar), semelhanca: pr.semelhanca ?? null, diferenca: pr.diferenca ?? null,
       manual: pr.trecho === "adicionado por você",
       href: achado ? `/colecao/${achado.id}` : `/buscar/resultado?nome=${encodeURIComponent(pr.nome)}&casa=${encodeURIComponent(pr.casa)}`,
     };

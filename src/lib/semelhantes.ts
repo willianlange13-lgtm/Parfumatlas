@@ -11,7 +11,7 @@ const T = { type: "STRING" }, I = { type: "INTEGER" };
 const SCHEMA = {
   type: "OBJECT",
   properties: {
-    original: { type: "OBJECT", properties: { nome: T, casa: T, link: T }, required: ["nome", "casa", "link"] },
+    original: { type: "OBJECT", properties: { nome: T, casa: T, link: T, pctMin: I, pctMax: I }, required: ["nome", "casa", "link", "pctMin", "pctMax"] },
     parentes: {
       type: "ARRAY",
       items: {
@@ -29,7 +29,7 @@ const SCHEMA = {
   required: ["parentes", "mesmaCasa"],
 };
 
-export type Resultado = { mesmaCasa?: { nome: string; link: string }[]; original?: { nome: string; casa: string; link: string } | null; parentes: { nome: string; casa: string; paisCasa?: string; link: string; relacao: string; radar: boolean; pctMin: number; pctMax: number; relevancia?: number; semelhanca: string; diferenca: string }[] };
+export type Resultado = { mesmaCasa?: { nome: string; link: string }[]; original?: { nome: string; casa: string; link: string; pctMin?: number; pctMax?: number } | null; parentes: { nome: string; casa: string; paisCasa?: string; link: string; relacao: string; radar: boolean; pctMin: number; pctMax: number; relevancia?: number; semelhanca: string; diferenca: string }[] };
 
 /** Método de parentesco olfativo, em versão curta (o texto de entrada também custa). */
 function pedido(p: Perfume) {
@@ -38,7 +38,8 @@ function pedido(p: Perfume) {
   const original = orig ? `${orig.nome} (${orig.casa})` : null;
   const ref = orig ? orig.nome : "<original>";
   return `Você é um especialista da COMUNIDADE BRASILEIRA de perfumaria (quem compra árabes e contratipos no Brasil).
-Encontre os perfumes mais parecidos com "${p.nome}" da casa "${p.casa}"${notas ? ` (notas: ${notas})` : ""}.${original ? ` Ele é inspirado no ${original}.` : " Descubra se ele é inspirado num original famoso e informe em \"original\"."}
+Encontre os perfumes mais parecidos com "${p.nome}" da casa "${p.casa}"${notas ? ` (notas: ${notas})` : ""}.${original ? ` Ele é inspirado no ${original}: devolva esse perfume em "original".` : " Descubra se ele é inspirado num original famoso e devolva em \"original\"."}
+TODAS as porcentagens (pctMin/pctMax), inclusive a do original, medem o quanto cada perfume cheira parecido com o "${p.nome}".
 
 Como pesquisar (em português, nas fontes que o brasileiro usa):
 1) Fragrantica Brasil (fragrantica.com.br): página do perfume, comentários e "Este perfume me lembra do".
@@ -52,7 +53,7 @@ RELEVÂNCIA é o que a comunidade brasileira mais cita, recomenda e compra como 
 Devolva "parentes": os 10 melhores (sem o próprio perfume nem o original), cada um com:
 - nome (sem a casa), casa, "paisCasa", "link" (página dele no Fragrantica, para a foto);
 - relacao: "clone direto", "dupe", "mesmo DNA", "interpretação" ou "similar por acordes";
-- pctMin e pctMax: faixa de parentesco no cheiro (ex.: 88 e 92), sem inventar precisão;
+- pctMin e pctMax: faixa de parecença com o "${p.nome}" (ex.: 88 e 92), sem inventar precisão;
 - relevancia de 1 a 5 NA COMUNIDADE BRASILEIRA (5 = citado em quase todo vídeo/lista de contratipos; 1 = quase ninguém no Brasil cita);
 - radar: true só para perfume pouco citado (relevancia 1 ou 2) mas com cheiro muito próximo;
 - semelhanca e diferenca: no máximo 12 palavras cada, em português.
@@ -105,9 +106,15 @@ export function ordenar(lista: Parecido[]): Parecido[] {
 /** Converte o resultado da IA nos semelhantes da ficha (mantém os que a pessoa adicionou). */
 export function converter(r: Resultado, p: Perfume): { parecidos: Parecido[]; dnaOriginal: string | null } {
   const eu = chave(p.nome);
-  const orig = r.original?.nome ? r.original : null;
+  const anterior = (p.parecidos ?? []).find((x) => x.tipo === "inspirou");
+  const orig = r.original?.nome ? r.original : anterior ? { nome: anterior.nome, casa: anterior.casa, link: anterior.link ?? "", pctMin: undefined, pctMax: undefined } : null;
   const lista: Parecido[] = [];
-  if (orig && chave(orig.nome) !== eu) lista.push({ nome: orig.nome, casa: orig.casa, tipo: "inspirou", pct: 99, link: orig.link, imagem: foto(orig.link, orig.nome), faixa: "o original", relacao: "original" });
+  if (orig && chave(orig.nome) !== eu) {
+    // o original nunca some: se a pesquisa não devolver, fica o que já estava
+    const oMin = Number(orig.pctMin) || 0, oMax = Number(orig.pctMax) || oMin;
+    const faixa = oMin ? (oMin === oMax ? `~${oMin}%` : `${oMin}–${oMax}%`) : anterior?.faixa && anterior.faixa !== "o original" ? anterior.faixa : null;
+    lista.push({ nome: orig.nome, casa: orig.casa, tipo: "inspirou", pct: oMin ? Math.round((oMin + oMax) / 2) : (anterior?.pct ?? 95), link: orig.link || anterior?.link || null, imagem: foto(orig.link, orig.nome) ?? anterior?.imagem ?? null, faixa, relacao: "original" });
+  }
   for (const x of r.parentes ?? []) {
     if (!x?.nome || !casaPermitida(x.casa, x.paisCasa)) continue; // trava: só casas brasileiras, americanas e árabes
     if (chave(x.nome) === eu || (orig && chave(x.nome) === chave(orig.nome)) || lista.some((y) => chave(y.nome) === chave(x.nome))) continue;

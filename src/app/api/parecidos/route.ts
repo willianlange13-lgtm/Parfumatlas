@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
     }
     const { parecidos: brutos, dnaOriginal } = converter(r.dados, perfume);
     // fotos conferidas: abre a página do Fragrantica de cada um quando dá (o número inventado trocava o frasco)
-    const parecidos = await Promise.all(brutos.map(async (x) => (x.trecho === "adicionado por você" ? x : { ...x, imagem: await fotoConferida(x.link, x.nome) })));
+    const parecidos = await Promise.all(brutos.map(async (x) => (x.trecho === "adicionado por você" ? x : { ...x, imagem: (await fotoConferida(x.link, x.nome)) ?? (x.tipo === "inspirou" ? x.imagem ?? null : null) })));
     const casaLista = (r.dados.mesmaCasa ?? []).filter((x, i, l) => x?.nome && chave(x.nome) !== chave(perfume.nome) && l.findIndex((y) => chave(y.nome) === chave(x.nome)) === i).slice(0, 8)
       .map((x) => ({ nome: x.nome, link: x.link && /fragrantica\./i.test(x.link) ? x.link : null }));
     const mesmaCasa = casaLista.length ? await fotosConferidas(casaLista) : perfume.mesmaCasa;

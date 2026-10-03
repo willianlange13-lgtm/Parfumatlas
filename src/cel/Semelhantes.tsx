@@ -10,7 +10,7 @@ type Item = { nome: string; casa: string; pct: number; original: boolean; imagem
  * Semelhantes pelo método de parentesco: 7 perfumes (⭐ = fora do radar) com faixa, relação, semelhança e diferença.
  * A pesquisa roda na OpenAI em segundo plano; a tela consulta até ficar pronta (dá para sair e voltar).
  */
-export function Semelhantes({ itens, perfumeId, buscando }: { itens: Item[]; perfumeId: string; buscando: boolean }) {
+export function Semelhantes({ itens, perfumeId, buscando, nome }: { itens: Item[]; perfumeId: string; buscando: boolean; nome: string }) {
   const [msg, setMsg] = useState("");
   const [ocupado, setOcupado] = useState(buscando ? "pesquisando" : "");
   const router = useRouter();
@@ -66,7 +66,10 @@ export function Semelhantes({ itens, perfumeId, buscando }: { itens: Item[]; per
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 10, flexShrink: 0 }}>
-      <Rot>Semelhantes</Rot>
+      <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 8 }}>
+        <Rot>Semelhantes</Rot>
+        <span style={{ fontSize: 12, color: "var(--ink-3)" }}>🧬 = quanto lembra o {nome}</span>
+      </div>
       {itens.map((it, k) => (
         <div key={it.nome} style={{ display: "flex", gap: 12, alignItems: "flex-start", padding: "10px 0", borderTop: k ? "1px solid var(--line)" : "none" }}>
           <Link href={it.href} style={{ width: 64, height: 76, flexShrink: 0, borderRadius: 12, background: it.imagem ? "#FFFFFF" : "var(--surface)", border: `1px solid ${it.original ? OURO : "var(--line)"}`, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
@@ -78,7 +81,7 @@ export function Semelhantes({ itens, perfumeId, buscando }: { itens: Item[]; per
           <Link href={it.href} style={{ flexGrow: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 3 }}>
             <span style={{ fontSize: 15, fontWeight: 500, lineHeight: 1.2 }}>{it.radar ? "⭐ " : ""}{it.nome}</span>
             <span style={{ fontFamily: MONO, fontSize: 9.5, letterSpacing: ".06em", color: "var(--ink-3)", textTransform: "uppercase" }}>{it.casa}{it.manual ? " · adicionado por você" : ""}</span>
-            <span style={{ fontSize: 12.5, color: OURO }}>{it.original ? "o original" : `🧬 ${it.faixa}`}{it.relacao && !it.original ? ` · ${it.relacao}` : ""}</span>
+            <span style={{ fontSize: 12.5, color: OURO }}>{it.original ? `o original${it.faixa && it.faixa !== "o original" ? ` · 🧬 ${it.faixa}` : ""}` : `🧬 ${it.faixa}`}{it.relacao && !it.original ? ` · ${it.relacao}` : ""}</span>
             {it.semelhanca && <span style={{ fontSize: 12.5, color: "var(--ink-2)", lineHeight: 1.35 }}>≈ {it.semelhanca}</span>}
             {it.diferenca && <span style={{ fontSize: 12.5, color: "var(--ink-3)", lineHeight: 1.35 }}>≠ {it.diferenca}</span>}
           </Link>
