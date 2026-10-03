@@ -320,7 +320,11 @@ async function fichaSalva(nome: string, casa: string): Promise<FichaIA | null> {
  * Segunda etapa, pedida pela tela depois que a ficha já apareceu (o cadastro não espera por ela):
  * perfumes da mesma casa sempre; votos só se faltaram. As duas pesquisas rodam ao mesmo tempo.
  */
-export async function completarFicha(f: FichaIA): Promise<FichaIA> {
+/**
+ * `forte`: usa o modelo da ficha em vez do leve. `soReal`: só aceita contagem real do Fragrantica
+ * (nada de estimativa). Os dois são usados na limpeza histórica dos votos.
+ */
+export async function completarFicha(f: FichaIA, opcoes: { forte?: boolean; soReal?: boolean } = {}): Promise<FichaIA> {
   const repetidos = await votosDuplicadosNoAcervo(f.nome, f.casa, f.votos);
   const semVotos = !temVotos(f.votos?.fixacao) || !temVotos(f.votos?.projecao) || votosSuspeitos(f.votos, f.nome, f.casa) || repetidos;
   if (!geminiConfigurado() || !semVotos) return { ...f, completar: false }; // só falta algo se faltaram os votos
@@ -334,13 +338,15 @@ export async function completarFicha(f: FichaIA): Promise<FichaIA> {
 - "projecao": as 4 contagens de "Rastro"/"Sillage" na ordem [íntimo, moderado, forte, enorme];
 - "total": o número de votos da avaliação.
 Formato obrigatório: "fixacao" deve ter exatamente 5 inteiros copiados da fonte e "projecao" exatamente 4 inteiros; "total" é o total real encontrado. Nunca copie números desta instrução.
-Se o Fragrantica não mostrar os números, use o Parfumo, resenhas e lojas, transforme em porcentagens coerentes que somam 100 e use "origem": "estimativa". Nunca devolva zerado e nunca reutilize um vetor fixo de exemplo.` }], { schema: SCHEMA_EXTRA, pesquisar: true, leve: true, tempo: 80000, maxBuscas: 3, tarefa: "votos" }).catch(() => ({}) as Extra)
+Se o Fragrantica não mostrar os números, use o Parfumo, resenhas e lojas, transforme em porcentagens coerentes que somam 100 e use "origem": "estimativa". Nunca devolva zerado e nunca reutilize um vetor fixo de exemplo.` }], { schema: SCHEMA_EXTRA, pesquisar: true, leve: !opcoes.forte, tempo: 80000, maxBuscas: 3, tarefa: opcoes.forte ? "votos_forte" : "votos" }).catch(() => ({}) as Extra)
       : Promise.resolve({} as Extra),
     Promise.resolve([] as NonNullable<FichaIA["mesmaCasa"]>), // "da mesma casa" saiu da ficha
   ]);
   const out: FichaIA = { ...f, completar: false };
   if (semVotos) {
-    const respostaSuspeita = votosSuspeitos({ fixacao: x.fixacao, projecao: x.projecao }, f.nome, f.casa);
+    const soma = (l?: number[] | null) => (l ?? []).reduce((t, n) => t + (Number(n) || 0), 0);
+    const pareceEstimativa = x.origem !== "fragrantica" || soma(x.fixacao) === 100 || soma(x.projecao) === 100;
+    const respostaSuspeita = votosSuspeitos({ fixacao: x.fixacao, projecao: x.projecao }, f.nome, f.casa) || (opcoes.soReal && pareceEstimativa);
     const novos = respostaSuspeita ? null : votosDe({ ...(f.votos ?? {}), fixacao: x.fixacao ?? undefined, projecao: x.projecao ?? undefined, total: x.total || f.votos?.total, origem: x.origem ?? "estimativa" } as Partial<Votos>, f.votos?.ocasioes?.length ? f.votos.ocasioes : OCASIOES);
     const novosDuplicados = novos ? await votosDuplicadosNoAcervo(f.nome, f.casa, novos) : false;
     if (novos && temVotos(novos.fixacao) && temVotos(novos.projecao) && !novosDuplicados) {

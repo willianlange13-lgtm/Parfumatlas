@@ -3,7 +3,8 @@ import { createClient, supabaseConfigurado } from "@/lib/supabase/server";
 import { geminiConfigurado, geminiJSON, nomeIA } from "@/lib/gemini";
 import { completarFicha, gerarFicha, ultimoErroFicha } from "@/lib/ficha";
 import { perfumeDaLinha } from "@/lib/dados";
-import { temVotos } from "@/lib/normalizar";
+import { horasDosVotos, metrosDosVotos, temVotos, votosDe } from "@/lib/normalizar";
+import type { Votos } from "@/lib/tipos";
 import { lerPagina } from "@/lib/pagina";
 import type { NextRequest } from "next/server";
 
@@ -12,6 +13,7 @@ export const maxDuration = 120;
 /** Mostra o que está ligado (sem revelar chaves). Abra /api/diagnostico no navegador. */
 export async function GET(request: NextRequest) {
   const votos = request.nextUrl.searchParams.get("votos");
+  if (votos === "gravar") return gravarVotosReais(request);
   if (votos) return votosSuspeitosNoBanco(votos === "corrigir");
   const r: Record<string, string> = {};
   r.supabase = supabaseConfigurado() ? "chaves ok" : "FALTA NEXT_PUBLIC_SUPABASE_URL ou NEXT_PUBLIC_SUPABASE_ANON_KEY";
@@ -110,7 +112,7 @@ async function votosSuspeitosNoBanco(corrigir: boolean) {
   const copias = suspeitos.filter((x) => n(x.nome) === n(alvo.nome) && n(x.casa) === n(alvo.casa));
   const linha = (data ?? []).find((x) => x.id === alvo.id)!;
   const p = perfumeDaLinha(linha);
-  const out = await completarFicha({ ...p, revisar: ["votos"] });
+  const out = await completarFicha({ ...p, revisar: ["votos"] }, { forte: true, soReal: true });
   const v = out.votos;
   const ok = v && temVotos(v.fixacao) && temVotos(v.projecao) && ass(v.fixacao) !== alvo.fixacao;
   const restantes = suspeitos.filter((x) => !copias.includes(x)).map((x) => `${x.nome} (${x.casa})`);
@@ -121,4 +123,33 @@ async function votosSuspeitosNoBanco(corrigir: boolean) {
     if (e) return json({ erro: e.message });
   }
   return json({ perfume: `${alvo.nome} (${alvo.casa})`, copiasCorrigidas: copias.length, fixacao: v.fixacao, projecao: v.projecao, total: v.total, origem: v.origem, horas: out.fixacaoH, metros: out.projecaoM, restantes: [...new Set(restantes)] });
+}
+
+/**
+ * Grava contagens reais conferidas à mão (custo zero), em todas as cópias do perfume.
+ * /api/diagnostico?votos=gravar&nome=Pacific Aura&casa=Rayhaan&fx=42,194,855,179,23&pj=120,610,240,35&total=1971
+ */
+async function gravarVotosReais(request: NextRequest) {
+  const json = (x: unknown) => NextResponse.json(x, { headers: { "Cache-Control": "no-store", "Content-Type": "application/json; charset=utf-8" } });
+  const q = request.nextUrl.searchParams;
+  const lista = (s: string | null) => (s ?? "").split(",").map((x) => Number(x.trim())).filter((x) => Number.isFinite(x) && x >= 0);
+  const fx = lista(q.get("fx")), pj = lista(q.get("pj"));
+  const nome = q.get("nome") ?? "", casa = q.get("casa") ?? "";
+  if (!nome || fx.length !== 5 || pj.length !== 4) return json({ erro: "Informe nome, casa, fx (5 números) e pj (4 números)." });
+  if (!supabaseConfigurado()) return json({ erro: "Banco não configurado." });
+  const sb = await createClient();
+  const { data: u } = await sb.auth.getUser();
+  if (!u.user) return json({ erro: "Entre no Atlas antes de abrir este endereço." });
+  const { data, error } = await sb.from("perfumes").select("id, nome, casa, votos").ilike("nome", nome).ilike("casa", casa || "%");
+  if (error) return json({ erro: error.message });
+  if (!data?.length) return json({ erro: "Perfume não encontrado." });
+  const novos = votosDe({ fixacao: fx, projecao: pj, total: Number(q.get("total")) || 0, origem: "fragrantica" } as Partial<Votos>, []);
+  if (!novos) return json({ erro: "Números inválidos." });
+  for (const row of data) {
+    const atual = (row.votos ?? {}) as Record<string, unknown>;
+    const votos = { ...atual, fixacao: novos.fixacao, projecao: novos.projecao, total: novos.total || atual.total || 0, origem: "fragrantica" };
+    const { error: e } = await sb.from("perfumes").update({ votos, fixacao_h: horasDosVotos(novos.fixacao), projecao_m: metrosDosVotos(novos.projecao) }).eq("id", row.id);
+    if (e) return json({ erro: e.message });
+  }
+  return json({ perfume: `${data[0].nome} (${data[0].casa})`, copiasGravadas: data.length, fixacao: novos.fixacao, projecao: novos.projecao, horas: horasDosVotos(novos.fixacao), metros: metrosDosVotos(novos.projecao) });
 }
