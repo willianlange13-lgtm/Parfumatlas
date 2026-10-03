@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
 import { createClient, supabaseConfigurado } from "@/lib/supabase/server";
 import { geminiConfigurado, geminiJSON, nomeIA } from "@/lib/gemini";
-import { gerarFicha, ultimoErroFicha } from "@/lib/ficha";
+import { completarFicha, gerarFicha, ultimoErroFicha } from "@/lib/ficha";
+import { perfumeDaLinha } from "@/lib/dados";
+import { temVotos } from "@/lib/normalizar";
 import { lerPagina } from "@/lib/pagina";
 import type { NextRequest } from "next/server";
 
@@ -9,7 +11,8 @@ export const maxDuration = 120;
 
 /** Mostra o que está ligado (sem revelar chaves). Abra /api/diagnostico no navegador. */
 export async function GET(request: NextRequest) {
-  if (request.nextUrl.searchParams.get("votos")) return votosSuspeitosNoBanco();
+  const votos = request.nextUrl.searchParams.get("votos");
+  if (votos) return votosSuspeitosNoBanco(votos === "corrigir");
   const r: Record<string, string> = {};
   r.supabase = supabaseConfigurado() ? "chaves ok" : "FALTA NEXT_PUBLIC_SUPABASE_URL ou NEXT_PUBLIC_SUPABASE_ANON_KEY";
   if (supabaseConfigurado()) {
@@ -64,16 +67,18 @@ export async function GET(request: NextRequest) {
 }
 
 /**
- * Só leitura: lista os perfumes com votos copiados (limpeza histórica, ver docs/DECISOES.md).
- * Abra /api/diagnostico?votos=1 logado. Não altera nada nem chama IA.
+ * Limpeza histórica dos votos copiados (ver docs/DECISOES.md).
+ * /api/diagnostico?votos=1 → só lista, sem IA e sem alterar nada.
+ * /api/diagnostico?votos=corrigir → busca de novo SÓ os votos do próximo perfume da lista (até 3 buscas)
+ * e grava o resultado em todas as cópias dele. A ficha não é refeita. Recarregue até a lista zerar.
  */
-async function votosSuspeitosNoBanco() {
+async function votosSuspeitosNoBanco(corrigir: boolean) {
   const json = (x: unknown) => NextResponse.json(x, { headers: { "Cache-Control": "no-store", "Content-Type": "application/json; charset=utf-8" } });
   if (!supabaseConfigurado()) return json({ erro: "Banco não configurado." });
   const sb = await createClient();
   const { data: u } = await sb.auth.getUser();
   if (!u.user) return json({ erro: "Entre no Atlas antes de abrir este endereço." });
-  const { data, error } = await sb.from("perfumes").select("id, nome, casa, votos");
+  const { data, error } = await sb.from("perfumes").select("*");
   if (error) return json({ erro: error.message });
   const n = (s: unknown) => String(s ?? "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim();
   const ass = (l: unknown) => (Array.isArray(l) ? l.map((x) => Math.round(Number(x) || 0)).join(",") : "");
@@ -99,5 +104,21 @@ async function votosSuspeitosNoBanco() {
   });
   const repetidos = [...grupos.entries()].filter(([, l]) => new Set(l.map((y) => `${n(y.nome)}|${n(y.casa)}`)).size > 1)
     .map(([chave, l]) => ({ fixacao: chave.split("|")[0], projecao: chave.split("|")[1], perfumes: l.map((y) => `${y.nome} (${y.casa}) · ${y.origem || "sem origem"} · total ${y.total}`) }));
-  return json({ analisados: itens.length, comVotos: comVotos.length, suspeitos: suspeitos.length, lista: suspeitos, gruposRepetidos: repetidos });
+  if (!corrigir || !suspeitos.length) return json({ analisados: itens.length, comVotos: comVotos.length, suspeitos: suspeitos.length, lista: suspeitos, gruposRepetidos: repetidos });
+
+  const alvo = suspeitos[0];
+  const copias = suspeitos.filter((x) => n(x.nome) === n(alvo.nome) && n(x.casa) === n(alvo.casa));
+  const linha = (data ?? []).find((x) => x.id === alvo.id)!;
+  const p = perfumeDaLinha(linha);
+  const out = await completarFicha({ ...p, revisar: ["votos"] });
+  const v = out.votos;
+  const ok = v && temVotos(v.fixacao) && temVotos(v.projecao) && ass(v.fixacao) !== alvo.fixacao;
+  const restantes = suspeitos.filter((x) => !copias.includes(x)).map((x) => `${x.nome} (${x.casa})`);
+  if (!ok) return json({ perfume: `${alvo.nome} (${alvo.casa})`, resultado: "não achei votos confiáveis agora; nada foi alterado", restantes: [...new Set(restantes)] });
+  for (const c of copias) {
+    const atual = (data ?? []).find((x) => x.id === c.id)!;
+    const { error: e } = await sb.from("perfumes").update({ votos: { ...((atual.votos ?? {}) as object), ...v }, fixacao_h: out.fixacaoH ?? null, projecao_m: out.projecaoM ?? null }).eq("id", c.id);
+    if (e) return json({ erro: e.message });
+  }
+  return json({ perfume: `${alvo.nome} (${alvo.casa})`, copiasCorrigidas: copias.length, fixacao: v.fixacao, projecao: v.projecao, total: v.total, origem: v.origem, horas: out.fixacaoH, metros: out.projecaoM, restantes: [...new Set(restantes)] });
 }
