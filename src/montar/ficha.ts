@@ -7,6 +7,7 @@ import { arc, circ, glifo, hexA, P, t } from "@/desenho/h2";
 import type { Perfume } from "@/lib/tipos";
 
 const PALETA = ["#D8B970", "#DCECFD", "#9099AC", "#B4BDCC", "#7F8AA0", "#A3ADBE", "#6E7A90", "#C9D1DE"];
+const dominio = (u?: string | null) => { try { return u ? new URL(u).hostname.replace(/^www\./, "") : ""; } catch { return ""; } };
 const idade = (a: number) => (a <= 0 ? "lançamento deste ano" : a === 1 ? "há 1 ano" : `há ${a} anos`);
 const hm = (h: number) => { let hh = Math.floor(h), mm = Math.round((h - hh) * 60); if (mm === 60) { hh++; mm = 0; } return `${hh}h${mm < 10 ? "0" : ""}${mm}`; };
 
@@ -125,7 +126,7 @@ export async function montarFicha(id: string) {
     const achado = todos.find((x) => norm(x.nome) === norm(pr.nome) && (!pr.casa || norm(x.casa) === norm(pr.casa)));
     const tem = achado ? meus.some((m) => m.perfumeId === achado.id) : false;
     const base: Perfume = achado ?? { id: "", nome: pr.nome, casa: pr.casa, perfumistas: [], familia: "", acorde: p.acorde, notas: { saida: [], coracao: [], fundo: [] }, acordes: [], forma: "ret", tampa: "#141417" };
-    const item = { ...sem(base, pr.pct, pr.tipo === "inspirou" ? "o original" : pr.tipo === "clone" ? (origPesq ? `clone do ${origPesq.nome}` : "inspirado nele") : "parecido", tem ? "Na sua coleção" : pr.tipo === "inspirou" ? "Original" : "", t.ink, t.sup[1]), href: achado ? `/colecao/${achado.id}` : `/buscar/resultado?nome=${encodeURIComponent(pr.nome)}&casa=${encodeURIComponent(pr.casa)}` };
+    const item = { ...sem(base, pr.pct, [pr.tipo === "inspirou" ? "o original" : pr.tipo === "clone" ? (origPesq ? `clone do ${origPesq.nome}` : "inspirado nele") : "parecido", dominio(pr.fonte)].filter(Boolean).join(" · "), tem ? "Na sua coleção" : pr.tipo === "inspirou" ? "Original" : "", t.ink, t.sup[1]), href: achado ? `/colecao/${achado.id}` : `/buscar/resultado?nome=${encodeURIComponent(pr.nome)}&casa=${encodeURIComponent(pr.casa)}` };
     if (pr.tipo !== "parecido") colunas[0].itens.push(item);
     else if (tem) colunas[1].itens.push(item);
     else colunas[2].itens.push(item);

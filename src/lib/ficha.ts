@@ -3,6 +3,7 @@ import { geminiConfigurado, geminiJSON, geminiTexto, usaOpenAI } from "@/lib/gem
 import { carregarAcervo, perfumeDaLinha } from "@/lib/dados";
 import { createClient, supabaseConfigurado } from "@/lib/supabase/server";
 import { lerPagina, linkDePerfume, type Pagina } from "@/lib/pagina";
+import { verificarParecidos } from "@/lib/verificar";
 import type { Perfume, Votos } from "@/lib/tipos";
 import { acordePT, acordePrincipal, horasDosVotos, metrosDosVotos, notasPT, votosDe, temVotos } from "@/lib/normalizar";
 
@@ -111,12 +112,12 @@ const SCHEMA_FICHA = {
     forma: { type: "STRING", enum: ["alto", "ret", "redondo", "largo"] }, tampa: T, imagem: T,
     fontes: { type: "ARRAY", items: { type: "OBJECT", properties: { nome: T, url: T, oQue: T }, required: ["nome", "oQue"] } },
     revisar: L,
-    parecidos: { type: "ARRAY", items: { type: "OBJECT", properties: { nome: T, casa: T, tipo: { type: "STRING", enum: ["inspirou", "clone", "parecido"] }, pct: { type: "INTEGER" } }, required: ["nome", "casa", "tipo", "pct"] } },
+    parecidos: { type: "ARRAY", items: { type: "OBJECT", properties: { nome: T, casa: T, tipo: { type: "STRING", enum: ["inspirou", "clone", "parecido"] }, pct: { type: "INTEGER" }, fonte: T, trecho: T }, required: ["nome", "casa", "tipo", "pct", "fonte", "trecho"] } },
   },
   required: ["nome", "casa", "familia", "acorde", "notas", "acordes", "votos", "forma", "tampa", "fontes", "revisar"],
 };
 
-const REGRA_PARECIDOS = `REGRAS DOS PARECIDOS: só entra perfume que o Fragrantica ("Este perfume me lembra"/"This perfume reminds me of"), o Parfumo, resenhas, vídeos ou lojas de contratipos comparam DIRETAMENTE com este perfume, ou que é clone/releitura do mesmo original que ele imita (ex.: se ele é inspirado no Pacific Chill, entram os outros clones do Pacific Chill). Nunca inclua um perfume só por ser da mesma família ou por também ser cítrico/fresco. "pct" é a semelhança apontada pelas fontes; abaixo de 60 não inclua.`;
+const REGRA_PARECIDOS = `REGRAS DOS PARECIDOS: só entra perfume que o Fragrantica ("Este perfume me lembra"/"This perfume reminds me of"), o Parfumo, resenhas, vídeos ou lojas de contratipos comparam DIRETAMENTE com este perfume, ou que é clone/releitura do mesmo original que ele imita (ex.: se ele é inspirado no Pacific Chill, entram os outros clones do Pacific Chill). Nunca inclua um perfume só por ser da mesma família ou por também ser cítrico/fresco. "pct" é a semelhança apontada pelas fontes; abaixo de 60 não inclua. Para cada um, "fonte" é o endereço exato da página onde a comparação aparece e "trecho" é a frase copiada dessa página que cita os dois perfumes. Cada um será conferido abrindo a página: se a página não citar os dois, ele é descartado, então não chute.`;
 
 const fotoDoFragrantica = (url?: string | null) => {
   const id = url?.match(/fragrantica\.com(?:\.br)?\/perfume\/[^?#]*-(\d+)\.html/i)?.[1];
@@ -276,6 +277,7 @@ ${REGRA_PARECIDOS}` : ""}` }], { schema: SCHEMA_EXTRA, pesquisar: true, tempo: 7
     if (temVotos(out.votos.projecao)) out.projecaoM = metrosDosVotos(out.votos.projecao);
     out.revisar = (f.revisar ?? []).filter((r) => r !== "votos");
   }
+  if (x.parecidos?.length) x.parecidos = await verificarParecidos(f.nome, x.parecidos);
   if (poucos && x.parecidos?.length) {
     const ja = new Set((f.parecidos ?? []).map((p) => p.nome.toLowerCase()));
     out.parecidos = [...(f.parecidos ?? []), ...x.parecidos.filter((p) => p?.nome && p?.casa && !ja.has(p.nome.toLowerCase()) && p.nome.toLowerCase() !== f.nome.toLowerCase() && (Number(p.pct) || 70) >= 60)]
@@ -290,7 +292,8 @@ export async function buscarParecidos(nome: string, casa: string): Promise<NonNu
   const r = await geminiJSON<{ parecidos: FichaIA["parecidos"] }>([{ text: `Pesquise na internet perfumes parecidos com "${nome}"${casa ? ` da casa "${casa}"` : ""}. Fontes: Fragrantica, Parfumo, resenhas, vídeos e lojas de contratipos.
 Devolva "parecidos": de 5 a 10 perfumes, cada um com nome, casa, tipo ("inspirou" para o original que ele imita, "clone" para releituras dele ou do mesmo original, "parecido" nos outros casos) e pct de 0 a 100, do mais parecido ao menos.
 ${REGRA_PARECIDOS}` }], { schema: SCHEMA_P, pesquisar: true, tempo: 90000 });
-  return (r.parecidos ?? []).filter((x) => x?.nome && x?.casa && x.nome.toLowerCase() !== nome.toLowerCase() && (Number(x.pct) || 70) >= 60).slice(0, 10).map((x) => ({ ...x, pct: Math.min(99, Math.round(Number(x.pct) || 70)) }));
+  const ok = await verificarParecidos(nome, r.parecidos);
+  return ok.filter((x) => x?.nome && x?.casa && x.nome.toLowerCase() !== nome.toLowerCase() && (Number(x.pct) || 70) >= 60).slice(0, 10).map((x) => ({ ...x, pct: Math.min(99, Math.round(Number(x.pct) || 70)) }));
 }
 
 /** ChatGPT: uma única chamada com pesquisa na internet monta a ficha inteira (como no chat). */
@@ -329,6 +332,7 @@ ${REGRA_PARECIDOS}
 - "fragrantica": endereço completo da página do perfume no Fragrantica.
 - fontes: sites usados e o que veio de cada um. O que não encontrar fica vazio e entra em "revisar".` }], { schema: { ...SCHEMA_FICHA, properties: { ...SCHEMA_FICHA.properties, fragrantica: { type: "STRING" } } }, pesquisar: !paginaCompleta });
     const imagem = pagina?.imagem ?? fotoDoFragrantica(c.link) ?? fotoDoFragrantica(f.fragrantica);
+    f.parecidos = await verificarParecidos(f.nome || c.nome, f.parecidos);
     const { fragrantica: _fr, ...resto } = f;
     void _fr;
     const pronta = finalizar({ ...resto, perfumistas: f.perfumistas ?? [], revisar: f.revisar ?? [], fontes: f.fontes ?? [], forma: f.forma ?? "ret", tampa: /^#[0-9a-f]{6}$/i.test(f.tampa ?? "") ? f.tampa : "#141417", imagem });
