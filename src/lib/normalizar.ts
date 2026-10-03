@@ -6,6 +6,7 @@ const tira = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCa
 // nome em inglês ou variação → nome usado no Fragrantica Brasil
 const NOTA: Record<string, string> = {
   // variações que vieram no primeiro lote do acervo (Rayhaan)
+  "bagas de zimbro": "Zimbro", "baga de zimbro": "Zimbro",
   "amendoa amarga": "Amêndoa amarga", "bitter almond": "Amêndoa amarga", aquozone: "Aquozone", "cana-de-acucar": "Cana-de-açúcar", "cana de acucar": "Cana-de-açúcar", "sugar cane": "Cana-de-açúcar",
   cascalone: "Cascalone", civeta: "Civeta", civet: "Civeta", cumarina: "Cumarina", coumarin: "Cumarina", hibisco: "Hibisco", hibiscus: "Hibisco", "leite condensado": "Leite condensado", "condensed milk": "Leite condensado",
   licor: "Licor", liquor: "Licor", "madeira de ambar": "Madeira ambarada", "amber wood": "Madeira ambarada", maltol: "Maltol", "mandarina verde": "Mandarina verde", "green mandarin": "Mandarina verde",
