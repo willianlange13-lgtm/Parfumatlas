@@ -3,7 +3,7 @@ import { createClient, supabaseConfigurado } from "@/lib/supabase/server";
 import { buscarEntrada, garantirPerfume, linhaDoPerfume, perfumeDaLinha } from "@/lib/dados";
 import { parecidoDoLink } from "@/lib/ficha";
 import { lerPesquisaFundo, usaOpenAI } from "@/lib/gemini";
-import { fotoConferida, fotosConferidas } from "@/lib/fotos";
+import { fotoConferida } from "@/lib/fotos";
 import { chave, converter, iniciarBuscaSemelhantes, ordenar, reaproveitar, type Resultado } from "@/lib/semelhantes";
 import type { Perfume } from "@/lib/tipos";
 
@@ -78,10 +78,7 @@ export async function POST(request: NextRequest) {
     const { parecidos: brutos, dnaOriginal } = converter(r.dados, perfume);
     // fotos conferidas: abre a página do Fragrantica de cada um quando dá (o número inventado trocava o frasco)
     const parecidos = await Promise.all(brutos.map(async (x) => (x.trecho === "adicionado por você" ? x : { ...x, imagem: (await fotoConferida(x.link, x.nome)) ?? (x.tipo === "inspirou" ? x.imagem ?? null : null) })));
-    const casaLista = (r.dados.mesmaCasa ?? []).filter((x, i, l) => x?.nome && chave(x.nome) !== chave(perfume.nome) && l.findIndex((y) => chave(y.nome) === chave(x.nome)) === i).slice(0, 8)
-      .map((x) => ({ nome: x.nome, link: x.link && /fragrantica\./i.test(x.link) ? x.link : null }));
-    const mesmaCasa = casaLista.length ? await fotosConferidas(casaLista) : perfume.mesmaCasa;
-    await salvar({ ...perfume, parecidos, mesmaCasa, dnaOriginal: dnaOriginal ?? perfume.dnaOriginal ?? null, buscaParecidos: null });
+    await salvar({ ...perfume, parecidos, dnaOriginal: dnaOriginal ?? perfume.dnaOriginal ?? null, buscaParecidos: null });
     return NextResponse.json({ estado: "pronta", n: parecidos.length });
   } catch (e) {
     return NextResponse.json({ erro: e instanceof Error ? e.message.slice(0, 200) : "Não deu certo agora." }, { status: 500 });

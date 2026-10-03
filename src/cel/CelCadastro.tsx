@@ -96,7 +96,7 @@ export function CelCadastro({ c, modoInicial }: { c: CadCel; modoInicial?: strin
         <input id="foto-frasco-cel" type="file" accept="image/*" capture="environment" hidden onChange={c.fotoEscolhida} />
         <div className="c-topo"><Circ icone="voltar" tamanho={36} rotulo="Voltar" onClick={() => setPasso("id")} /><span className="c-topo-tit">Revisar ficha</span><span style={{ width: 36 }} /></div>
         <Passos n={3} txt="Revisar ficha" />
-        {c.completando && <span style={{ fontSize: 13, color: "var(--ink-3)", flexShrink: 0 }}>Buscando os perfumes da mesma casa… pode revisar e salvar, eles entram na ficha quando chegarem.</span>}
+        {c.completando && <span style={{ fontSize: 13, color: "var(--ink-3)", flexShrink: 0 }}>Buscando os votos de fixação e projeção… pode revisar e salvar, eles entram na ficha quando chegarem.</span>}
         <div style={{ display: "flex", gap: 12, alignItems: "center", flexShrink: 0 }}>
           <span style={{ width: 46, height: 52, borderRadius: 12, background: "var(--surface)", border: "1px solid var(--line)", display: "flex", alignItems: "flex-end", justifyContent: "center", paddingBottom: 4, overflow: "hidden" }}>
             {c.foto || f.imagem ? (

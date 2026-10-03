@@ -274,8 +274,8 @@ async function fichaSalva(nome: string, casa: string): Promise<FichaIA | null> {
  * perfumes da mesma casa sempre; votos só se faltaram. As duas pesquisas rodam ao mesmo tempo.
  */
 export async function completarFicha(f: FichaIA): Promise<FichaIA> {
-  if (!geminiConfigurado()) return { ...f, completar: false };
   const semVotos = !temVotos(f.votos?.fixacao) || !temVotos(f.votos?.projecao);
+  if (!geminiConfigurado() || !semVotos) return { ...f, completar: false }; // só falta algo se faltaram os votos
   const alvo = `"${f.nome}"${f.casa ? ` da casa "${f.casa}"` : ""}`;
   type Extra = { fixacao?: number[] | null; projecao?: number[] | null; total?: number | null; origem?: "fragrantica" | "estimativa" | null };
   const SCHEMA_EXTRA = { type: "OBJECT", properties: { fixacao: { type: "ARRAY", items: N }, projecao: { type: "ARRAY", items: N }, total: { type: "INTEGER" }, origem: { type: "STRING", enum: ["fragrantica", "estimativa"] } }, required: [] };
@@ -288,7 +288,7 @@ export async function completarFicha(f: FichaIA): Promise<FichaIA> {
 Exemplo: {"fixacao": [42, 194, 855, 179, 23], "projecao": [120, 610, 240, 35], "total": 1971, "origem": "fragrantica"}.
 Se o Fragrantica não mostrar os números, use o Parfumo, resenhas e lojas, transforme em porcentagens que somam 100 e use "origem": "estimativa". Nunca devolva zerado.` }], { schema: SCHEMA_EXTRA, pesquisar: true, leve: true, tempo: 80000 }).catch(() => ({}) as Extra)
       : Promise.resolve({} as Extra),
-    buscarMesmaCasa(f.nome, f.casa, f.fragrantica).catch(() => []),
+    Promise.resolve([] as NonNullable<FichaIA["mesmaCasa"]>), // "da mesma casa" saiu da ficha
   ]);
   const out: FichaIA = { ...f, completar: false };
   if (semVotos) {
@@ -305,7 +305,7 @@ Se o Fragrantica não mostrar os números, use o Parfumo, resenhas e lojas, tran
 }
 
 /** Outros perfumes da mesma marca (seção "Designer" do Fragrantica), com foto. Pesquisa leve. */
-async function buscarMesmaCasa(nome: string, casa: string, link?: string): Promise<NonNullable<FichaIA["mesmaCasa"]>> {
+export async function buscarMesmaCasa(nome: string, casa: string, link?: string): Promise<NonNullable<FichaIA["mesmaCasa"]>> {
   const SCHEMA_M = { type: "OBJECT", properties: { mesmaCasa: SCHEMA_FICHA.properties.mesmaCasa }, required: ["mesmaCasa"] };
   const r = await geminiJSON<{ mesmaCasa: FichaIA["mesmaCasa"] }>([{ text: `Abra a página do perfume "${nome}"${casa ? ` da casa "${casa}"` : ""} no Fragrantica${link ? ` (${link})` : ""} e devolva "mesmaCasa": até 8 outros perfumes da mesma marca, da seção "Designer ${casa || "da marca"}" da página, cada um com o nome (sem a marca) e "link", o endereço da página dele no Fragrantica copiado exatamente como apareceu na busca (o número no fim identifica a foto). Se não viu a página, deixe "link" vazio; nunca monte um endereço.` }], { schema: SCHEMA_M, pesquisar: true, tempo: 80000 });
   return (r.mesmaCasa ?? []).filter((x, i, l) => x?.nome && normal(x.nome) !== normal(nome) && l.findIndex((y) => normal(y.nome) === normal(x.nome)) === i).slice(0, 8)
@@ -371,7 +371,7 @@ Pirâmide, acordes e família vêm do Fragrantica, sem misturar. Os outros campo
     const pronta = finalizar({ ...resto, perfumistas: f.perfumistas ?? [], revisar: f.revisar ?? [], fontes: f.fontes ?? [], forma: f.forma ?? "ret", tampa: /^#[0-9a-f]{6}$/i.test(f.tampa ?? "") ? f.tampa : "#141417", imagem });
     // votos ou parecidos faltando: a tela pede o complemento em segundo plano (outra chamada, sem travar o cadastro)
     const link = c.link ?? (f.fragrantica && /fragrantica\./i.test(f.fragrantica) ? f.fragrantica : undefined);
-    return { ...pronta, completar: true, fragrantica: link };
+    return { ...pronta, completar: !temVotos(pronta.votos?.fixacao) || !temVotos(pronta.votos?.projecao), fragrantica: link };
   } catch (e) {
     ultimoErroFicha = `ficha: ${e instanceof Error ? e.message.slice(0, 200) : e}`;
     console.error("fichaChatGPT", e);

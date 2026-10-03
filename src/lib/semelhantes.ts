@@ -24,9 +24,8 @@ const SCHEMA = {
         required: ["nome", "casa", "paisCasa", "link", "relacao", "radar", "pctMin", "pctMax", "relevancia", "semelhanca", "diferenca"],
       },
     },
-    mesmaCasa: { type: "ARRAY", items: { type: "OBJECT", properties: { nome: T, link: T }, required: ["nome", "link"] } },
   },
-  required: ["parentes", "mesmaCasa"],
+  required: ["parentes"],
 };
 
 export type Resultado = { mesmaCasa?: { nome: string; link: string }[]; original?: { nome: string; casa: string; link: string; pctMin?: number; pctMax?: number } | null; parentes: { nome: string; casa: string; paisCasa?: string; link: string; relacao: string; radar: boolean; pctMin: number; pctMax: number; relevancia?: number; semelhanca: string; diferenca: string }[] };
@@ -57,7 +56,6 @@ Devolva "parentes": os 10 melhores (sem o próprio perfume nem o original), cada
 - relevancia de 1 a 5 NA COMUNIDADE BRASILEIRA (5 = citado em quase todo vídeo/lista de contratipos; 1 = quase ninguém no Brasil cita);
 - radar: true só para perfume pouco citado (relevancia 1 ou 2) mas com cheiro muito próximo;
 - semelhanca e diferenca: no máximo 12 palavras cada, em português.
-Devolva também "mesmaCasa": até 8 outros perfumes da casa "${p.casa}" (seção "Designer" da página dele no Fragrantica), com nome e "link".
 LINKS: copie o endereço do Fragrantica exatamente como apareceu na busca (o número no fim identifica a foto). Se não viu a página, deixe "link" vazio; nunca monte um endereço.`
 }
 
