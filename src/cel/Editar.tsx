@@ -8,7 +8,7 @@ import { Card, MONO, NotaChip, OURO, Rot } from "./kit";
 import { ouvirUmaVez, reduzirFoto } from "./voz";
 
 type E = { situacao: string; anotacao: string; foto: string | null; minhaFixacao: number | null; minhaProjecao: number | null; minhaNota: number | null };
-const NF = ["Muito fraca", "Fraca", "Moderada", "Duradoura", "Muito longa"];
+const NF = ["Muito fraca", "Fraca", "Moderada", "Longa", "Eterna"];
 const NP = ["Íntima", "Moderada", "Forte", "Enorme"];
 
 export function Editar({ p: p0, e: e0, podeSalvar }: { p: Perfume; e: E; podeSalvar: boolean }) {

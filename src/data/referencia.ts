@@ -36,8 +36,8 @@ export const WIKI_NOTA: Record<string, string> = {
   Abacaxi: "Pineapple", Maçã: "Apple", Pera: "Pear", Tâmara: "Date_palm", Pêssego: "Peach", Lichia: "Lychee",
   "Groselha-preta": "Blackcurrant", "Frutas vermelhas": "Raspberry", Frutas: "Fruit",
   Bergamota: "Bergamot_orange", Toranja: "Grapefruit", Laranja: "Orange_(fruit)", Limão: "Lemon", Mandarina: "Mandarin_orange", Tangerina: "Tangerine",
-  Neroli: "Neroli", Jasmim: "Jasminum_officinale", Rosa: "Rosa_×_damascena", "Flor de laranjeira": "Orange_blossom", Gerânio: "Pelargonium_graveolens", Violeta: "Viola_odorata", Tuberosa: "Polianthes_tuberosa", Peônia: "Paeonia_lactiflora", Íris: "Iris_pallida",
-  Lavanda: "Lavandula_angustifolia", Patchouli: "Patchouli", "Musgo de carvalho": "Evernia_prunastri", Hortelã: "Mentha_×_piperita", Alecrim: "Rosemary", Cipreste: "Cupressus_sempervirens", Vetiver: "Chrysopogon_zizanioides",
+  Neroli: "Neroli", Jasmim: "Jasminum_officinale", Rosa: "Rose", "Flor de laranjeira": "Orange_blossom", Gerânio: "Pelargonium_graveolens", Violeta: "Viola_odorata", Tuberosa: "Polianthes_tuberosa", Peônia: "Paeonia_lactiflora", Íris: "Iris_pallida",
+  Lavanda: "Lavandula_angustifolia", Patchouli: "Patchouli", "Musgo de carvalho": "Evernia_prunastri", Hortelã: "Peppermint", Alecrim: "Rosemary", Cipreste: "Cupressus_sempervirens", Vetiver: "Chrysopogon_zizanioides",
   Bétula: "Betula_pendula", Cedro: "Cedrus_atlantica", Oud: "Agarwood", Sândalo: "Santalum_album", Carvalho: "Quercus_robur", "Resina de abeto": "Abies_alba",
   Mel: "Honey", Conhaque: "Cognac", Café: "Coffee_bean",
   Canela: "Cinnamon", Cardamomo: "Cardamom", Gengibre: "Ginger", Açafrão: "Saffron", "Noz-moscada": "Nutmeg", Pimenta: "Black_pepper", "Pimenta-rosa": "Schinus_terebinthifolia", Alcaçuz: "Liquorice",
@@ -52,6 +52,7 @@ export const WIKI_NOTA: Record<string, string> = {
   Cacau: "Cocoa_bean", Chocolate: "Chocolate", Caramelo: "Caramel", Rum: "Rum", Amêndoa: "Almond", Avelã: "Hazelnut", Pistache: "Pistachio", Leite: "Milk",
   "Fava tonka": "Tonka_bean", "Semente de ambreta": "Abelmoschus_moschatus", Âmbar: "Amber", "Laranja amarga": "Bitter_orange", Melão: "Melon", Zimbro: "Juniperus_communis", Pinho: "Pinus_sylvestris", Abeto: "Abies_alba",
   "Folha de violeta": "Viola_odorata", "Erva-mate": "Yerba_mate", Açúcar: "Sugar", "Groselha Preta": "Blackcurrant",
+  Ambroxan: "Ambroxide", Ambrofix: "Ambroxide", "Âmbar cinzento": "Ambergris", "Hortelã-pimenta": "Peppermint",
   Guaiaco: "Guaiacum_officinale", "Madeira de guaiaco": "Guaiacum_officinale", Cashmeran: "Cashmere_wool", Papiro: "Cyperus_papyrus", Labdano: "Labdanum", Olíbano: "Frankincense", Opoponax: "Opopanax",
 };
 

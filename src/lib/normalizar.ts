@@ -73,18 +73,26 @@ export function acordePrincipal(a: string) {
 /** Converte contagens de votos (ou porcentagens) no formato do Atlas. */
 export function votosDe(v: Partial<Votos> | undefined, ocasioesPadrao: { nome: string; v: number }[]): Votos | undefined {
   if (!v) return undefined;
-  const pct = (l: number[] | undefined, n: number) => {
-    const a = Array.from({ length: n }, (_, i) => Math.max(0, Number(l?.[i]) || 0));
+  // aceita lista [42, 194, ...], objeto {"muito fraco": 42, ...} e textos como "855 votos"
+  const lista = (l: unknown): unknown[] => (Array.isArray(l) ? l : l && typeof l === "object" ? Object.values(l) : []);
+  const numero = (x: unknown) => {
+    if (x && typeof x === "object") { const o = x as Record<string, unknown>; x = o.votos ?? o.v ?? o.valor ?? o.count ?? o.n; }
+    return parseFloat(String(x ?? "").replace(/\./g, "").replace(",", ".").replace(/[^\d.]/g, "")) || 0;
+  };
+  const pct = (l: unknown, n: number) => {
+    const b = lista(l);
+    const a = Array.from({ length: n }, (_, i) => Math.max(0, numero(b[i])));
     const s = a.reduce((x, y) => x + y, 0);
     return s > 0 ? a.map((x) => Math.round((x / s) * 100)) : null;
   };
   const fix = pct(v.fixacao, 5), proj = pct(v.projecao, 4);
-  const e = v.estacoes ?? { primavera: 0, verao: 0, outono: 0, inverno: 0 };
-  const maxE = Math.max(e.primavera, e.verao, e.outono, e.inverno, v.dia ?? 0, v.noite ?? 0, 1);
-  const rel = (x?: number) => Math.round(((Number(x) || 0) / maxE) * 100);
+  const eb = (v.estacoes ?? {}) as Record<string, unknown>;
+  const e = { primavera: numero(eb.primavera), verao: numero(eb.verao ?? eb["verão"]), outono: numero(eb.outono), inverno: numero(eb.inverno) };
+  const maxE = Math.max(e.primavera, e.verao, e.outono, e.inverno, numero(v.dia), numero(v.noite), 1);
+  const rel = (x?: unknown) => Math.round((numero(x) / maxE) * 100);
   if (!fix && !proj && maxE <= 1) return undefined;
   return {
-    total: v.total ?? 0,
+    total: numero(v.total),
     fixacao: (fix ?? [0, 0, 100, 0, 0]) as Votos["fixacao"],
     projecao: (proj ?? [0, 100, 0, 0]) as Votos["projecao"],
     estacoes: { primavera: rel(e.primavera), verao: rel(e.verao), outono: rel(e.outono), inverno: rel(e.inverno) },

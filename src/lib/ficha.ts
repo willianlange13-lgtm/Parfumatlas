@@ -124,6 +124,16 @@ const fotoDoFragrantica = (url?: string | null) => {
 const OCASIOES = [{ nome: "Trabalho", v: 50 }, { nome: "Dia a dia", v: 50 }, { nome: "Encontro", v: 50 }, { nome: "Festa", v: 50 }, { nome: "Formal", v: 50 }, { nome: "Esporte", v: 50 }];
 const FAMILIA: Record<string, string> = { aromatic: "Aromático", aquatic: "Aquático", woody: "Amadeirado", floral: "Floral", fruity: "Frutado", chypre: "Chipre", oriental: "Oriental", amber: "Âmbar", citrus: "Cítrico", fougere: "Fougère", "fougère": "Fougère", leather: "Couro", gourmand: "Gourmand", spicy: "Especiado", green: "Verde", musky: "Almiscarado", vanilla: "Baunilha" };
 
+/** "EDP", "eau de parfum" → "Eau de Parfum". */
+function concentracaoPT(c?: string) {
+  const t = (c ?? "").toLowerCase().replace(/[^a-z ]/g, " ").replace(/\s+/g, " ").trim();
+  if (/extrait|^parfum$|pure perfume/.test(t)) return "Extrait de Parfum";
+  if (/eau de parfum|^edp$|edp intense/.test(t)) return /intense/.test(t) ? "Eau de Parfum Intense" : "Eau de Parfum";
+  if (/eau de toilette|^edt$/.test(t)) return "Eau de Toilette";
+  if (/eau de cologne|^edc$|cologne/.test(t)) return "Eau de Cologne";
+  return c ?? "";
+}
+
 /** Deixa a ficha no padrão do Fragrantica Brasil e corrige números inconsistentes. */
 function finalizar(f: FichaIA): FichaIA {
   const revisar = new Set(f.revisar ?? []);
@@ -139,6 +149,8 @@ function finalizar(f: FichaIA): FichaIA {
   return {
     ...f,
     notas, acordes, familia,
+    pais: /desconhecid|unknown|n\/a|^-$/i.test(f.pais ?? "") ? "" : f.pais,
+    concentracao: concentracaoPT(f.concentracao),
     acorde: acordes[0] ? acordePrincipal(acordes[0].nome) : f.acorde,
     votos: votos ?? f.votos,
     fixacaoH: votos ? horasDosVotos(votos.fixacao) : f.fixacaoH,
@@ -236,10 +248,13 @@ async function fichaSalva(nome: string, casa: string): Promise<FichaIA | null> {
 async function fichaChatGPT(c: { nome: string; casa: string; concentracao?: string; link?: string }, alvo: string, local?: Perfume): Promise<FichaIA | null> {
   const pagina = c.link ? await lerPagina(c.link) : null;
   // se a página abriu com pirâmide e votos, não precisa pesquisar (a pesquisa é a parte cara)
-  const paginaCompleta = Boolean(pagina && /notas de topo|top notes/i.test(pagina.texto) && /longevidade|longevity/i.test(pagina.texto));
+  const paginaCompleta = Boolean(pagina && /notas de topo|top notes/i.test(pagina.texto) && /longevidade|longevity/i.test(pagina.texto) && /me lembra|reminds me/i.test(pagina.texto));
+  // a seção "Este perfume me lembra" costuma ficar no fim da página: junta ao recorte
+  const iLembra = pagina ? pagina.texto.search(/me lembra|reminds me/i) : -1;
+  const textoPagina = pagina ? pagina.texto.slice(0, paginaCompleta ? 18000 : 12000) + (iLembra > 12000 ? `\n...\n${pagina.texto.slice(iLembra, iLembra + 2500)}` : "") : "";
   try {
     const f = await geminiJSON<FichaIA & { fragrantica?: string }>([{ text: `Pesquise na internet o perfume ${alvo}${c.link ? ` (página: ${c.link})` : ""}. A fonte principal é a página dele no Fragrantica Brasil (fragrantica.com.br). Outras fontes só completam o que o Fragrantica não tiver.
-${pagina ? `Texto da página já baixada:\n${pagina.texto.slice(0, paginaCompleta ? 20000 : 12000)}\n` : ""}
+${pagina ? `Texto da página já baixada:\n${textoPagina}\n` : ""}
 Copie do Fragrantica, sem inventar e sem misturar outras fontes:
 - Pirâmide: EXATAMENTE as notas de topo, coração e base do Fragrantica, com os nomes em português como aparecem no Fragrantica Brasil (ex.: "Cidra", "Groselha Preta", "Cenoura"). Uma nota por item, sem parênteses, sem notas citadas em resenhas ou lojas.
 - "acordes": os "Principais acordes" do Fragrantica, na mesma ordem e com os mesmos nomes em português (ex.: "cítrico", "verde", "aromático", "fresco especiado", "frutado", "âmbar"). "valor" é o tamanho da barra, de 0 a 100 (a primeira é 100).
@@ -249,10 +264,13 @@ Copie do Fragrantica, sem inventar e sem misturar outras fontes:
   · projecao = [Íntimo, Moderada, Forte, Enorme] do "Rastro";
   · estacoes = inverno, primavera, verao, outono e dia, noite do "Quando usar";
   · total = número de votos da avaliação;
+  · exemplo do formato: "fixacao": [42, 194, 855, 179, 23], "projecao": [120, 610, 240, 35]. Sempre listas de números inteiros, nunca porcentagens nem textos;
   · ocasioes: Trabalho, Dia a dia, Encontro, Festa, Formal, Esporte de 0 a 100 (estime pelo perfil).
-- Ano, concentração, perfumistas, gênero, país da casa e uma descricao de 1 ou 2 frases curtas sobre o cheiro, em português.
+- "concentracao": copie exatamente como está no Fragrantica (ex.: "Eau de Parfum", "Eau de Toilette", "Extrait de Parfum"). Não deduza pela linha nem pelo preço.
+- "pais": o país de origem da marca (ex.: Rayhaan, Lattafa, Armaf → "Emirados Árabes Unidos"; Dior, Chanel → "França"). Pesquise se não souber.
+- Ano, perfumistas, gênero e uma descricao de 1 ou 2 frases curtas sobre o cheiro, em português.
 - forma do frasco: alto, ret, redondo ou largo. tampa: cor da tampa em hex.
-- "parecidos": até 10 perfumes semelhantes, da seção "Este perfume me lembra" do Fragrantica e das comparações da comunidade (resenhas, vídeos, lojas de contratipos). Para cada um: nome, casa, "tipo" ("inspirou" se é o original em que este se inspira, "clone" se é uma releitura inspirada neste, "parecido" nos outros casos) e "pct", a semelhança de 0 a 100.
+- "parecidos": de 5 a 10 perfumes semelhantes (no mínimo 5), da seção "Este perfume me lembra" do Fragrantica e das comparações da comunidade (resenhas, vídeos, lojas de contratipos). Para cada um: nome, casa, "tipo" ("inspirou" se é o original em que este se inspira, "clone" se é uma releitura inspirada neste, "parecido" nos outros casos) e "pct", a semelhança de 0 a 100. Inclua o original famoso que ele lembra e outros contratipos árabes do mesmo DNA.
 - "fragrantica": endereço completo da página do perfume no Fragrantica.
 - fontes: sites usados e o que veio de cada um. O que não encontrar fica vazio e entra em "revisar".` }], { schema: { ...SCHEMA_FICHA, properties: { ...SCHEMA_FICHA.properties, fragrantica: { type: "STRING" } } }, pesquisar: !paginaCompleta });
     const imagem = pagina?.imagem ?? fotoDoFragrantica(c.link) ?? fotoDoFragrantica(f.fragrantica);

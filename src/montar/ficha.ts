@@ -1,12 +1,13 @@
 import { buscarEntrada } from "@/lib/dados";
 import { semelhantes, naColecao } from "@/lib/analise";
-import { CASAS, nota as refNota, tipoNota } from "@/data/referencia";
+import { CASAS, nota as refNota } from "@/data/referencia";
 import { corDoAcorde } from "@/lib/cores";
 import base from "@/data/desenho/FichaAzulPreto.json";
 import { arc, circ, glifo, hexA, P, t } from "@/desenho/h2";
 import type { Perfume } from "@/lib/tipos";
 
 const PALETA = ["#D8B970", "#DCECFD", "#9099AC", "#B4BDCC", "#7F8AA0", "#A3ADBE", "#6E7A90", "#C9D1DE"];
+const idade = (a: number) => (a <= 0 ? "lançamento deste ano" : a === 1 ? "há 1 ano" : `há ${a} anos`);
 const hm = (h: number) => { let hh = Math.floor(h), mm = Math.round((h - hh) * 60); if (mm === 60) { hh++; mm = 0; } return `${hh}h${mm < 10 ? "0" : ""}${mm}`; };
 
 function notaCor(n: string, cor: string) {
@@ -14,11 +15,17 @@ function notaCor(n: string, cor: string) {
   return { nome: n, d: r.icone, cor, bg: r.foto ? "#FFFFFF" : hexA(cor, 0.14), borda: hexA(cor, 0.45), img: r.foto ?? "", semImg: !r.foto, foto: r.foto ? "#FFFFFF" : `radial-gradient(circle at 35% 30%, ${hexA(cor, 0.95)} 0%, ${hexA(cor, 0.55)} 45%, #050506 100%)` };
 }
 
-const PALAVRA: Record<string, string> = { fruta: "frutado", citrico: "cítrico", baga: "frutado", flor: "floral", folha: "verde", madeira: "fumaça", gota: "aquático", especiaria: "especiado", resina: "resina", baunilha: "doce", nuvem: "almíscar" };
+/** "Abre em mandarina e hortelã, passa por manjericão e termina em figo e ambroxan." */
 function frase(p: Perfume) {
-  const pal = (lista: string[]) => PALAVRA[tipoNota(lista[0] ?? "")];
-  const fundo = p.notas.fundo[1] ?? p.notas.fundo[0] ?? "almíscar";
-  return `Abre ${pal(p.notas.saida)}, vira ${pal(p.notas.coracao)}, termina em ${fundo.toLowerCase()}.`;
+  const junta = (l: string[]) => { const x = l.slice(0, 2).map((n) => n.toLowerCase()); return x.join(" e "); };
+  const partes = [
+    p.notas.saida.length ? `Abre em ${junta(p.notas.saida)}` : "",
+    p.notas.coracao.length ? `passa por ${junta(p.notas.coracao)}` : "",
+    p.notas.fundo.length ? `termina em ${junta(p.notas.fundo)}` : "",
+  ].filter(Boolean);
+  if (!partes.length) return "";
+  const t = partes.length > 1 ? partes.slice(0, -1).join(", ") + " e " + partes[partes.length - 1] : partes[0];
+  return t.charAt(0).toUpperCase() + t.slice(1) + ".";
 }
 
 const FORM: Record<string, [number, number, string]> = { alto: [30, 50, "6px"], ret: [38, 44, "7px"], redondo: [44, 40, "20px"], largo: [46, 36, "8px"] };
@@ -55,7 +62,6 @@ export async function montarFicha(id: string) {
   const hFam = mesmaFam.length ? mesmaFam.reduce((s, x) => s + (x.fixacaoH ?? 0), 0) / mesmaFam.length - 0.4 : 6.8;
   const mFam = mesmaFam.length ? mesmaFam.reduce((s, x) => s + (x.projecaoM ?? 1.2), 0) / mesmaFam.length - 0.15 : 1.2;
   const gauge = (frac: number, fracRef: number, cor: string) => { const cx = 120, cy = 118, r = 96, aC = Math.PI + Math.PI * Math.min(1, fracRef); return { trilho: arc(cx, cy, r, Math.PI, 2 * Math.PI), valor: arc(cx, cy, r, Math.PI, Math.PI + Math.PI * Math.min(0.999, frac)), marca: `M ${P(cx + Math.cos(aC) * (r - 14))} ${P(cy + Math.sin(aC) * (r - 14))} L ${P(cx + Math.cos(aC) * (r + 14))} ${P(cy + Math.sin(aC) * (r + 14))}`, cor }; };
-  const famNome = p.familia.split(" ")[0].toLowerCase() + "s " + (p.familia.split(" ")[1] ?? "") ;
   const g1 = gauge(horas / 12, hFam / 12, t.sup[0]), g2 = gauge(metros / 3, mFam / 3, t.sup[1]);
 
   // quando funciona
@@ -118,6 +124,17 @@ export async function montarFicha(id: string) {
 
   const inspNaColecao = s.inspirados.filter((x) => x.tem).length;
   const relacao = s.inspirados.length ? `Original · ${inspNaColecao || s.inspirados.length} inspirado${(inspNaColecao || s.inspirados.length) > 1 ? "s" : ""} ${inspNaColecao ? "na sua coleção" : "conhecidos"}` : p.inspiradoEm ? `Inspirado em ${acervo.perfumes.get(p.inspiradoEm)?.nome ?? "outro perfume"}` : "";
+  const original = (p.parecidos ?? []).find((x) => x.tipo === "inspirou");
+  const clones = (p.parecidos ?? []).filter((x) => x.tipo === "clone");
+  const nInsp = s.inspirados.length + clones.length;
+  const inspFato = original
+    ? { v: original.nome, c: "é o original em que ele se inspira" }
+    : nInsp
+      ? { v: `${nInsp} conhecido${nInsp > 1 ? "s" : ""}`, c: `${inspNaColecao} na sua coleção` }
+      : p.inspiradoEm
+        ? { v: "é um deles", c: `de ${acervo.perfumes.get(p.inspiradoEm)?.nome ?? ""}` }
+        : { v: "nenhum conhecido", c: "por enquanto" };
+  const relacaoFinal = relacao || (original ? `Inspirado no ${original.nome}${original.casa ? ` (${original.casa})` : ""}` : "");
   const casaInfo = CASAS[p.casa];
   const sitAtual = entrada?.situacao ?? null;
   const cor = corDoAcorde(p.acorde);
@@ -139,9 +156,9 @@ export async function montarFicha(id: string) {
     fatos: [
       { l: "FAMÍLIA", v: p.familia, c: "segundo a casa" },
       { l: "CONCENTRAÇÃO", v: p.concentracao ?? "—", c: p.concentracao === "Eau de Parfum" ? "a versão mais comum" : "concentração da casa" },
-      { l: "LANÇAMENTO", v: p.ano ? String(p.ano) : "—", c: p.ano ? `há ${new Date().getFullYear() - p.ano} anos` : "ano a confirmar" },
+      { l: "LANÇAMENTO", v: p.ano ? String(p.ano) : "—", c: p.ano ? idade(new Date().getFullYear() - p.ano) : "ano a confirmar" },
       { l: "PERFUMISTAS", v: p.perfumistas.length ? p.perfumistas.map((x) => x.split(" ").slice(-1)[0]).join(" e ") : "a confirmar", c: p.perfumistas[0] ?? "a casa não divulga" },
-      { l: "INSPIRADOS", v: s.inspirados.length ? `${s.inspirados.length} conhecido${s.inspirados.length > 1 ? "s" : ""}` : p.inspiradoEm ? "é um deles" : "nenhum conhecido", c: s.inspirados.length ? `${inspNaColecao} deles na sua coleção` : p.inspiradoEm ? `de ${acervo.perfumes.get(p.inspiradoEm)?.nome ?? ""}` : "por enquanto" },
+      { l: "INSPIRADOS", ...inspFato },
     ],
     piramide: [
       { nome: "Saída", tempo: "PRIMEIROS 30 MIN", notas: p.notas.saida.slice(0, 4).map((x, i) => notaCor(x, PALETA[i % PALETA.length])) },
@@ -149,13 +166,13 @@ export async function montarFicha(id: string) {
       { nome: "Fundo", tempo: "DEPOIS DE 3 H", notas: p.notas.fundo.slice(0, 4).map((x, i) => notaCor(x, PALETA[(i + 5) % PALETA.length])) },
     ],
     gauges: [
-      { nome: "Fixação", txt: hm(horas), sub: `média ponderada de ${(p.votos?.total ?? 0).toLocaleString("pt-BR")} votos`, ref: `Traço fino: ${famNome.trim()}, ${hm(hFam)}`, trilho: g1.trilho, valor: g1.valor, marca: g1.marca, cor: g1.cor },
-      { nome: "Projeção", txt: metros.toFixed(1).replace(".", ",") + " m", sub: "alcance médio nas 2 primeiras horas", ref: `Traço fino: ${famNome.trim()}, ${mFam.toFixed(1).replace(".", ",")} m`, trilho: g2.trilho, valor: g2.valor, marca: g2.marca, cor: g2.cor },
+      { nome: "Fixação", txt: hm(horas), sub: `média ponderada de ${(p.votos?.total ?? 0).toLocaleString("pt-BR")} votos`, ref: `Média da família: ${hm(hFam)}`, trilho: g1.trilho, valor: g1.valor, marca: g1.marca, cor: g1.cor },
+      { nome: "Projeção", txt: metros.toFixed(1).replace(".", ",") + " m", sub: "alcance médio nas 2 primeiras horas", ref: `Média da família: ${mFam.toFixed(1).replace(".", ",")} m`, trilho: g2.trilho, valor: g2.valor, marca: g2.marca, cor: g2.cor },
     ],
     espectro: AC.map((a, i) => ({ curto: a.nome, v: a.valor, h: Math.round((a.valor / 100) * 190), cor: cores[i] })),
     roda: { guia: circ(rc, rcy, ri) + " " + circ(rc, rcy, rmax), seg },
     votos: [
-      { nome: "Fixação", itens: votos(["Muito fraca", "Fraca", "Moderada", "Duradoura", "Muito longa"], VF, t.sup[0]) },
+      { nome: "Fixação", itens: votos(["Muito fraca", "Fraca", "Moderada", "Longa", "Eterna"], VF, t.sup[0]) },
       { nome: "Projeção", itens: votos(["Íntima", "Moderada", "Forte", "Enorme"], VP, t.sup[1]) },
     ],
     colunas,
@@ -167,7 +184,7 @@ export async function montarFicha(id: string) {
       rot: p.casa.split(" ")[0].toUpperCase(), rotNome: p.nome.length > 14 ? p.nome.split(" ").slice(0, 2).join(" ") : p.nome,
       casaCidade: [p.casa.toUpperCase(), (casaInfo?.cidade ?? p.pais ?? "").toUpperCase()].filter(Boolean).join(" · "),
       desc: p.descricao ?? `${p.familia}${p.ano ? ` de ${p.ano}` : ""}.`,
-      relacao, som: `/sommelier?perfume=${p.id}`, comparar: `/comparar?a=${p.id}`, blind: `/blind?a=${p.id}`,
+      relacao: relacaoFinal, som: `/sommelier?perfume=${p.id}`, comparar: `/comparar?a=${p.id}`, blind: `/blind?a=${p.id}`,
       frase: frase(p), dia, noite, pergunte: `pergunte sobre o ${p.nome}, por texto ou voz`, voz: `/sommelier?perfume=${p.id}&voz=1`,
       anotacao: entrada?.anotacao ?? "",
       foto: entrada?.foto ?? p.imagem ?? null, fotoOficial: !entrada?.foto && Boolean(p.imagem),
