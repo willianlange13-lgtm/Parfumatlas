@@ -133,7 +133,7 @@ export function PalcoC({ nome, casa, acorde, forma = "ret", tampa = "#141417", a
     <div style={{ position: "relative", height: altura, borderRadius: raio, overflow: "hidden", border: semBorda ? "none" : "1px solid var(--line)", background: `radial-gradient(ellipse at 50% 85%, ${hexA(cor, 0.22)} 0%, ${hexA(cor, 0.06)} 55%, ${transparente ? "rgba(0,0,0,0)" : "var(--surface)"} 100%)`, display: "flex", alignItems: "flex-end", justifyContent: "center", paddingBottom: Math.round(22 * esc), flexShrink: 0 }}>
       {foto ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={foto} alt={nome} style={oficial ? { position: "absolute", inset: 10, width: "calc(100% - 20px)", height: "calc(100% - 20px)", objectFit: "contain", filter: "drop-shadow(0 10px 14px rgba(0,0,0,.45))", borderRadius: Math.max(8, raio - 8) } : { position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
+        <img src={foto} alt={nome} style={oficial ? { position: "absolute", inset: 10, width: "calc(100% - 20px)", height: "calc(100% - 20px)", objectFit: "contain", filter: "drop-shadow(0 12px 14px rgba(0,0,0,.5)) drop-shadow(0 2px 3px rgba(0,0,0,.35))", borderRadius: Math.max(8, raio - 8) } : { position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
       ) : (
         <Frasco nome={nome} casa={casa} acorde={acorde} forma={(forma as Forma) ?? "ret"} tampa={tampa} escala={esc} />
       )}
