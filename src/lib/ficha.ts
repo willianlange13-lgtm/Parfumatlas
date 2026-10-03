@@ -10,7 +10,7 @@ import { acordeConhecido, familiaAtlas, acordePT, acordePrincipal, horasDosVotos
 
 export type Candidato = { nome: string; casa: string; concentracao: string; por: string; pct: number; link?: string; imagem?: string | null };
 export type Identificacao = { lido: string[]; candidatos: Candidato[] };
-import { acharNoAcervo, buscarNoAcervo, fichaDoAcervo, notasSemTraducao } from "@/lib/acervo-global";
+import { acharNoAcervo, buscarNoAcervo, fichaDoAcervo, guardarNoAcervo, notasSemTraducao } from "@/lib/acervo-global";
 
 export type FichaIA = Omit<Perfume, "id" | "clima"> & { revisar: string[]; completar?: boolean; fragrantica?: string };
 
@@ -257,7 +257,12 @@ export async function gerarFicha(c: { nome: string; casa: string; concentracao?:
   if (geminiConfigurado()) {
     ultimoErroFicha = "";
     const alvo = `"${c.nome}"${c.casa ? ` da casa "${c.casa}"` : ""}${c.concentracao ? ` (${c.concentracao})` : ""}`;
-    if (usaOpenAI()) return fichaChatGPT(c, alvo, local);
+    if (usaOpenAI()) {
+      // fora do acervo: pesquisa paga e o resultado entra no acervo para a próxima vez sair de graça
+      const f = await fichaChatGPT(c, alvo, local);
+      if (f) await guardarNoAcervo({ ...f, fragrantica: c.link ?? f.fragrantica });
+      return f;
+    }
     // 1) a página do link, lida direto (dados reais e a foto oficial)
     let pagina: Pagina | null = c.link ? await lerPagina(c.link) : null;
     // 2) pesquisa na internet, se não houver página ou para completar

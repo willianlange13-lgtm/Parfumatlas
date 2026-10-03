@@ -54,8 +54,9 @@ export function linhaDoImport(o: Record<string, unknown>): LinhaAcervo | { erro:
  * Junta com o que já existe. Lista nova com pelo menos o mesmo tamanho substitui (é assim que um lote
  * corrigido entra por cima); lista menor ou vazia nunca apaga a que estava. Link e níveis só preenchem o vazio.
  */
-export function mesclar(velha: LinhaAcervo, nova: LinhaAcervo): LinhaAcervo {
-  const mais = (a: string[], b: string[]) => (b.length && b.length >= a.length ? b : a);
+export function mesclar(velha: LinhaAcervo, nova: LinhaAcervo, soVazios = false): LinhaAcervo {
+  // soVazios: resultado de pesquisa paga só completa o que faltava; quem manda é o lote importado
+  const mais = (a: string[], b: string[]) => (soVazios ? (a.length ? a : b) : b.length && b.length >= a.length ? b : a);
   return {
     ...velha,
     fragrantica: velha.fragrantica ?? nova.fragrantica,
@@ -145,4 +146,35 @@ export function fichaDoAcervo(r: LinhaAcervo): FichaIA | null {
     revisar: ["ano", "concentracao", "pais", "votos"],
     completar: false,
   };
+}
+
+/**
+ * Perfume que não estava no acervo e foi pesquisado (pago): o resultado entra no acervo (origem "pesquisa"),
+ * para a próxima vez sair de graça. Mescla sem apagar o que veio da importação. O nível só entra quando
+ * há votos (o mais votado); sem votos fica vazio. Falha aqui nunca derruba o cadastro.
+ */
+export async function guardarNoAcervo(f: FichaIA): Promise<void> {
+  try {
+    if (!f?.nome || !f?.casa) return;
+    const { clienteServico } = await import("@/lib/supabase/servico");
+    const sb = clienteServico();
+    if (!sb) return;
+    const fx = f.votos?.fixacao ?? [], pj = f.votos?.projecao ?? [];
+    const maisVotado = (l: number[]) => (l.some((x) => x > 0) ? l.indexOf(Math.max(...l)) : -1);
+    const linkFr = linhaDoImport({ n: f.nome, c: f.casa, u: f.fragrantica ?? f.imagem ?? "" }) as LinhaAcervo;
+    const nova: LinhaAcervo = {
+      chave: chaveAcervo(f.nome, f.casa), nome: f.nome, casa: f.casa,
+      fragrantica: linkFr.fragrantica,
+      notas_saida: f.notas?.saida ?? [], notas_coracao: f.notas?.coracao ?? [], notas_fundo: f.notas?.fundo ?? [],
+      acordes: (f.acordes ?? []).map((a) => a.nome).filter(Boolean),
+      fixacao_nivel: f.votos?.origem === "acervo" ? f.votos.nivelFixacao ?? null : NIVEIS_FIXACAO[maisVotado(fx)]?.nome ?? null,
+      projecao_nivel: f.votos?.origem === "acervo" ? f.votos.nivelProjecao ?? null : NIVEIS_PROJECAO[maisVotado(pj)]?.nome ?? null,
+    };
+    if (!nova.notas_saida.length && !nova.notas_coracao.length && !nova.notas_fundo.length && !nova.acordes.length) return;
+    const { data: velha } = await sb.from("acervo").select("*").eq("chave", nova.chave).maybeSingle();
+    const r = velha ? mesclar(velha as LinhaAcervo, nova, true) : nova;
+    await sb.from("acervo").upsert({ ...r, ...(velha ? {} : { origem: "pesquisa" }), atualizado_em: new Date().toISOString() }, { onConflict: "chave" });
+  } catch (e) {
+    console.error("[atlas:acervo] guardar", e instanceof Error ? e.message : e);
+  }
 }

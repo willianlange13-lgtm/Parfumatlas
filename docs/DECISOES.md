@@ -235,6 +235,7 @@ Tabela `acervo` (SQL em `supabase/migrations/0002_acervo.sql`), global e não po
 - na foto, o rótulo lido pela IA é conferido no acervo para ganhar link e foto sem pesquisa;
 - ficha a partir do acervo sem IA (`fichaDoAcervo`): pirâmide, acordes, família, foto; fixação/projeção vêm só do nível mais votado (`votos.origem = "acervo"`), sem distribuição inventada. Ano, concentração e país ficam para revisar;
 - a tabela `perfumes` continua sendo o cache das fichas completas (`fichaSalva`).
+- perfume fora do acervo: a pesquisa paga monta a ficha e o resultado entra no acervo (`guardarNoAcervo`, origem "pesquisa"), com o link do candidato escolhido; os votos da segunda etapa dão o nível mais votado. Quando o perfume já existe no acervo, a pesquisa só completa o que estava vazio: quem manda é o lote importado. Na importação de lote, lista corrigida (mesmo tamanho ou maior) substitui.
 
 ## 17. Foto oficial do frasco sem fundo
 
