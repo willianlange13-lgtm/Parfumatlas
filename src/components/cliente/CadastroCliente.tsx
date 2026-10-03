@@ -8,7 +8,7 @@ import { hexA } from "@/lib/cores";
 import type { Perfume } from "@/lib/tipos";
 
 type Modo = "foto" | "link" | "nome" | "voz";
-type Cand = { nome: string; casa: string; concentracao: string; por: string; pct: number; link?: string };
+type Cand = { nome: string; casa: string; concentracao: string; por: string; pct: number; link?: string; imagem?: string | null };
 type Ficha = Omit<Perfume, "id" | "clima"> & { revisar: string[] };
 type SR = { lang: string; onresult: (e: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void; onend: () => void; onerror: () => void; start: () => void };
 
@@ -47,18 +47,22 @@ export function CadastroCliente({ base, modoInicial }: { base: Record<string, un
   const [ouvindo, setOuvindo] = useState(false);
   const [fala, setFala] = useState("");
   const [erro, setErro] = useState("");
+  const [pesquisou, setPesquisou] = useState(false);
   const link = useRef<string | undefined>(undefined);
 
-  async function identificar(m: "foto" | "link" | "nome", texto?: string, f?: { mime: string; base64: string }) {
-    setOcupado("lendo"); setErro(""); setFicha(null); setSel(-1);
+  async function identificar(m: "foto" | "link" | "nome", texto?: string, f?: { mime: string; base64: string }, rapido = false) {
+    setOcupado("lendo"); setErro(""); setFicha(null); setSel(-1); setPesquisou(false);
     link.current = m === "link" ? texto : undefined;
     try {
-      const r = await fetch("/api/identificar", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ modo: m, texto, foto: f }) });
+      const r = await fetch("/api/identificar", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ modo: m, texto, foto: f, rapido }) });
       const j = await r.json();
       setLido(j.lido ?? []);
       setCands(j.candidatos ?? []);
+      setPesquisou(!rapido);
+      if (rapido) return; // enquanto digita: só mostra o catálogo, sem erro e sem escolher
       if (!j.candidatos?.length) setErro(j.ia === false ? "A IA ainda não está ligada (falta a chave do Gemini na Vercel). Sem ela, só acho os perfumes do catálogo de exemplo." : "Não encontrei esse perfume. Tente o nome completo com a casa, ou cole o link do Fragrantica.");
-      else if (j.candidatos[0].pct >= 90) escolher(j.candidatos[0], 0);
+      // só segue direto quando veio de um link; por nome, voz ou foto a pessoa escolhe a opção
+      else if (m === "link" && j.candidatos.length === 1) escolher(j.candidatos[0], 0);
     } catch {
       setErro("Não consegui identificar agora. Tente de novo.");
     } finally {
@@ -181,7 +185,7 @@ export function CadastroCliente({ base, modoInicial }: { base: Record<string, un
   };
   const cel = {
     modo, setModo: (m: Modo) => { setModo(m); setErro(""); }, foto: foto?.url ?? null, lido, cands, sel, ficha, setFicha, situacao, setSituacao, anotacao, setAnotacao, ocupado, ouvindo, fala, erro,
-    identificar, escolher, ouvir, salvar, fotoEscolhida: v.fotoEscolhida, campos, prog: v.prog, fontes: v.fontes, desemp: v.desemp,
+    identificar, pesquisou, escolher, ouvir, salvar, fotoEscolhida: v.fotoEscolhida, campos, prog: v.prog, fontes: v.fontes, desemp: v.desemp,
     quando: ficha?.votos ? [["Inverno", ficha.votos.estacoes.inverno], ["Primavera", ficha.votos.estacoes.primavera], ["Verão", ficha.votos.estacoes.verao], ["Outono", ficha.votos.estacoes.outono], ["Dia", ficha.votos.dia], ["Noite", ficha.votos.noite]] as [string, number][] : [],
   };
   return (

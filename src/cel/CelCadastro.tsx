@@ -6,13 +6,13 @@ import type { Perfume } from "@/lib/tipos";
 import { Anel, Card, Circ, MONO, NotaChip, OURO, Rot } from "./kit";
 
 type Modo = "foto" | "link" | "nome" | "voz";
-type Cand = { nome: string; casa: string; concentracao: string; por: string; pct: number; link?: string };
+type Cand = { nome: string; casa: string; concentracao: string; por: string; pct: number; link?: string; imagem?: string | null };
 type Ficha = Omit<Perfume, "id" | "clima"> & { revisar: string[] };
 type Campo = { l: string; v: string; st: string; mudar: (e: React.ChangeEvent<HTMLInputElement>) => void };
 export type CadCel = {
   modo: Modo; setModo: (m: Modo) => void; foto: string | null; lido: string[]; cands: Cand[]; sel: number; ficha: Ficha | null; setFicha: (f: Ficha) => void;
   situacao: string; setSituacao: (s: string) => void; anotacao: string; setAnotacao: (s: string) => void; ocupado: string; ouvindo: boolean; fala: string; erro: string;
-  identificar: (m: "foto" | "link" | "nome", texto?: string) => void; escolher: (c: Cand, i: number) => void; ouvir: () => void; salvar: () => void;
+  identificar: (m: "foto" | "link" | "nome", texto?: string, f?: undefined, rapido?: boolean) => void; pesquisou: boolean; escolher: (c: Cand, i: number) => void; ouvir: () => void; salvar: () => void;
   fotoEscolhida: (e: React.ChangeEvent<HTMLInputElement>) => void; campos: Campo[]; prog: { pct: number; ok: number; tot: number; rev: number }; fontes: { nome: string; info: string }[]; desemp: { l: string; seg: string[]; v: string }[]; quando: [string, number][];
 };
 
@@ -72,7 +72,7 @@ export function CelCadastro({ c, modoInicial }: { c: CadCel; modoInicial?: strin
   // na busca por nome, procura enquanto digita
   useEffect(() => {
     if (c.modo !== "nome" || q.trim().length < 3) return;
-    const t = setTimeout(() => c.identificar("nome", q.trim()), 650);
+    const t = setTimeout(() => c.identificar("nome", q.trim(), undefined, true), 650);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [q, c.modo]);
@@ -306,19 +306,29 @@ export function CelCadastro({ c, modoInicial }: { c: CadCel; modoInicial?: strin
             <button type="button" className="c-circ" style={{ width: 34, height: 34, background: "var(--chip-2)" }} onClick={() => { c.setModo("voz"); c.ouvir(); }} aria-label="Falar"><Icone nome="mic" tamanho={15} /></button>
           </form>
           {c.ocupado === "lendo" && <span style={{ fontSize: 13.5, color: "var(--ink-3)" }}>Procurando…</span>}
+          {c.pesquisou && c.cands.length > 0 && c.ocupado !== "ficha" && <span style={{ fontSize: 13, color: "var(--ink-3)" }}>Escolha o perfume certo para eu montar a ficha.</span>}
           {c.cands.length > 0 && (
             <div style={{ display: "flex", flexDirection: "column", flexShrink: 0 }}>
               {c.cands.map((x, i) => (
                 <button key={i} type="button" onClick={() => c.escolher(x, i)} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 0", background: "none", border: "none", borderTop: i ? "1px solid var(--line)" : "none", color: "var(--ink)", textAlign: "left" }}>
-                  <span style={{ width: 36, height: 42, borderRadius: 10, background: "var(--surface)", display: "flex", alignItems: "flex-end", justifyContent: "center", paddingBottom: 3, overflow: "hidden" }}><Frasco nome={x.nome} casa={x.casa} forma="ret" tampa="#141417" escala={0.3} /></span>
+                  {x.imagem
+                    // eslint-disable-next-line @next/next/no-img-element
+                    ? <img src={x.imagem} alt="" style={{ width: 36, height: 42, borderRadius: 10, background: "#fff", objectFit: "contain", flexShrink: 0 }} />
+                    : <span style={{ width: 36, height: 42, borderRadius: 10, background: "var(--surface)", display: "flex", alignItems: "flex-end", justifyContent: "center", paddingBottom: 3, overflow: "hidden" }}><Frasco nome={x.nome} casa={x.casa} forma="ret" tampa="#141417" escala={0.3} /></span>}
                   <span style={{ flexGrow: 1, display: "flex", flexDirection: "column", gap: 2 }}>
                     <span style={{ fontSize: 15, color: i === 0 ? OURO : "var(--ink)" }}>{x.nome}</span>
                     <span style={{ fontFamily: MONO, fontSize: 9, letterSpacing: ".1em", color: "var(--ink-3)" }}>{x.casa.toUpperCase()}{x.concentracao ? ` · ${x.concentracao}` : ""}</span>
+                    {c.pesquisou && x.por && <span style={{ fontSize: 11.5, color: "var(--ink-3)" }}>{x.por}</span>}
                   </span>
                   {c.ocupado === "ficha" && c.sel === i ? <span style={{ fontSize: 12, color: "var(--ink-3)" }}>montando…</span> : <Icone nome="seta" tamanho={16} />}
                 </button>
               ))}
             </div>
+          )}
+          {!c.pesquisou && q.trim().length >= 3 && c.ocupado !== "lendo" && c.ocupado !== "ficha" && (
+            <button type="button" className="c-btn sec" style={{ height: 44, borderRadius: 22, flexShrink: 0 }} onClick={() => c.identificar("nome", q.trim())}>
+              {c.cands.length ? "Não está aqui? Procurar no Fragrantica" : "Procurar no Fragrantica"}
+            </button>
           )}
         </>
       )}

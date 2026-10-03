@@ -6,7 +6,7 @@ import { lerPagina, linkDePerfume, type Pagina } from "@/lib/pagina";
 import type { Perfume, Votos } from "@/lib/tipos";
 import { acordePT, acordePrincipal, horasDosVotos, metrosDosVotos, notasPT, votosDe } from "@/lib/normalizar";
 
-export type Candidato = { nome: string; casa: string; concentracao: string; por: string; pct: number; link?: string };
+export type Candidato = { nome: string; casa: string; concentracao: string; por: string; pct: number; link?: string; imagem?: string | null };
 export type Identificacao = { lido: string[]; candidatos: Candidato[] };
 export type FichaIA = Omit<Perfume, "id" | "clima"> & { revisar: string[] };
 
@@ -53,7 +53,7 @@ const SCHEMA_ID = { type: "OBJECT", properties: { lido: { type: "ARRAY", items: 
  * Descobre qual é o perfume. Para economizar a cota da IA:
  * link → lido do próprio endereço, sem IA; nome → catálogo primeiro, IA sem pesquisa só se precisar; foto → IA lendo a imagem.
  */
-export async function identificar(modo: "foto" | "link" | "nome", texto?: string, foto?: { mime: string; base64: string }): Promise<Identificacao> {
+export async function identificar(modo: "foto" | "link" | "nome", texto?: string, foto?: { mime: string; base64: string }, rapido = false): Promise<Identificacao> {
   if (modo === "link" && texto) {
     const c = doLink(texto);
     if (c) {
@@ -64,7 +64,8 @@ export async function identificar(modo: "foto" | "link" | "nome", texto?: string
   }
   if (modo === "nome" && texto) {
     const local = await buscaLocal(texto);
-    if (local[0]?.pct >= 90 || !geminiConfigurado()) return { lido: [], candidatos: local };
+    // enquanto digita: só o catálogo, sem gastar IA
+    if (rapido || !geminiConfigurado()) return { lido: [], candidatos: local };
   }
   if (geminiConfigurado()) {
     try {
@@ -74,13 +75,11 @@ export async function identificar(modo: "foto" | "link" | "nome", texto?: string
           { schema: SCHEMA_ID },
         );
       }
-      if (usaOpenAI() && modo === "nome" && texto) {
-        // economia: não gasta IA para identificar; a ficha já pesquisa o perfume pelo que foi digitado
-        return { lido: [], candidatos: [{ nome: texto.trim(), casa: "", concentracao: "", por: "Vou pesquisar no Fragrantica ao montar a ficha", pct: 92 }] };
-      }
-      if (usaOpenAI()) {
-        const r = await geminiJSON<Identificacao>([{ text: `O usuário digitou ou falou: "${texto}". Pesquise no Fragrantica e liste até 3 perfumes que existem de verdade e que ele pode querer dizer, do mais provável ao menos. Para cada um: nome, casa, concentração (em maiúsculas), um motivo curto em português em "por", a confiança em "pct" (0 a 100) e o endereço da página no Fragrantica em "link".` }], { schema: SCHEMA_ID, pesquisar: true });
-        if (r.candidatos?.length) return r;
+      if (usaOpenAI() && texto) {
+        // modelo leve com pesquisa: só a lista de opções, a ficha vem depois que a pessoa escolhe
+        const r = await geminiJSON<Identificacao>([{ text: `O usuário procura o perfume: "${texto}". Pesquise no Fragrantica (fragrantica.com.br ou fragrantica.com) e liste de 1 a 5 perfumes que existem de verdade e que ele pode querer dizer, do mais provável ao menos. Inclua as versões parecidas da mesma linha (ex.: EDP, Intense, Elixir) quando existirem. Para cada um: nome sem a casa, casa, concentração (em maiúsculas), em "por" um motivo curto em português (ex.: "Nome e casa iguais", "Mesma linha, outra versão"), a confiança em "pct" (0 a 100) e em "link" o endereço da página dele no Fragrantica.` }], { schema: SCHEMA_ID, pesquisar: true, leve: true });
+        const lista = (r.candidatos ?? []).filter((x) => x?.nome).slice(0, 5).map((x) => ({ ...x, link: x.link && /fragrantica\./i.test(x.link) ? x.link : undefined, imagem: fotoDoFragrantica(x.link) }));
+        if (lista.length) return { lido: [], candidatos: lista };
       }
       const r = await geminiJSON<Identificacao>([{ text: `O usuário digitou ou falou: "${texto}". Liste até 3 perfumes que existem de verdade e que ele pode querer dizer, do mais provável ao menos, com nome, casa e concentração (em maiúsculas). Em "por", um motivo curto em português. Se não reconhecer, devolva a lista vazia.` }], { schema: SCHEMA_ID, leve: true });
       if (r.candidatos?.length) return r;

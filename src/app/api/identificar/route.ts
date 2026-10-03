@@ -6,6 +6,6 @@ import { geminiConfigurado } from "@/lib/gemini";
 export const maxDuration = 120;
 
 export async function POST(request: NextRequest) {
-  const b = (await request.json()) as { modo: "foto" | "link" | "nome"; texto?: string; foto?: { mime: string; base64: string } };
-  return NextResponse.json({ ...(await identificar(b.modo, b.texto, b.foto)), ia: geminiConfigurado() });
+  const b = (await request.json()) as { modo: "foto" | "link" | "nome"; texto?: string; foto?: { mime: string; base64: string }; rapido?: boolean };
+  return NextResponse.json({ ...(await identificar(b.modo, b.texto, b.foto, Boolean(b.rapido))), ia: geminiConfigurado() });
 }
