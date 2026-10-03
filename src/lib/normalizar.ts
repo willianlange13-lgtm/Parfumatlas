@@ -21,10 +21,29 @@ const NOTA: Record<string, string> = {
   jasmine: "Jasmim", iris: "Íris", orris: "Íris", magnolia: "Magnólia", "lily of the valley": "Lírio-do-vale", ylang: "Ylang-ylang", "ylang-ylang": "Ylang-ylang", "orange blossom": "Flor de laranjeira", osmanthus: "Osmanthus", gardenia: "Gardênia", heliotrope: "Heliotropo",
   cardamom: "Cardamomo", cinnamon: "Canela", pepper: "Pimenta", "black pepper": "Pimenta-preta", "pink pepper": "Pimenta-rosa", saffron: "Açafrão", ginger: "Gengibre", nutmeg: "Noz-moscada", clove: "Cravo", licorice: "Alcaçuz", anise: "Anis", "star anise": "Anis-estrelado", elemi: "Elemi", cumin: "Cominho",
   incense: "Incenso", olibanum: "Olíbano", frankincense: "Olíbano", labdanum: "Labdano", benzoin: "Benjoim", myrrh: "Mirra", leather: "Couro", tobacco: "Tabaco", "sea notes": "Notas marinhas", "marine notes": "Notas marinhas", "aquatic notes": "Notas aquáticas",
+  "pink pepper tree": "Pimenta-rosa", "sichuan pepper": "Pimenta de Sichuan", "szechuan pepper": "Pimenta de Sichuan", "black currant leaf": "Folha de groselha-preta",
+  salt: "Sal", "sea salt": "Sal marinho", "sea water": "Água do mar", seaweed: "Alga marinha", algae: "Alga marinha", driftwood: "Madeira flutuante", "ozonic notes": "Notas ozônicas",
+  "water notes": "Notas aquáticas", "watery notes": "Notas aquáticas", "fresh notes": "Notas frescas", "citrus notes": "Notas cítricas", "spicy notes": "Notas especiadas", "floral notes": "Notas florais",
+  "white flowers": "Flores brancas", "musky notes": "Notas almiscaradas", "powdery notes": "Notas atalcadas", "earthy notes": "Notas terrosas", "animalic notes": "Notas animálicas", "aldehydes": "Aldeídos",
+  "mandarin orange peel": "Casca de mandarina", "orange peel": "Casca de laranja", "lemon peel": "Casca de limão", "blood orange": "Laranja sanguínea", kumquat: "Kumquat", "calabrian bergamot": "Bergamota da Calábria",
+  "red apple": "Maçã vermelha", "green apple": "Maçã verde", "pear blossom": "Flor de pera", quince: "Marmelo", guava: "Goiaba", papaya: "Mamão", banana: "Banana", "black cherry": "Cereja preta", blueberry: "Mirtilo", blackberry: "Amora", "wild strawberry": "Morango silvestre", rhubarb: "Ruibarbo", "pomegranate": "Romã", grape: "Uva", "white grape": "Uva branca",
+  "orange flower": "Flor de laranjeira", "neroli oil": "Neroli", "lotus": "Lótus", "water lily": "Lírio d'água", lily: "Lírio", "freesia": "Frésia", mimosa: "Mimosa", "lilac": "Lilás", "honeysuckle": "Madressilva", "frangipani": "Frangipani", "tiare flower": "Flor de tiaré", "sambac jasmine": "Jasmim sambac", "jasmine sambac": "Jasmim sambac", "turkish rose": "Rosa turca", "bulgarian rose": "Rosa búlgara", "damask rose": "Rosa damascena", "may rose": "Rosa de maio", "rose petals": "Pétalas de rosa", "cyclamen": "Ciclâmen", "carnation": "Cravo (flor)", "chamomile": "Camomila", "marigold": "Calêndula",
+  "tarragon": "Estragão", "artemisia": "Artemísia", "wormwood": "Absinto", "fennel": "Erva-doce", "dill": "Endro", "bay leaf": "Folha de louro", "laurel": "Louro", "eucalyptus": "Eucalipto", "tea tree": "Melaleuca", "galbanum": "Gálbano", "fig leaf": "Folha de figo", "tomato leaf": "Folha de tomate", "mastic": "Mástique", "lentisque": "Lentisco", "hay": "Feno", "tobacco leaf": "Folha de tabaco",
+  "whiskey": "Uísque", "whisky": "Uísque", "champagne": "Champanhe", "wine": "Vinho", "vodka": "Vodca", "gin": "Gim", "bourbon vanilla": "Baunilha bourbon", "madagascar vanilla": "Baunilha de Madagascar", "vanilla absolute": "Baunilha", "marshmallow": "Marshmallow", "cotton candy": "Algodão-doce", "toffee": "Toffee", "brown sugar": "Açúcar mascavo", "pistachio": "Pistache", "chestnut": "Castanha", "coconut milk": "Leite de coco", "cream": "Creme", "butter": "Manteiga", "bread": "Pão", "rice": "Arroz", "biscuit": "Biscoito",
+  "atlas cedar": "Cedro do Atlas", "virginia cedar": "Cedro da Virgínia", "texas cedar": "Cedro do Texas", "white cedar": "Cedro branco", "haitian vetiver": "Vetiver do Haiti", "indonesian patchouli": "Patchouli da Indonésia", "australian sandalwood": "Sândalo australiano", "mysore sandalwood": "Sândalo de Mysore", "teak": "Teca", "ebony": "Ébano", "rosewood": "Pau-rosa", "oak": "Carvalho", "oakwood": "Madeira de carvalho", "balsam fir": "Abeto balsâmico", "pine needles": "Agulhas de pinheiro", "akigalawood": "Akigalawood", "iso e super": "Iso E Super", "norlimbanol": "Norlimbanol", "clearwood": "Clearwood",
+  "ambergris accord": "Âmbar cinzento", "amberwood": "Madeira ambarada", "ambrocenide": "Ambrocenide", "cetalox": "Cetalox", "hedione": "Hedione", "calone": "Calone", "helional": "Helional", "javanol": "Javanol", "sandalore": "Sandalore", "habanolide": "Habanolide", "galaxolide": "Galaxolide", "muscone": "Muscona", "musk ketone": "Almíscar", "cashmere musk": "Almíscar de cashmere", "skin musk": "Almíscar de pele",
+  "leather accord": "Couro", "suede": "Camurça", "tobacco blossom": "Flor de tabaco", "smoke": "Fumaça", "birch tar": "Alcatrão de bétula", "cade": "Cade", "styrax": "Estoraque", "tolu balsam": "Bálsamo de tolu", "peru balsam": "Bálsamo do Peru", "copahu": "Copaíba", "elemi resin": "Elemi", "opoponax": "Opoponax", "resins": "Resinas",
   tea: "Chá", "green tea": "Chá verde", "black tea": "Chá preto", "green notes": "Notas verdes", grass: "Grama", "mate": "Erva-mate",
 };
 
 /** "Damasco/Alperce (apricot) (em algumas fontes)" → "Damasco". */
+/** A nota está na tabela de tradução? (as que não estão vão para a tradução automática) */
+export function notaConhecida(n: string) {
+  const limpa = n.replace(/\([^)]*\)/g, "").split(/\s*\/\s*/)[0].replace(/\s+/g, " ").trim();
+  return Boolean(NOTA[tira(limpa)] ?? NOTA[limpa.toLowerCase()]);
+}
+export const acordeConhecido = (a: string) => Boolean(ACORDE[tira(a.replace(/\([^)]*\)/g, ""))]);
+
 export function notaPT(n: string) {
   const limpa = n.replace(/\([^)]*\)/g, "").split(/\s*\/\s*/)[0].replace(/\s+/g, " ").trim();
   const t = tira(limpa);

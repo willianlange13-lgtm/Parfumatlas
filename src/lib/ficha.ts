@@ -6,7 +6,7 @@ import { lerPagina, linkDePerfume, type Pagina } from "@/lib/pagina";
 import { verificarParecidos } from "@/lib/verificar";
 import { fotoConferida } from "@/lib/fotos";
 import type { Perfume, Votos } from "@/lib/tipos";
-import { acordePT, acordePrincipal, horasDosVotos, metrosDosVotos, notasPT, votosDe, temVotos } from "@/lib/normalizar";
+import { acordeConhecido, acordePT, acordePrincipal, horasDosVotos, metrosDosVotos, notaConhecida, notasPT, votosDe, temVotos } from "@/lib/normalizar";
 
 export type Candidato = { nome: string; casa: string; concentracao: string; por: string; pct: number; link?: string; imagem?: string | null };
 export type Identificacao = { lido: string[]; candidatos: Candidato[] };
@@ -331,6 +331,39 @@ export function parecidoDoLink(url: string): NonNullable<FichaIA["parecidos"]>[n
   return { nome: c.nome, casa: c.casa, tipo: "parecido", pct: 85, fonte: url, trecho: "adicionado por você", link: url, imagem: fotoDoFragrantica(url) };
 }
 
+const EM_INGLES = /\b(the|and|with|of|notes?|wood|leaf|leaves|flower|blossom|accord|fresh|sweet|warm|spicy|musk|seed|peel|absolute)\b/i;
+
+/**
+ * Última passada: o que ainda veio em inglês (nota, acorde, família ou descrição) é traduzido
+ * pelo modelo mais barato, sem pesquisa (custa frações de centavo e só roda se sobrar algo).
+ */
+async function traduzirSobras(f: FichaIA): Promise<FichaIA> {
+  const todas = [...f.notas.saida, ...f.notas.coracao, ...f.notas.fundo];
+  const notas = [...new Set(todas.filter((n) => !notaConhecida(n) && /[a-z]/i.test(n)))];
+  const acordes = [...new Set(f.acordes.map((a) => a.nome).filter((a) => !acordeConhecido(a)))];
+  const familia = f.familia && EM_INGLES.test(f.familia) ? f.familia : null;
+  const descricao = f.descricao && EM_INGLES.test(f.descricao) ? f.descricao : null;
+  if (!notas.length && !acordes.length && !familia && !descricao) return f;
+  try {
+    const SCHEMA_T = { type: "OBJECT", properties: { itens: { type: "ARRAY", items: { type: "OBJECT", properties: { de: { type: "STRING" }, para: { type: "STRING" } }, required: ["de", "para"] } }, descricao: { type: "STRING" } }, required: ["itens"] };
+    const r = await geminiJSON<{ itens: { de: string; para: string }[]; descricao?: string | null }>([{ text: `Traduza para o português do Brasil, com os nomes usados no Fragrantica Brasil (ex.: "Pink Pepper" → "Pimenta-rosa", "Fresh Spicy" → "Fresco especiado", "Aromatic Aquatic" → "Aromático Aquático"). Se já estiver em português, repita igual. Nomes próprios de moléculas (Ambroxan, Iso E Super) ficam como estão.
+Itens: ${JSON.stringify([...notas, ...acordes, ...(familia ? [familia] : [])])}${descricao ? `\nE traduza também esta descrição em "descricao": ${JSON.stringify(descricao)}` : ""}` }], { schema: SCHEMA_T, leve: true, tempo: 30000 });
+    const mapa = new Map((r.itens ?? []).filter((x) => x?.de && x?.para).map((x) => [x.de.toLowerCase(), x.para.charAt(0).toUpperCase() + x.para.slice(1)]));
+    const tr = (n: string) => mapa.get(n.toLowerCase()) ?? n;
+    const unicas = (l: string[]) => [...new Set(l.map(tr))];
+    return {
+      ...f,
+      notas: { saida: unicas(f.notas.saida), coracao: unicas(f.notas.coracao), fundo: unicas(f.notas.fundo) },
+      acordes: f.acordes.map((a) => ({ ...a, nome: tr(a.nome) })),
+      familia: familia ? tr(familia) : f.familia,
+      descricao: descricao && r.descricao ? r.descricao : f.descricao,
+    };
+  } catch (e) {
+    console.error("traduzirSobras", e);
+    return f;
+  }
+}
+
 /** ChatGPT: uma única chamada com pesquisa na internet monta a ficha inteira (como no chat). */
 async function fichaChatGPT(c: { nome: string; casa: string; concentracao?: string; link?: string }, alvo: string, local?: Perfume): Promise<FichaIA | null> {
   const pagina = c.link ? await lerPagina(c.link) : null;
@@ -371,7 +404,8 @@ Pirâmide, acordes e família vêm do Fragrantica, sem misturar. Os outros campo
     const pronta = finalizar({ ...resto, perfumistas: f.perfumistas ?? [], revisar: f.revisar ?? [], fontes: f.fontes ?? [], forma: f.forma ?? "ret", tampa: /^#[0-9a-f]{6}$/i.test(f.tampa ?? "") ? f.tampa : "#141417", imagem });
     // votos ou parecidos faltando: a tela pede o complemento em segundo plano (outra chamada, sem travar o cadastro)
     const link = c.link ?? (f.fragrantica && /fragrantica\./i.test(f.fragrantica) ? f.fragrantica : undefined);
-    return { ...pronta, completar: !temVotos(pronta.votos?.fixacao) || !temVotos(pronta.votos?.projecao), fragrantica: link };
+    const traduzida = await traduzirSobras(pronta);
+    return { ...traduzida, acorde: traduzida.acordes[0] ? acordePrincipal(acordePT(traduzida.acordes[0].nome)) : traduzida.acorde, completar: !temVotos(pronta.votos?.fixacao) || !temVotos(pronta.votos?.projecao), fragrantica: link };
   } catch (e) {
     ultimoErroFicha = `ficha: ${e instanceof Error ? e.message.slice(0, 200) : e}`;
     console.error("fichaChatGPT", e);
