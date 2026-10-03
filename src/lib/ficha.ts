@@ -79,7 +79,7 @@ export async function identificar(modo: "foto" | "link" | "nome", texto?: string
       }
       if (usaOpenAI() && texto) {
         // modelo leve com pesquisa: só a lista de opções, a ficha vem depois que a pessoa escolhe
-        const r = await geminiJSON<Identificacao>([{ text: `O usuário procura o perfume: "${texto}". Pesquise no Fragrantica (fragrantica.com.br ou fragrantica.com) e liste de 1 a 5 perfumes que existem de verdade e que ele pode querer dizer, do mais provável ao menos. Inclua as versões parecidas da mesma linha (ex.: EDP, Intense, Elixir) quando existirem. Para cada um: nome sem a casa, casa, concentração (em maiúsculas), em "por" um motivo curto em português (ex.: "Nome e casa iguais", "Mesma linha, outra versão"), a confiança em "pct" (0 a 100) e em "link" o endereço da página dele no Fragrantica.` }], { schema: SCHEMA_ID, pesquisar: true, leve: true, maxBuscas: 2 });
+        const r = await geminiJSON<Identificacao>([{ text: `O usuário procura o perfume: "${texto}". Pesquise no Fragrantica (fragrantica.com.br ou fragrantica.com) e liste de 1 a 5 perfumes que existem de verdade e que ele pode querer dizer, do mais provável ao menos. Inclua as versões parecidas da mesma linha (ex.: EDP, Intense, Elixir) quando existirem. Para cada um: nome sem a casa, casa, concentração (em maiúsculas), em "por" um motivo curto em português (ex.: "Nome e casa iguais", "Mesma linha, outra versão"), a confiança em "pct" (0 a 100) e em "link" o endereço da página dele no Fragrantica.` }], { schema: SCHEMA_ID, pesquisar: true, leve: true, maxBuscas: 2, tarefa: "identificar_nome" });
         const lista = (r.candidatos ?? []).filter((x) => x?.nome).slice(0, 5).map((x) => ({ ...x, link: x.link && /fragrantica\./i.test(x.link) ? x.link : undefined, imagem: fotoDoFragrantica(x.link) }));
         if (lista.length) return { lido: [], candidatos: lista };
       }
@@ -334,7 +334,7 @@ export async function completarFicha(f: FichaIA): Promise<FichaIA> {
 - "projecao": as 4 contagens de "Rastro"/"Sillage" na ordem [íntimo, moderado, forte, enorme];
 - "total": o número de votos da avaliação.
 Formato obrigatório: "fixacao" deve ter exatamente 5 inteiros copiados da fonte e "projecao" exatamente 4 inteiros; "total" é o total real encontrado. Nunca copie números desta instrução.
-Se o Fragrantica não mostrar os números, use o Parfumo, resenhas e lojas, transforme em porcentagens coerentes que somam 100 e use "origem": "estimativa". Nunca devolva zerado e nunca reutilize um vetor fixo de exemplo.` }], { schema: SCHEMA_EXTRA, pesquisar: true, leve: true, tempo: 80000, maxBuscas: 3 }).catch(() => ({}) as Extra)
+Se o Fragrantica não mostrar os números, use o Parfumo, resenhas e lojas, transforme em porcentagens coerentes que somam 100 e use "origem": "estimativa". Nunca devolva zerado e nunca reutilize um vetor fixo de exemplo.` }], { schema: SCHEMA_EXTRA, pesquisar: true, leve: true, tempo: 80000, maxBuscas: 3, tarefa: "votos" }).catch(() => ({}) as Extra)
       : Promise.resolve({} as Extra),
     Promise.resolve([] as NonNullable<FichaIA["mesmaCasa"]>), // "da mesma casa" saiu da ficha
   ]);
@@ -397,7 +397,7 @@ async function traduzirSobras(f: FichaIA): Promise<FichaIA> {
   try {
     const SCHEMA_T = { type: "OBJECT", properties: { itens: { type: "ARRAY", items: { type: "OBJECT", properties: { de: { type: "STRING" }, para: { type: "STRING" } }, required: ["de", "para"] } }, descricao: { type: "STRING" } }, required: ["itens"] };
     const r = await geminiJSON<{ itens: { de: string; para: string }[]; descricao?: string | null }>([{ text: `Traduza para o português do Brasil, com os nomes usados no Fragrantica Brasil (ex.: "Pink Pepper" → "Pimenta-rosa", "Fresh Spicy" → "Fresco especiado", "Aromatic Aquatic" → "Aromático Aquático"). Se já estiver em português, repita igual. Nomes próprios de moléculas (Ambroxan, Iso E Super) ficam como estão.
-Itens: ${JSON.stringify([...notas, ...acordes, ...(familia ? [familia] : [])])}${descricao ? `\nE traduza também esta descrição em "descricao": ${JSON.stringify(descricao)}` : ""}` }], { schema: SCHEMA_T, leve: true, tempo: 30000 });
+Itens: ${JSON.stringify([...notas, ...acordes, ...(familia ? [familia] : [])])}${descricao ? `\nE traduza também esta descrição em "descricao": ${JSON.stringify(descricao)}` : ""}` }], { schema: SCHEMA_T, leve: true, tempo: 30000, tarefa: "traducao" });
     const mapa = new Map((r.itens ?? []).filter((x) => x?.de && x?.para).map((x) => [x.de.toLowerCase(), x.para.charAt(0).toUpperCase() + x.para.slice(1)]));
     const tr = (n: string) => mapa.get(n.toLowerCase()) ?? n;
     const unicas = (l: string[]) => [...new Set(l.map(tr))];
@@ -444,7 +444,7 @@ Pirâmide, acordes e família vêm do Fragrantica, sem misturar. Os outros campo
 - "pais": o país de origem da marca (ex.: Rayhaan, Lattafa, Armaf → "Emirados Árabes Unidos"; Dior, Chanel → "França"). Pesquise se não souber.
 - Ano, gênero e "descricao": UMA frase curta (até 15 palavras) sobre o cheiro, em português.
 - "fragrantica": endereço completo da página do perfume no Fragrantica.
-- O que não encontrar fica vazio e entra em "revisar".` }], { schema: SCHEMA_PRINCIPAL, pesquisar: !paginaCompleta, maxBuscas: 4 });
+- O que não encontrar fica vazio e entra em "revisar".` }], { schema: SCHEMA_PRINCIPAL, pesquisar: !paginaCompleta, maxBuscas: 4, tarefa: "ficha" });
     const imagem = pagina?.imagem ?? fotoDoFragrantica(c.link) ?? fotoDoFragrantica(f.fragrantica);
     f.parecidos = await verificarParecidos(f.nome || c.nome, f.parecidos);
     const { fragrantica: _fr, ...resto } = f;
