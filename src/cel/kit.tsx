@@ -86,7 +86,7 @@ export function Topo({ titulo, voltar, direita, grande }: { titulo: string; volt
 export function TituloAba({ titulo, children }: { titulo: string; children?: ReactNode }) {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 8, height: 56, flexShrink: 0 }}>
-      <h1 style={{ margin: 0, fontSize: 28, fontWeight: 500, letterSpacing: "-.02em" }}>{titulo}</h1>
+      <h1 style={{ margin: 0, fontSize: 28, fontFamily: "var(--marca)", fontWeight: 500, letterSpacing: "-.02em" }}>{titulo}</h1>
       <span style={{ flexGrow: 1 }} />
       {children}
     </div>

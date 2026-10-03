@@ -28,7 +28,7 @@ export function CelFicha({ v, x }: { v: V; x: ExtraFicha }) {
       </PalcoC>
       <div style={{ display: "flex", flexDirection: "column", gap: 8, flexShrink: 0 }}>
         <Rot style={{ color: "var(--ink-2)" }}>{cab.casaCidade}</Rot>
-        <h1 style={{ margin: 0, fontSize: 40, fontWeight: 500, letterSpacing: "-.02em", lineHeight: 1.02 }}>{p.nome}</h1>
+        <h1 style={{ margin: 0, fontSize: 40, fontFamily: "var(--marca)", fontWeight: 500, letterSpacing: "-.01em", lineHeight: 1.02 }}>{p.nome}</h1>
         <p style={{ margin: 0, fontSize: 14.5, lineHeight: 1.5, color: "var(--ink-2)" }}>{cab.desc}</p>
       </div>
       <div style={{ display: "flex", gap: 6, flexWrap: "wrap", flexShrink: 0 }}>

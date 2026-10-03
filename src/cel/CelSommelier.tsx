@@ -89,7 +89,7 @@ export function CelSommelier({ v }: { v: VSom }) {
       <div className="c-tela sem-barra" style={{ paddingBottom: 150 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10, height: 60, flexShrink: 0 }}>
           <Circ icone="voltar" href="/" tamanho={36} rotulo="Voltar" />
-          <span style={{ fontSize: 26, fontWeight: 500, letterSpacing: "-.01em", flexGrow: 1 }}>Sommelier</span>
+          <span style={{ fontSize: 26, fontFamily: "var(--marca)", fontWeight: 500, letterSpacing: "-.01em", flexGrow: 1 }}>Sommelier</span>
           <Circ icone="chat" tamanho={40} rotulo="Conversas" onClick={() => setHistorico(true)} />
           <button type="button" className="c-pill on" style={{ height: 40, borderRadius: 20, fontSize: 14 }} onClick={v.nova}>+ Nova</button>
         </div>

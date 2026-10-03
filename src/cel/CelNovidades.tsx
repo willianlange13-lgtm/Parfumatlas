@@ -15,7 +15,7 @@ export function CelNovidades({ v, limite }: { v: V; limite: number }) {
       </TituloAba>
       <div style={{ display: "flex", flexDirection: "column", gap: 6, flexShrink: 0 }}>
         <Rot>Lançamentos para você</Rot>
-        <div style={{ fontSize: 25, fontWeight: 500, letterSpacing: "-.01em", lineHeight: 1.15 }}>{v.n} {v.n === 1 ? "novidade combina" : "novidades combinam"} com o seu DNA</div>
+        <div style={{ fontSize: 25, fontFamily: "var(--marca)", fontWeight: 500, letterSpacing: "-.01em", lineHeight: 1.15 }}>{v.n} {v.n === 1 ? "novidade combina" : "novidades combinam"} com o seu DNA</div>
       </div>
       <Rolar gap={6}>
         {v.filtros.map((f) => <Pill key={f.nome} on={f.bg === v.t.btn} href={f.href}>{f.nome}</Pill>)}
@@ -35,7 +35,7 @@ export function CelNovidades({ v, limite }: { v: V; limite: number }) {
             <div style={{ display: "flex", flexDirection: "column", gap: 6, minWidth: 0 }}>
               <span style={{ alignSelf: "flex-start", padding: "3px 8px", borderRadius: 6, background: OURO, color: "#1A1407", fontSize: 10.5, fontWeight: 600 }}>MAIS AFINIDADE</span>
               <span style={{ fontFamily: MONO, fontSize: 9.5, letterSpacing: ".1em", color: "var(--ink-3)" }}>{d.linha}</span>
-              <span style={{ fontSize: 22, fontWeight: 500, lineHeight: 1.1 }}>{d.nome}</span>
+              <span style={{ fontSize: 22, fontFamily: "var(--marca)", fontWeight: 500, lineHeight: 1.1 }}>{d.nome}</span>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <Anel valor={d.pct / 100} txt={`${d.pct}%`} tam={48} sw={4} cor={OURO} />
                 <span style={{ fontFamily: MONO, fontSize: 9.5, letterSpacing: ".14em", color: "var(--ink-3)" }}>AFINIDADE</span>

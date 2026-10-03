@@ -14,7 +14,7 @@ export function CelInicio({ v, usado }: { v: D; usado?: string }) {
   return (
     <div className="c-tela">
       <div style={{ display: "flex", flexDirection: "column", gap: 4, flexShrink: 0, marginTop: 6 }}>
-        <div style={{ fontSize: 28, fontWeight: 500, letterSpacing: "-.02em", lineHeight: 1.1 }}>{c.saudacao}, Willian</div>
+        <div style={{ fontSize: 28, fontFamily: "var(--marca)", fontWeight: 500, letterSpacing: "-.01em", lineHeight: 1.1 }}>{c.saudacao}, Willian</div>
         <div style={{ fontSize: 14, color: "var(--ink-3)" }}>{[c.data, c.cidade].filter(Boolean).join(" · ")}</div>
       </div>
 
@@ -32,7 +32,7 @@ export function CelInicio({ v, usado }: { v: D; usado?: string }) {
               <PalcoC nome={p.nome} casa={p.casa} acorde={p.acorde} forma={p.forma} tampa={p.tampa} foto={d.e.foto ?? p.imagem} oficial={!d.e.foto && Boolean(p.imagem)} altura={170} k={0.9} raio={18} />
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 8, minWidth: 0, paddingTop: 4 }}>
-              <div style={{ fontSize: 26, fontWeight: 500, letterSpacing: "-.02em", lineHeight: 1 }}>{p.nome}</div>
+              <div style={{ fontSize: 26, fontFamily: "var(--marca)", fontWeight: 500, letterSpacing: "-.01em", lineHeight: 1 }}>{p.nome}</div>
               <div style={{ fontFamily: MONO, fontSize: 10.5, letterSpacing: ".1em", color: "var(--ink-3)" }}>{`${p.casa} · ${p.familia}`.toUpperCase()}</div>
               <div style={{ fontSize: 13.5, lineHeight: 1.5, color: "var(--ink-2)" }}>{d.curto}</div>
             </div>

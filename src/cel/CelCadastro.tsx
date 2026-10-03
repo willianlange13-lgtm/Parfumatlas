@@ -203,7 +203,7 @@ export function CelCadastro({ c, modoInicial }: { c: CadCel; modoInicial?: strin
           ) : <Frasco nome={f.nome} casa={f.casa} acorde={f.acorde} forma={f.forma} tampa={f.tampa} escala={1} />}
         </div>
         <div style={{ textAlign: "center", display: "flex", flexDirection: "column", gap: 4 }}>
-          <span style={{ fontSize: 24, fontWeight: 500 }}>{f.nome}</span>
+          <span style={{ fontSize: 24, fontFamily: "var(--marca)", fontWeight: 500 }}>{f.nome}</span>
           <span style={{ fontFamily: MONO, fontSize: 10, letterSpacing: ".12em", color: "var(--ink-3)" }}>{f.casa.toUpperCase()}</span>
         </div>
         <Rot>Adicionar como</Rot>

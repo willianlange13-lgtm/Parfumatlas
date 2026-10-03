@@ -67,7 +67,7 @@ export function CelColecao({ d, s }: { d: DadosColecao; s: EstadoColecao }) {
           <Anel valor={c.total / Math.max(1, c.total + c.faltam)} txt={String(c.total)} sub="FRASCOS" tam={76} />
           <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
             <Rot>Classe do colecionador</Rot>
-            <span style={{ fontSize: 23, fontWeight: 500, lineHeight: 1 }}>{c.nome}</span>
+            <span style={{ fontSize: 23, fontFamily: "var(--marca)", fontWeight: 500, lineHeight: 1 }}>{c.nome}</span>
             {c.faltam > 0 ? <span style={{ fontSize: 12.5, color: "var(--ink-2)" }}>Faltam <b style={{ color: "var(--ink)" }}>{c.faltam} frascos</b> para {c.prox}</span> : null}
           </div>
         </div>
