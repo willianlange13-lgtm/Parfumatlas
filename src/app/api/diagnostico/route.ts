@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
   }
   r.ia = geminiConfigurado() ? nomeIA() : "nenhuma";
   if (!geminiConfigurado()) r.gemini = "FALTA OPENAI_API_KEY (ou GEMINI_API_KEY)";
-  else if (request.nextUrl.searchParams.get("pagina")) r.gemini = "chave ok (não testada)";
+  else if (request.nextUrl.searchParams.get("pagina") || request.nextUrl.searchParams.get("nota")) r.gemini = "chave ok (não testada)";
   else {
     try {
       const t = await geminiJSON<{ ok: string }>([{ text: 'Responda {"ok":"sim"}' }], { schema: { type: "OBJECT", properties: { ok: { type: "STRING" } }, required: ["ok"] } });
@@ -37,6 +37,17 @@ export async function GET(request: NextRequest) {
     const pg = await lerPagina(url);
     r.pagina = pg ? `lida: ${pg.texto.length} letras, foto ${pg.imagem ? "achada" : "não achada"}, início: ${pg.texto.slice(0, 120).replace(/\s+/g, " ")}` : "o site bloqueou a leitura";
     return NextResponse.json(r, { headers: { "Cache-Control": "no-store", "Content-Type": "application/json; charset=utf-8" } });
+  }
+  // teste da foto de uma nota: /api/diagnostico?nota=Bergamota
+  const nota = request.nextUrl.searchParams.get("nota");
+  if (nota) {
+    const { WIKI_NOTA } = await import("@/data/referencia");
+    const t = WIKI_NOTA[nota];
+    if (!t) r.nota = "nota sem foto cadastrada";
+    else {
+      const w = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(t)}`, { headers: { "User-Agent": "ParfumAtlas/1.0 (https://atlas-system-three.vercel.app)", "Api-User-Agent": "ParfumAtlas/1.0 (https://atlas-system-three.vercel.app)" } }).catch((e) => e as Error);
+      r.nota = w instanceof Error ? `ERRO: ${w.message}` : `Wikipédia ${w.status}: ${w.ok ? ((await w.json()).thumbnail?.source ?? "sem imagem") : (await w.text()).slice(0, 120)}`;
+    }
   }
   // teste da ficha: /api/diagnostico?ficha=Pacific Aura|Rayhaan
   const teste = request.nextUrl.searchParams.get("ficha");

@@ -50,6 +50,8 @@ export const WIKI_NOTA: Record<string, string> = {
   Sálvia: "Salvia_sclarea", "Sálvia esclareia": "Salvia_sclarea", Tomilho: "Thyme", Artemísia: "Artemisia_absinthium", Eucalipto: "Eucalyptus", Chá: "Tea", "Chá verde": "Green_tea", "Chá preto": "Black_tea",
   Cravo: "Clove", "Cravo-da-índia": "Clove", Anis: "Anise", "Anis-estrelado": "Illicium_verum", "Pimenta-preta": "Black_pepper", Elemi: "Elemi", Cominho: "Cumin",
   Cacau: "Cocoa_bean", Chocolate: "Chocolate", Caramelo: "Caramel", Rum: "Rum", Amêndoa: "Almond", Avelã: "Hazelnut", Pistache: "Pistachio", Leite: "Milk",
+  "Fava tonka": "Tonka_bean", "Semente de ambreta": "Abelmoschus_moschatus", Âmbar: "Amber", "Laranja amarga": "Bitter_orange", Melão: "Melon", Zimbro: "Juniperus_communis", Pinho: "Pinus_sylvestris", Abeto: "Abies_alba",
+  "Folha de violeta": "Viola_odorata", "Erva-mate": "Yerba_mate", Açúcar: "Sugar", "Groselha Preta": "Blackcurrant",
   Guaiaco: "Guaiacum_officinale", "Madeira de guaiaco": "Guaiacum_officinale", Cashmeran: "Cashmere_wool", Papiro: "Cyperus_papyrus", Labdano: "Labdanum", Olíbano: "Frankincense", Opoponax: "Opopanax",
 };
 
@@ -116,6 +118,10 @@ export const ACORDE_EIXO: Record<string, (typeof EIXOS)[number]> = {
   Amadeirado: "Amadeirado", Oud: "Amadeirado", Esfumaçado: "Amadeirado", Couro: "Amadeirado", Patchouli: "Amadeirado", Incenso: "Amadeirado",
   Âmbar: "Âmbar", Especiado: "Âmbar", Almíscar: "Âmbar", Tabaco: "Âmbar",
   Baunilha: "Gourmand", Doce: "Gourmand", Gourmand: "Gourmand", Mel: "Gourmand", Café: "Gourmand",
+  "Fresco especiado": "Aromático", Herbal: "Aromático", "Especiado quente": "Âmbar", "Especiado suave": "Âmbar", Almiscarado: "Âmbar", Balsâmico: "Âmbar", Resinoso: "Âmbar",
+  Atalcado: "Floral", "Floral branco": "Floral", "Floral amarelo": "Floral", Rosa: "Floral", Íris: "Floral", Violeta: "Floral", Tuberosa: "Floral",
+  Marinho: "Aquático", Ozônico: "Aquático", Salgado: "Aquático", Terroso: "Amadeirado", Musgoso: "Amadeirado", Animálico: "Amadeirado",
+  Tropical: "Frutado", Lactônico: "Gourmand", Coco: "Gourmand", Cacau: "Gourmand", Caramelo: "Gourmand", Amendoado: "Gourmand",
 };
 
 export const tipoNota = (n: string) => TIPO[n] ?? "nuvem";

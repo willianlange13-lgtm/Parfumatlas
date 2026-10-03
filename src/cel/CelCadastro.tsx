@@ -13,7 +13,7 @@ export type CadCel = {
   modo: Modo; setModo: (m: Modo) => void; foto: string | null; lido: string[]; cands: Cand[]; sel: number; ficha: Ficha | null; setFicha: (f: Ficha) => void;
   situacao: string; setSituacao: (s: string) => void; anotacao: string; setAnotacao: (s: string) => void; ocupado: string; ouvindo: boolean; fala: string; erro: string;
   identificar: (m: "foto" | "link" | "nome", texto?: string) => void; escolher: (c: Cand, i: number) => void; ouvir: () => void; salvar: () => void;
-  fotoEscolhida: (e: React.ChangeEvent<HTMLInputElement>) => void; campos: Campo[]; prog: { pct: number; ok: number; tot: number; rev: number }; fontes: { nome: string; info: string }[]; desemp: { l: string; seg: string[]; v: string }[];
+  fotoEscolhida: (e: React.ChangeEvent<HTMLInputElement>) => void; campos: Campo[]; prog: { pct: number; ok: number; tot: number; rev: number }; fontes: { nome: string; info: string }[]; desemp: { l: string; seg: string[]; v: string }[]; quando: [string, number][];
 };
 
 const MODOS: [Modo, string, string][] = [["foto", "Foto", "camera"], ["link", "Link", "link"], ["nome", "Nome", "texto"], ["voz", "Voz", "mic"]];
@@ -148,6 +148,30 @@ export function CelCadastro({ c, modoInicial }: { c: CadCel; modoInicial?: strin
             </div>
           ))}
         </Card>
+        {f.acordes.length > 0 && (
+          <Card pad={14} gap={8}>
+            <Rot>Principais acordes</Rot>
+            {f.acordes.slice(0, 8).map((a) => (
+              <div key={a.nome} style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 13 }}>
+                <span style={{ width: 118, color: "var(--ink-2)" }}>{a.nome}</span>
+                <span style={{ flexGrow: 1, height: 6, borderRadius: 3, background: "var(--chip)", display: "flex" }}><span style={{ width: `${a.valor}%`, borderRadius: 3, background: a === f.acordes[0] ? OURO : "var(--prata)" }} /></span>
+              </div>
+            ))}
+          </Card>
+        )}
+        {c.quando.length > 0 && (
+          <Card pad={14} gap={8}>
+            <Rot>Quando usar</Rot>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(6, minmax(0, 1fr))", gap: 6, alignItems: "end", height: 90 }}>
+              {c.quando.map(([nome, v]) => (
+                <div key={nome} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, height: "100%", justifyContent: "flex-end" }}>
+                  <span style={{ width: "70%", height: `${Math.max(4, v * 0.6)}px`, borderRadius: 4, background: v >= 80 ? OURO : "var(--prata)" }} />
+                  <span style={{ fontSize: 10, color: "var(--ink-3)" }}>{nome}</span>
+                </div>
+              ))}
+            </div>
+          </Card>
+        )}
         {c.fontes.length > 0 && (
           <Card pad={14} gap={10}>
             <Rot>Fontes lidas</Rot>

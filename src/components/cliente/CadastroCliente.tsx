@@ -16,7 +16,7 @@ const OURO = "#D8B970";
 const CORES = ["#7F8AA0", "#B4BDCC", "#9099AC"];
 const ROT: Record<Modo, string> = { foto: "Foto", link: "Link", nome: "Nome", voz: "Voz" };
 const PH: Record<Modo, string> = { foto: "Ou cole o link de qualquer site de perfume", link: "Cole o link do Fragrantica, Parfumo ou do site da marca", nome: "Digite o nome e a casa, ex.: Aventus Creed", voz: "Ou digite o nome do perfume" };
-const NIVEL_F = ["Muito fraca", "Fraca", "Moderada", "Duradoura", "Muito longa"];
+const NIVEL_F = ["Muito fraca", "Fraca", "Moderada", "Longa", "Eterna"];
 const NIVEL_P = ["Íntima", "Moderada", "Forte", "Enorme"];
 
 async function reduzir(f: File) {
@@ -169,7 +169,7 @@ export function CadastroCliente({ base, modoInicial }: { base: Record<string, un
     piramide: ficha ? ([["SAÍDA", "saida"], ["CORAÇÃO", "coracao"], ["FUNDO", "fundo"]] as const).map(([nome, k]) => ({ nome, notas: ficha.notas[k].map(notaChip), addNota: addNota(k) })) : [],
     desemp: ficha ? [
       { l: "FIXAÇÃO", seg: seg(nivelF + 1), v: `${NIVEL_F[nivelF] ?? "—"}${ficha.fixacaoH ? ` · ${Math.floor(ficha.fixacaoH)}h${String(Math.round((ficha.fixacaoH % 1) * 60)).padStart(2, "0")}` : ""}` },
-      { l: "PROJEÇÃO", seg: seg(nivelP + 2), v: `${NIVEL_P[nivelP] ?? "—"}${ficha.projecaoM ? ` · ${ficha.projecaoM.toFixed(1).replace(".", ",")} m` : ""}` },
+      { l: "PROJEÇÃO", seg: seg(Math.round(((nivelP + 1) / 4) * 5)), v: `${NIVEL_P[nivelP] ?? "—"}${ficha.projecaoM ? ` · ${ficha.projecaoM.toFixed(1).replace(".", ",")} m` : ""}` },
     ] : [],
     prog: { trilho: "M 8.0 42.0 a 34 34 0 1 0 68.0 0 a 34 34 0 1 0 -68.0 0 Z", arco: arco(ok / tot), pct: Math.round((ok / tot) * 100), ok, tot, rev: pend },
     fontes: (ficha?.fontes ?? []).map((f) => ({ nome: f.nome, info: f.oQue, ic: "✓", bg: t.amber })).concat(foto ? [{ nome: "Imagem do frasco", info: "salva no Atlas", ic: "✓", bg: t.amber }] : []),
@@ -182,6 +182,7 @@ export function CadastroCliente({ base, modoInicial }: { base: Record<string, un
   const cel = {
     modo, setModo: (m: Modo) => { setModo(m); setErro(""); }, foto: foto?.url ?? null, lido, cands, sel, ficha, setFicha, situacao, setSituacao, anotacao, setAnotacao, ocupado, ouvindo, fala, erro,
     identificar, escolher, ouvir, salvar, fotoEscolhida: v.fotoEscolhida, campos, prog: v.prog, fontes: v.fontes, desemp: v.desemp,
+    quando: ficha?.votos ? [["Inverno", ficha.votos.estacoes.inverno], ["Primavera", ficha.votos.estacoes.primavera], ["Verão", ficha.votos.estacoes.verao], ["Outono", ficha.votos.estacoes.outono], ["Dia", ficha.votos.dia], ["Noite", ficha.votos.noite]] as [string, number][] : [],
   };
   return (
     <>

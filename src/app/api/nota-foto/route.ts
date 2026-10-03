@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
   if (!titulo) return new NextResponse(null, { status: 404 });
   try {
     const r = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(titulo)}`, {
-      headers: { "User-Agent": "ParfumAtlas/1.0 (arquivo pessoal de perfumes)" },
+      headers: { "User-Agent": "ParfumAtlas/1.0 (https://atlas-system-three.vercel.app)", "Api-User-Agent": "ParfumAtlas/1.0 (https://atlas-system-three.vercel.app)" },
       next: { revalidate: 60 * 60 * 24 * 30 },
       signal: AbortSignal.timeout(6000),
     });
@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     const src: string | undefined = j.thumbnail?.source ?? j.originalimage?.source;
     if (!src) return new NextResponse(null, { status: 404 });
     // pede uma miniatura de 240 px (a Wikipédia gera qualquer largura)
-    const foto = src.replace(/\/(\d+)px-/, "/240px-");
+    const foto = src;
     return NextResponse.redirect(foto, { status: 302, headers: { "Cache-Control": "public, max-age=2592000, immutable" } });
   } catch {
     return new NextResponse(null, { status: 404 });

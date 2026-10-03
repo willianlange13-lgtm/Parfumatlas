@@ -2,7 +2,8 @@ import "server-only";
 import { geminiConfigurado, geminiJSON, geminiTexto, usaOpenAI } from "@/lib/gemini";
 import { carregarAcervo } from "@/lib/dados";
 import { lerPagina, linkDePerfume, type Pagina } from "@/lib/pagina";
-import type { Perfume } from "@/lib/tipos";
+import type { Perfume, Votos } from "@/lib/tipos";
+import { acordePT, acordePrincipal, horasDosVotos, metrosDosVotos, notasPT, votosDe } from "@/lib/normalizar";
 
 export type Candidato = { nome: string; casa: string; concentracao: string; por: string; pct: number; link?: string };
 export type Identificacao = { lido: string[]; candidatos: Candidato[] };
@@ -114,6 +115,29 @@ const fotoDoFragrantica = (url?: string | null) => {
   return id ? `https://fimgs.net/mdimg/perfume/375x500.${id}.jpg` : null;
 };
 
+const OCASIOES = [{ nome: "Trabalho", v: 50 }, { nome: "Dia a dia", v: 50 }, { nome: "Encontro", v: 50 }, { nome: "Festa", v: 50 }, { nome: "Formal", v: 50 }, { nome: "Esporte", v: 50 }];
+const FAMILIA: Record<string, string> = { aromatic: "Aromático", aquatic: "Aquático", woody: "Amadeirado", floral: "Floral", fruity: "Frutado", chypre: "Chipre", oriental: "Oriental", amber: "Âmbar", citrus: "Cítrico", fougere: "Fougère", "fougère": "Fougère", leather: "Couro", gourmand: "Gourmand", spicy: "Especiado", green: "Verde", musky: "Almiscarado", vanilla: "Baunilha" };
+
+/** Deixa a ficha no padrão do Fragrantica Brasil e corrige números inconsistentes. */
+function finalizar(f: FichaIA): FichaIA {
+  const revisar = new Set(f.revisar ?? []);
+  const notas = { saida: notasPT(f.notas?.saida), coracao: notasPT(f.notas?.coracao), fundo: notasPT(f.notas?.fundo) };
+  let acordes = (f.acordes ?? []).map((a) => ({ nome: acordePT(a.nome), valor: Math.max(0, Math.min(100, Math.round(Number(a.valor) || 0))) })).filter((a, i, l) => a.nome && l.findIndex((x) => x.nome === a.nome) === i);
+  if (acordes.length && acordes.every((a) => !a.valor)) acordes = acordes.map((a, i) => ({ ...a, valor: Math.max(30, 100 - i * 12) }));
+  const familia = (f.familia ?? "").split(/\s+/).map((w) => FAMILIA[w.toLowerCase()] ?? w).join(" ");
+  const votos = votosDe(f.votos as Partial<Votos>, f.votos?.ocasioes?.length ? f.votos.ocasioes : OCASIOES);
+  if (!votos) revisar.add("votos");
+  return {
+    ...f,
+    notas, acordes, familia,
+    acorde: acordes[0] ? acordePrincipal(acordes[0].nome) : f.acorde,
+    votos: votos ?? f.votos,
+    fixacaoH: votos ? horasDosVotos(votos.fixacao) : f.fixacaoH,
+    projecaoM: votos ? metrosDosVotos(votos.projecao) : f.projecaoM,
+    revisar: [...revisar],
+  };
+}
+
 /** Último erro da IA ao montar a ficha (aparece na tela e no diagnóstico). */
 export let ultimoErroFicha = "";
 
@@ -162,7 +186,7 @@ Regras:
 - fontes: os sites usados e o que veio de cada um.` }], { schema: SCHEMA_FICHA, temperatura: 0.1, leve: Boolean(pagina) });
       const imagem = pagina?.imagem ?? (f.imagem && /^https:\/\/fimgs\.net\//.test(f.imagem) ? f.imagem : null);
       const fontes = f.fontes?.length ? f.fontes : pagina ? [{ nome: new URL(pagina.url).hostname.replace("www.", ""), url: pagina.url, oQue: "notas, acordes e votos" }] : [];
-      return { ...f, perfumistas: f.perfumistas ?? [], revisar: f.revisar ?? [], fontes, forma: f.forma ?? "ret", tampa: /^#[0-9a-f]{6}$/i.test(f.tampa ?? "") ? f.tampa : "#141417", imagem };
+      return finalizar({ ...f, perfumistas: f.perfumistas ?? [], revisar: f.revisar ?? [], fontes, forma: f.forma ?? "ret", tampa: /^#[0-9a-f]{6}$/i.test(f.tampa ?? "") ? f.tampa : "#141417", imagem });
     } catch (e) {
       ultimoErroFicha = `${ultimoErroFicha ? ultimoErroFicha + " · " : ""}ficha: ${e instanceof Error ? e.message.slice(0, 160) : e}`;
       console.error("gerarFicha", e);
@@ -180,21 +204,26 @@ Regras:
 async function fichaChatGPT(c: { nome: string; casa: string; concentracao?: string; link?: string }, alvo: string, local?: Perfume): Promise<FichaIA | null> {
   const pagina = c.link ? await lerPagina(c.link) : null;
   try {
-    const f = await geminiJSON<FichaIA & { fragrantica?: string }>([{ text: `Pesquise na internet o perfume ${alvo}${c.link ? ` (página: ${c.link})` : ""}. Use como fonte principal o Fragrantica e confira com o Parfumo, o site da marca e lojas.
+    const f = await geminiJSON<FichaIA & { fragrantica?: string }>([{ text: `Pesquise na internet o perfume ${alvo}${c.link ? ` (página: ${c.link})` : ""}. A fonte principal é a página dele no Fragrantica Brasil (fragrantica.com.br). Outras fontes só completam o que o Fragrantica não tiver.
 ${pagina ? `Texto da página já baixada:\n${pagina.texto.slice(0, 12000)}\n` : ""}
-Monte a ficha completa com o que as fontes trazem. Não invente: o que não achar fica vazio (ou 0) e entra em "revisar".
-- Tudo em português do Brasil, inclusive as notas ("Mandarina", "Hortelã", "Âmbar cinzento").
-- "acorde" principal, um de: ${ACORDE_PRINCIPAL}. "acordes": nomes entre ${ACORDES_OK}, força de 0 a 100 na ordem do Fragrantica.
-- fixacaoH em horas (média dos relatos) e projecaoM em metros.
-- votos.fixacao: 5 porcentagens (muito fraca, fraca, moderada, duradoura, muito longa); votos.projecao: 4 (íntima, moderada, forte, enorme); estações, dia e noite de 0 a 100; ocasioes: Trabalho, Dia a dia, Encontro, Festa, Formal, Esporte (0 a 100). Se o site não mostrar os números, estime pelos relatos e ponha "votos" em "revisar".
-- descricao: 1 ou 2 frases curtas sobre o cheiro. genero: Masculino, Feminino ou Unissex. familia: a do Fragrantica, em português.
+Copie do Fragrantica, sem inventar e sem misturar outras fontes:
+- Pirâmide: EXATAMENTE as notas de topo, coração e base do Fragrantica, com os nomes em português como aparecem no Fragrantica Brasil (ex.: "Cidra", "Groselha Preta", "Cenoura"). Uma nota por item, sem parênteses, sem notas citadas em resenhas ou lojas.
+- "acordes": os "Principais acordes" do Fragrantica, na mesma ordem e com os mesmos nomes em português (ex.: "cítrico", "verde", "aromático", "fresco especiado", "frutado", "âmbar"). "valor" é o tamanho da barra, de 0 a 100 (a primeira é 100).
+- "familia": a família do Fragrantica em português (ex.: "Aromático Aquático").
+- "votos" com as CONTAGENS de votos do Fragrantica (números, não porcentagens):
+  · fixacao = [Muito fraco, Fraco, Moderada, Longa, Eterno] da "Longevidade";
+  · projecao = [Íntimo, Moderada, Forte, Enorme] do "Rastro";
+  · estacoes = inverno, primavera, verao, outono e dia, noite do "Quando usar";
+  · total = número de votos da avaliação;
+  · ocasioes: Trabalho, Dia a dia, Encontro, Festa, Formal, Esporte de 0 a 100 (estime pelo perfil).
+- Ano, concentração, perfumistas, gênero, país da casa e uma descricao de 1 ou 2 frases curtas sobre o cheiro, em português.
 - forma do frasco: alto, ret, redondo ou largo. tampa: cor da tampa em hex.
 - "fragrantica": endereço completo da página do perfume no Fragrantica.
-- fontes: sites usados e o que veio de cada um.` }], { schema: { ...SCHEMA_FICHA, properties: { ...SCHEMA_FICHA.properties, fragrantica: { type: "STRING" } } }, pesquisar: true });
+- fontes: sites usados e o que veio de cada um. O que não encontrar fica vazio e entra em "revisar".` }], { schema: { ...SCHEMA_FICHA, properties: { ...SCHEMA_FICHA.properties, fragrantica: { type: "STRING" } } }, pesquisar: true });
     const imagem = pagina?.imagem ?? fotoDoFragrantica(c.link) ?? fotoDoFragrantica(f.fragrantica);
     const { fragrantica: _fr, ...resto } = f;
     void _fr;
-    return { ...resto, perfumistas: f.perfumistas ?? [], revisar: f.revisar ?? [], fontes: f.fontes ?? [], forma: f.forma ?? "ret", tampa: /^#[0-9a-f]{6}$/i.test(f.tampa ?? "") ? f.tampa : "#141417", imagem };
+    return finalizar({ ...resto, perfumistas: f.perfumistas ?? [], revisar: f.revisar ?? [], fontes: f.fontes ?? [], forma: f.forma ?? "ret", tampa: /^#[0-9a-f]{6}$/i.test(f.tampa ?? "") ? f.tampa : "#141417", imagem });
   } catch (e) {
     ultimoErroFicha = `ficha: ${e instanceof Error ? e.message.slice(0, 200) : e}`;
     console.error("fichaChatGPT", e);
