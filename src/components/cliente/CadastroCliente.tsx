@@ -144,8 +144,8 @@ export function CadastroCliente({ base, modoInicial }: { base: Record<string, un
   };
   const rev = (l: string) => Boolean(ficha?.revisar.some((r) => r.toLowerCase().slice(0, 4) === l.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").slice(0, 4) || r.toLowerCase().slice(0, 4) === l.toLowerCase().slice(0, 4)));
   const campo = (l: string, v: string | undefined) => { const r = rev(l) || !v; return { l, v: v || "a confirmar", st: r ? "REVISAR" : "✓", stCor: r ? OURO : t.ink3, borda: r ? OURO : t.line, mudar: muda(l) }; };
-  const campos = ficha ? [campo("NOME", ficha.nome), campo("CASA", ficha.casa), campo("CONCENTRAÇÃO", ficha.concentracao), campo("ANO", ficha.ano ? String(ficha.ano) : ""), campo("PERFUMISTA", ficha.perfumistas.join(" e ")), campo("FAMÍLIA", ficha.familia), campo("GÊNERO", ficha.genero), campo("PAÍS", ficha.pais)] : [];
-  const checks = ficha ? [ficha.nome, ficha.casa, ficha.concentracao, ficha.ano, ficha.perfumistas.length, ficha.familia, ficha.genero, ficha.pais, ficha.descricao, ficha.notas.saida.length, ficha.notas.coracao.length, ficha.notas.fundo.length, ficha.acordes.length, ficha.fixacaoH, ficha.projecaoM, ficha.votos?.estacoes, ficha.votos?.ocasioes?.length, ficha.votos?.dia, ficha.acorde, ficha.fontes?.length] : [];
+  const campos = ficha ? [campo("NOME", ficha.nome), campo("CASA", ficha.casa), campo("CONCENTRAÇÃO", ficha.concentracao), campo("ANO", ficha.ano ? String(ficha.ano) : ""), campo("FAMÍLIA", ficha.familia), campo("GÊNERO", ficha.genero), campo("PAÍS", ficha.pais)] : [];
+  const checks = ficha ? [ficha.nome, ficha.casa, ficha.concentracao, ficha.ano, ficha.familia, ficha.genero, ficha.pais, ficha.descricao, ficha.notas.saida.length, ficha.notas.coracao.length, ficha.notas.fundo.length, ficha.acordes.length, ficha.fixacaoH, ficha.projecaoM, ficha.votos?.estacoes, ficha.votos?.dia, ficha.acorde] : [];
   const pend = campos.filter((c) => c.st === "REVISAR").length;
   const ok = checks.filter(Boolean).length - pend;
   const tot = 20;
@@ -193,7 +193,7 @@ export function CadastroCliente({ base, modoInicial }: { base: Record<string, un
       { l: ficha.votos?.origem === "estimativa" ? "PROJEÇÃO · ESTIMATIVA" : "PROJEÇÃO", seg: seg(Math.round(((nivelP + 1) / 4) * 5)), v: `${NIVEL_P[nivelP] ?? "—"}${ficha.projecaoM ? ` · ${ficha.projecaoM.toFixed(1).replace(".", ",")} m` : ""}` },
     ] : [],
     prog: { trilho: "M 8.0 42.0 a 34 34 0 1 0 68.0 0 a 34 34 0 1 0 -68.0 0 Z", arco: arco(ok / tot), pct: Math.round((ok / tot) * 100), ok, tot, rev: pend },
-    fontes: (ficha?.fontes ?? []).map((f) => ({ nome: f.nome, info: f.oQue, ic: "✓", bg: t.amber })).concat(foto ? [{ nome: "Imagem do frasco", info: "salva no Atlas", ic: "✓", bg: t.amber }] : []),
+    fontes: [] as { nome: string; info: string; ic: string; bg: string }[], // "fontes lidas" saiu da ficha
     como: [["tenho", "Tenho"], ["quero", "Quero"], ["tive", "Tive"], ["assinatura", "★ Assinatura"]].map(([k, nome]) => ({ nome, bg: k === situacao ? t.btn : t.chip, cor: k === situacao ? t.onBtn : t.ink2, pick: () => setSituacao(k) })),
     mudarAnotacao: (e: React.ChangeEvent<HTMLInputElement>) => setAnotacao(e.target.value),
     salvar,

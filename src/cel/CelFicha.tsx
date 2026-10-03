@@ -14,9 +14,7 @@ const SIT: [string, string][] = [["tenho", "Tenho"], ["tive", "Tive"], ["quero",
 export function CelFicha({ v, x }: { v: V; x: ExtraFicha }) {
   const p = x.p;
   const cab = v.cab;
-  const c = v.clima;
   const n = v.eixos.length;
-  const temClima = c.pts.length > 0;
   return (
     <div className="c-tela">
       <Topo titulo={`Coleção / ${p.acorde}`} voltar direita={<OpcoesPerfume id={p.id} nome={p.nome} casa={p.casa} entradaId={x.entradaId} situacao={x.situacao} numero={x.numero} />} />
@@ -129,39 +127,6 @@ export function CelFicha({ v, x }: { v: V; x: ExtraFicha }) {
         </div>
       </Bloco>
 
-      {/* 05 · fixação × temperatura */}
-      <Card pad={16} gap={12}>
-        <Rot>Fixação × temperatura</Rot>
-        {temClima ? (
-          <>
-            <div style={{ fontSize: 20, lineHeight: 1.3 }}>Abaixo de 25 °C dura <span style={{ color: v.t.sup[0] }}>{c.frio}</span>. Acima de 28 °C, cai para <span style={{ color: OURO }}>{c.quente}</span>.</div>
-            <div style={{ fontSize: 12.5, color: "var(--ink-3)" }}>Base: {c.n} reviews com data e cidade, cruzadas com a temperatura daquele dia.</div>
-            <div style={{ display: "flex", gap: 14, fontSize: 12.5, color: "var(--ink-2)" }}>
-              <span style={{ display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 8, height: 8, borderRadius: 4, background: v.t.seco }} />Dia seco</span>
-              <span style={{ display: "flex", alignItems: "center", gap: 6 }}><span style={{ width: 8, height: 8, borderRadius: 4, background: v.t.umido }} />Dia úmido</span>
-            </div>
-            <svg viewBox="0 0 699 262" style={{ width: "100%", display: "block" }}>
-              <rect x={44} y={0} width={c.faixaF} height={236} rx={10} style={{ fill: v.t.zonaF }} />
-              <rect x={c.qx} y={0} width={c.faixaQ} height={236} rx={10} style={{ fill: v.t.zonaQ }} />
-              {c.gy.map((g) => (
-                <g key={g.t}><line x1={44} x2={699} y1={g.y} y2={g.y} style={{ stroke: "var(--line)" }} /><text x={0} y={Number(g.y) + 8} style={{ fontFamily: MONO, fontSize: 22, fill: "var(--ink-3)" }}>{g.t}</text></g>
-              ))}
-              {c.gx.map((g) => <text key={g.t} x={g.x} y={262} textAnchor="middle" style={{ fontFamily: MONO, fontSize: 22, fill: "var(--ink-3)" }}>{g.t}</text>)}
-              <path d={c.tend} style={{ fill: "none", stroke: "var(--ink-3)", strokeWidth: 2.5, strokeDasharray: "6 7" }} />
-              {c.pts.map((pt, i) => <circle key={i} cx={pt.x} cy={pt.y} r={pt.r * 0.9} style={{ fill: pt.cor, stroke: "var(--surface)", strokeWidth: 3 }} />)}
-            </svg>
-            {x.hoje ? (
-              <div style={{ display: "flex", gap: 10, alignItems: "center", padding: "10px 14px", borderRadius: 14, background: "var(--chip)", fontSize: 13 }}>
-                <svg viewBox="0 0 24 24" style={{ width: 18, height: 18, fill: "none", stroke: OURO, strokeWidth: 1.5, flexShrink: 0 }}><path d="M12 8a4 4 0 1 0 .01 0 M12 2v2 M12 20v2 M2 12h2 M20 12h2 M4.9 4.9l1.4 1.4 M17.7 17.7l1.4 1.4 M4.9 19.1l1.4-1.4 M17.7 6.3l1.4-1.4" /></svg>
-                <span>Hoje em {x.hoje.cidade} faz <b>{x.hoje.temp} °C</b>: conte com umas <b>{x.hoje.horas}</b>.</span>
-              </div>
-            ) : null}
-          </>
-        ) : (
-          <div style={{ fontSize: 14, lineHeight: 1.5, color: "var(--ink-2)" }}>Ainda não há reviews com data e cidade suficientes para cruzar com o clima. A IA completa esse gráfico quando encontrar dados.</div>
-        )}
-      </Card>
-
       {/* 06 · quando funciona e votos */}
       <Card fundo="vinho" pad={16}>
         <Rot>Quando funciona</Rot>
@@ -198,18 +163,7 @@ export function CelFicha({ v, x }: { v: V; x: ExtraFicha }) {
         ))}
       </Card>
 
-      {/* 07 · ocasiões e semelhantes */}
-      <Card pad={16} gap={10}>
-        <Rot>Ocasiões</Rot>
-        <span style={{ fontSize: 12.5, color: "var(--ink-3)" }}>onde a comunidade mais usa</span>
-        {v.ocasioes.map((o) => (
-          <div key={o.nome} style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 14 }}>
-            <span style={{ width: 80 }}>{o.nome}</span>
-            <Barra v={o.v} cor={o.cor} />
-            <span style={{ width: 22, textAlign: "right", fontFamily: MONO, fontSize: 10.5, color: "var(--ink-3)" }}>{o.v}</span>
-          </div>
-        ))}
-      </Card>
+      {/* 07 · semelhantes */}
       <Semelhantes itens={v.semelhantes} perfumeId={p.id} buscando={v.buscandoSemelhantes} nome={p.nome} />
 
 

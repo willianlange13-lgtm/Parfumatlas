@@ -184,7 +184,6 @@ export async function montarFicha(id: string) {
       { l: "FAMÍLIA", v: p.familia, c: SOBRE_FAMILIA[p.familia as Familia] ?? "família olfativa" },
       { l: "CONCENTRAÇÃO", v: p.concentracao ?? "—", c: p.concentracao === "Eau de Parfum" ? "a versão mais comum" : "concentração da casa" },
       { l: "LANÇAMENTO", v: p.ano ? String(p.ano) : "—", c: p.ano ? idade(new Date().getFullYear() - p.ano) : "ano a confirmar" },
-      { l: "PERFUMISTAS", v: p.perfumistas.length ? p.perfumistas.map((x) => x.split(" ").slice(-1)[0]).join(" e ") : "a confirmar", c: p.perfumistas[0] ?? "a casa não divulga" },
       { l: "INSPIRADOS", ...inspFato },
     ],
     piramide: [

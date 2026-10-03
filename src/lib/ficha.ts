@@ -122,7 +122,16 @@ const SCHEMA_FICHA = {
 // a ficha principal não procura parecidos nem a mesma casa (isso vem na segunda etapa, em segundo plano)
 const { parecidos: _p, mesmaCasa: _m, ...PROPS_PRINCIPAIS } = SCHEMA_FICHA.properties;
 void _p; void _m;
-const SCHEMA_PRINCIPAL = { ...SCHEMA_FICHA, properties: { ...PROPS_PRINCIPAIS, fragrantica: { type: "STRING" } } };
+// ficha enxuta: sem perfumistas, fontes, ocasiões e frasco desenhado (o cadastro responde mais rápido)
+const { perfumistas: _pf, fontes: _fo, forma: _fm, tampa: _tp, imagem: _im, votos: VOTOS_COMPLETO, ...PROPS_ENXUTAS } = PROPS_PRINCIPAIS;
+void _pf; void _fo; void _fm; void _tp; void _im;
+const { ocasioes: _oc, ...PROPS_VOTOS } = VOTOS_COMPLETO.properties;
+void _oc;
+const SCHEMA_PRINCIPAL = {
+  ...SCHEMA_FICHA,
+  properties: { ...PROPS_ENXUTAS, votos: { ...VOTOS_COMPLETO, properties: PROPS_VOTOS, required: VOTOS_COMPLETO.required.filter((x) => x !== "ocasioes") }, fragrantica: { type: "STRING" } },
+  required: SCHEMA_FICHA.required.filter((x) => !["forma", "tampa", "fontes"].includes(x)),
+};
 
 const REGRA_PARECIDOS = `COMO MONTAR OS PARECIDOS (faça as duas buscas):
 A) Descubra se este perfume é inspirado num original famoso (ex.: Pacific Aura → Louis Vuitton Pacific Chill). Se for, o original entra com tipo "inspirou".
@@ -391,13 +400,11 @@ Pirâmide, acordes e família vêm do Fragrantica, sem misturar. Os outros campo
   · total = número de votos da avaliação; origem = "fragrantica".
   · exemplo: "fixacao": [42, 194, 855, 179, 23], "projecao": [120, 610, 240, 35], "estacoes": {"inverno": 60, "primavera": 410, "verao": 520, "outono": 170}, "dia": 600, "noite": 150.
   · Se o Fragrantica não mostrar esses números, NÃO deixe zerado: use a fixação e o rastro do Parfumo, as resenhas e as lojas e transforme em porcentagens que somam 100 (ex.: fixação moderada com 5 a 7 h → [5, 15, 55, 20, 5]; estações e dia/noite de 0 a 100) e use origem = "estimativa".
-  · ocasioes: Trabalho, Dia a dia, Encontro, Festa, Formal, Esporte de 0 a 100 (estime pelo perfil).
 - "concentracao": a que está escrita no frasco e no site da marca ou das lojas (ex.: "Eau de Parfum", "Eau de Toilette", "Extrait de Parfum"). O Fragrantica muitas vezes não mostra; nesse caso procure na marca e nas lojas. Nunca escreva "Colônia" sem o frasco dizer "Eau de Cologne".
 - "pais": o país de origem da marca (ex.: Rayhaan, Lattafa, Armaf → "Emirados Árabes Unidos"; Dior, Chanel → "França"). Pesquise se não souber.
-- Ano, perfumistas, gênero e uma descricao de 1 ou 2 frases curtas sobre o cheiro, em português.
-- forma do frasco: alto, ret, redondo ou largo. tampa: cor da tampa em hex.
+- Ano, gênero e "descricao": UMA frase curta (até 15 palavras) sobre o cheiro, em português.
 - "fragrantica": endereço completo da página do perfume no Fragrantica.
-- fontes: sites usados e o que veio de cada um. O que não encontrar fica vazio e entra em "revisar".` }], { schema: SCHEMA_PRINCIPAL, pesquisar: !paginaCompleta, maxBuscas: 4 });
+- O que não encontrar fica vazio e entra em "revisar".` }], { schema: SCHEMA_PRINCIPAL, pesquisar: !paginaCompleta, maxBuscas: 4 });
     const imagem = pagina?.imagem ?? fotoDoFragrantica(c.link) ?? fotoDoFragrantica(f.fragrantica);
     f.parecidos = await verificarParecidos(f.nome || c.nome, f.parecidos);
     const { fragrantica: _fr, ...resto } = f;
