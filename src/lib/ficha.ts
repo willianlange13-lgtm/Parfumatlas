@@ -189,7 +189,7 @@ function invalidarVotos(f: FichaIA): FichaIA {
 }
 async function votosDuplicadosNoAcervo(nome: string, casa: string, votos?: VetoresVotos & { total?: number | null; origem?: "fragrantica" | "estimativa" | null }) {
   const ePacificAura = normal(nome) === "pacific aura" && normal(casa).includes("rayhaan");
-  if (ePacificAura || votos?.origem !== "fragrantica" || !Number(votos?.total) || !temVotos(votos?.fixacao) || !temVotos(votos?.projecao)) return false;
+  if (ePacificAura || votos?.origem !== "fragrantica" || !Number(votos?.total) || !temVotos(votos?.fixacao ?? undefined) || !temVotos(votos?.projecao ?? undefined)) return false;
   const fx = assinaturaVotos(votos.fixacao), pj = assinaturaVotos(votos.projecao), total = Number(votos.total);
   const acervo = await carregarAcervo();
   return acervo.colecao.some(({ perfume: p }) => {
