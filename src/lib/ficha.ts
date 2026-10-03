@@ -221,6 +221,9 @@ async function fichaSalva(nome: string, casa: string): Promise<FichaIA | null> {
     if (casa) q = q.ilike("casa", casa.trim());
     const { data } = await q.limit(1).maybeSingle();
     if (!data || !(data.notas_saida as string[] | null)?.length) return null;
+    // só reaproveita ficha completa (acordes com força e votos); senão, pesquisa de novo
+    const ac = (data.acordes as { valor: number }[] | null) ?? [];
+    if (!ac.some((a) => a.valor > 0) || !(data.votos as { fixacao?: number[] } | null)?.fixacao?.some((x) => x > 0)) return null;
     const { id: _i, clima: _c, ...p } = perfumeDaLinha(data);
     void _i; void _c;
     return { ...p, revisar: p.revisar ?? [] };

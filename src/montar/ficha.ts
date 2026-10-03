@@ -38,7 +38,9 @@ export async function montarFicha(id: string) {
   const meus = naColecao(acervo.colecao);
 
   // radar e espectro com os 8 acordes mais fortes
-  const AC = [...p.acordes].sort((a, b) => b.valor - a.valor).slice(0, 8);
+  // acordes sem força (fichas antigas): usa a ordem do Fragrantica, do maior para o menor
+  const acs = p.acordes.length && p.acordes.every((a) => !a.valor) ? p.acordes.map((a, i) => ({ ...a, valor: Math.max(30, 100 - i * 12) })) : p.acordes;
+  const AC = [...acs].sort((a, b) => b.valor - a.valor).slice(0, 8);
   while (AC.length < 3) AC.push({ nome: "—", valor: 10 });
   const cores = AC.map((a, i) => (i === 0 ? "#D8B970" : corDoAcorde(a.nome) === "#9099AC" ? PALETA[(i + 1) % PALETA.length] : corDoAcorde(a.nome)));
   const n = AC.length;
