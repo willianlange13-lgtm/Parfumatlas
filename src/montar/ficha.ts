@@ -62,6 +62,8 @@ export async function montarFicha(id: string) {
   const hFam = mesmaFam.length ? mesmaFam.reduce((s, x) => s + (x.fixacaoH ?? 0), 0) / mesmaFam.length - 0.4 : 6.8;
   const mFam = mesmaFam.length ? mesmaFam.reduce((s, x) => s + (x.projecaoM ?? 1.2), 0) / mesmaFam.length - 0.15 : 1.2;
   const gauge = (frac: number, fracRef: number, cor: string) => { const cx = 120, cy = 118, r = 96, aC = Math.PI + Math.PI * Math.min(1, fracRef); return { trilho: arc(cx, cy, r, Math.PI, 2 * Math.PI), valor: arc(cx, cy, r, Math.PI, Math.PI + Math.PI * Math.min(0.999, frac)), marca: `M ${P(cx + Math.cos(aC) * (r - 14))} ${P(cy + Math.sin(aC) * (r - 14))} L ${P(cx + Math.cos(aC) * (r + 14))} ${P(cy + Math.sin(aC) * (r + 14))}`, cor }; };
+  const nivelP = metros < 0.8 ? "Íntima" : metros < 1.6 ? "Moderada" : metros < 2.5 ? "Forte" : "Enorme";
+  const temF = VF.some((x) => x > 0), temP = VP.some((x) => x > 0);
   const g1 = gauge(horas / 12, hFam / 12, t.sup[0]), g2 = gauge(metros / 3, mFam / 3, t.sup[1]);
 
   // quando funciona
@@ -166,14 +168,14 @@ export async function montarFicha(id: string) {
       { nome: "Fundo", tempo: "DEPOIS DE 3 H", notas: p.notas.fundo.slice(0, 4).map((x, i) => notaCor(x, PALETA[(i + 5) % PALETA.length])) },
     ],
     gauges: [
-      { nome: "Fixação", txt: hm(horas), sub: `média ponderada de ${(p.votos?.total ?? 0).toLocaleString("pt-BR")} votos`, ref: `Média da família: ${hm(hFam)}`, trilho: g1.trilho, valor: g1.valor, marca: g1.marca, cor: g1.cor },
-      { nome: "Projeção", txt: metros.toFixed(1).replace(".", ",") + " m", sub: "alcance médio nas 2 primeiras horas", ref: `Média da família: ${mFam.toFixed(1).replace(".", ",")} m`, trilho: g2.trilho, valor: g2.valor, marca: g2.marca, cor: g2.cor },
+      { nome: "Fixação", txt: hm(horas), sub: temF ? `média ponderada de ${(p.votos?.total ?? 0).toLocaleString("pt-BR")} votos` : "estimativa (votos do Fragrantica não encontrados)", ref: `Média da família: ${hm(hFam)}`, trilho: g1.trilho, valor: g1.valor, marca: g1.marca, cor: g1.cor },
+      { nome: "Projeção", txt: nivelP, sub: `alcança cerca de ${metros.toFixed(1).replace(".", ",")} metro${metros >= 2 ? "s" : ""} de distância nas 2 primeiras horas`, ref: `Média da família: ${mFam.toFixed(1).replace(".", ",")} metro${mFam >= 2 ? "s" : ""}`, trilho: g2.trilho, valor: g2.valor, marca: g2.marca, cor: g2.cor },
     ],
     espectro: AC.map((a, i) => ({ curto: a.nome, v: a.valor, h: Math.round((a.valor / 100) * 190), cor: cores[i] })),
     roda: { guia: circ(rc, rcy, ri) + " " + circ(rc, rcy, rmax), seg },
     votos: [
-      { nome: "Fixação", itens: votos(["Muito fraca", "Fraca", "Moderada", "Longa", "Eterna"], VF, t.sup[0]) },
-      { nome: "Projeção", itens: votos(["Íntima", "Moderada", "Forte", "Enorme"], VP, t.sup[1]) },
+      { nome: temF ? "Fixação" : "Fixação · votos não encontrados", itens: votos(["Muito fraca", "Fraca", "Moderada", "Longa", "Eterna"], VF, t.sup[0]) },
+      { nome: temP ? "Projeção" : "Projeção · votos não encontrados", itens: votos(["Íntima", "Moderada", "Forte", "Enorme"], VP, t.sup[1]) },
     ],
     colunas,
     perguntas: perguntas.map((q) => ({ t: q, href: qs(q) })),

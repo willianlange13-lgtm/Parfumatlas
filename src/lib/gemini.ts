@@ -15,7 +15,7 @@ type Parte = { text: string } | { inlineData: { mimeType: string; data: string }
  * Chama o Gemini e devolve JSON. Com `pesquisar`, liga a busca do Google e a leitura de links
  * (nesse modo a API não aceita schema, então o JSON vem pedido no próprio texto).
  */
-export async function geminiJSON<T>(partes: Parte[], opcoes: { schema?: object; pesquisar?: boolean; sistema?: string; temperatura?: number; leve?: boolean } = {}): Promise<T> {
+export async function geminiJSON<T>(partes: Parte[], opcoes: { schema?: object; pesquisar?: boolean; sistema?: string; temperatura?: number; leve?: boolean; esforco?: "low" | "medium" } = {}): Promise<T> {
   const texto = await chamar(partes, opcoes, true);
   const lido = lerJSON<T>(texto);
   if (lido !== null) return lido;
@@ -45,7 +45,7 @@ export async function geminiTexto(partes: Parte[], opcoes: { pesquisar?: boolean
   return chamar(partes, opcoes, false);
 }
 
-async function chamar(partes: Parte[], opcoes: { schema?: object; pesquisar?: boolean; sistema?: string; temperatura?: number; leve?: boolean }, json: boolean): Promise<string> {
+async function chamar(partes: Parte[], opcoes: { schema?: object; pesquisar?: boolean; sistema?: string; temperatura?: number; leve?: boolean; esforco?: "low" | "medium" }, json: boolean): Promise<string> {
   if (usaOpenAI()) return chamarOpenAI(partes, opcoes, json);
   const chave = process.env.GEMINI_API_KEY;
   if (!chave) throw new Error("GEMINI_API_KEY não configurada");
@@ -97,7 +97,7 @@ function schemaComum(o: unknown): unknown {
   return o;
 }
 
-async function chamarOpenAI(partes: Parte[], opcoes: { schema?: object; pesquisar?: boolean; sistema?: string; temperatura?: number; leve?: boolean }, json: boolean): Promise<string> {
+async function chamarOpenAI(partes: Parte[], opcoes: { schema?: object; pesquisar?: boolean; sistema?: string; temperatura?: number; leve?: boolean; esforco?: "low" | "medium" }, json: boolean): Promise<string> {
   const chave = process.env.OPENAI_API_KEY!;
   const conteudo = partes.map((p) => ("text" in p ? { type: "input_text", text: p.text } : { type: "input_image", image_url: `data:${p.inlineData.mimeType};base64,${p.inlineData.data}` }));
   if (json) conteudo.push({ type: "input_text", text: `Responda só com um JSON válido${opcoes.schema ? ` neste formato (JSON Schema): ${JSON.stringify(schemaComum(opcoes.schema))}` : ""}.` });
@@ -113,7 +113,7 @@ async function chamarOpenAI(partes: Parte[], opcoes: { schema?: object; pesquisa
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${chave}` },
       // modelos gpt-5 "pensam" antes de responder: esforço baixo deixa bem mais rápido e barato
-      body: JSON.stringify({ model: modelo, ...corpo, ...(modelo.startsWith("gpt-5") ? { reasoning: { effort: "low" } } : {}) }),
+      body: JSON.stringify({ model: modelo, ...corpo, ...(modelo.startsWith("gpt-5") ? { reasoning: { effort: opcoes.esforco ?? "low" } } : {}) }),
       signal: AbortSignal.timeout(100000),
     });
     if (!r.ok) {

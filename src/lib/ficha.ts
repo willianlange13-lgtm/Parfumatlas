@@ -4,7 +4,7 @@ import { carregarAcervo, perfumeDaLinha } from "@/lib/dados";
 import { createClient, supabaseConfigurado } from "@/lib/supabase/server";
 import { lerPagina, linkDePerfume, type Pagina } from "@/lib/pagina";
 import type { Perfume, Votos } from "@/lib/tipos";
-import { acordePT, acordePrincipal, horasDosVotos, metrosDosVotos, notasPT, votosDe } from "@/lib/normalizar";
+import { acordePT, acordePrincipal, horasDosVotos, metrosDosVotos, notasPT, votosDe, temVotos } from "@/lib/normalizar";
 
 export type Candidato = { nome: string; casa: string; concentracao: string; por: string; pct: number; link?: string; imagem?: string | null };
 export type Identificacao = { lido: string[]; candidatos: Candidato[] };
@@ -125,11 +125,12 @@ const FAMILIA: Record<string, string> = { aromatic: "Aromático", aquatic: "Aqu�
 
 /** "EDP", "eau de parfum" → "Eau de Parfum". */
 function concentracaoPT(c?: string) {
-  const t = (c ?? "").toLowerCase().replace(/[^a-z ]/g, " ").replace(/\s+/g, " ").trim();
+  const t = (c ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z ]/g, " ").replace(/\s+/g, " ").trim();
   if (/extrait|^parfum$|pure perfume/.test(t)) return "Extrait de Parfum";
   if (/eau de parfum|^edp$|edp intense/.test(t)) return /intense/.test(t) ? "Eau de Parfum Intense" : "Eau de Parfum";
   if (/eau de toilette|^edt$/.test(t)) return "Eau de Toilette";
-  if (/eau de cologne|^edc$|cologne/.test(t)) return "Eau de Cologne";
+  if (/eau de cologne|^edc$|cologne|^colonia$|agua de colonia/.test(t)) return "Eau de Cologne";
+  if (/^perfume$|^parfum$/.test(t)) return "Extrait de Parfum";
   return c ?? "";
 }
 
@@ -144,7 +145,7 @@ function finalizar(f: FichaIA): FichaIA {
   if (acordes.length && acordes.every((a) => !a.valor)) acordes = acordes.map((a, i) => ({ ...a, valor: Math.max(30, 100 - i * 12) }));
   const familia = (f.familia ?? "").split(/\s+/).map((w) => FAMILIA[w.toLowerCase()] ?? w).join(" ");
   const votos = votosDe(f.votos as Partial<Votos>, f.votos?.ocasioes?.length ? f.votos.ocasioes : OCASIOES);
-  if (!votos) revisar.add("votos");
+  if (!votos || !temVotos(votos.fixacao) || !temVotos(votos.projecao)) revisar.add("votos");
   return {
     ...f,
     notas, acordes, familia,
@@ -152,8 +153,8 @@ function finalizar(f: FichaIA): FichaIA {
     concentracao: concentracaoPT(f.concentracao),
     acorde: acordes[0] ? acordePrincipal(acordes[0].nome) : f.acorde,
     votos: votos ?? f.votos,
-    fixacaoH: votos ? horasDosVotos(votos.fixacao) : f.fixacaoH,
-    projecaoM: votos ? metrosDosVotos(votos.projecao) : f.projecaoM,
+    fixacaoH: votos && temVotos(votos.fixacao) ? horasDosVotos(votos.fixacao) : f.fixacaoH,
+    projecaoM: votos && temVotos(votos.projecao) ? metrosDosVotos(votos.projecao) : f.projecaoM,
     revisar: [...revisar],
     parecidos: (f.parecidos ?? []).filter((x) => x?.nome && x?.casa && x.nome.toLowerCase() !== (f.nome ?? "").toLowerCase()).slice(0, 10).map((x) => ({ ...x, pct: Math.max(40, Math.min(99, Math.round(Number(x.pct) || 70))) })),
   };
@@ -234,12 +235,43 @@ async function fichaSalva(nome: string, casa: string): Promise<FichaIA | null> {
     if (!data || !(data.notas_saida as string[] | null)?.length) return null;
     // só reaproveita ficha completa (acordes com força e votos); senão, pesquisa de novo
     const ac = (data.acordes as { valor: number }[] | null) ?? [];
-    if (!ac.some((a) => a.valor > 0) || !(data.votos as { fixacao?: number[] } | null)?.fixacao?.some((x) => x > 0)) return null;
+    const fx = (data.votos as { fixacao?: number[] } | null)?.fixacao ?? [];
+    // [0,0,100,0,0] era o valor de reserva antigo (votos não encontrados): pesquisa de novo
+    if (!ac.some((a) => a.valor > 0) || !fx.some((x) => x > 0) || fx.join() === "0,0,100,0,0") return null;
     const { id: _i, clima: _c, ...p } = perfumeDaLinha(data);
     void _i; void _c;
     return { ...p, revisar: p.revisar ?? [] };
   } catch {
     return null;
+  }
+}
+
+const somaVotos = (l: unknown) => (Array.isArray(l) ? l : l && typeof l === "object" ? Object.values(l) : []).reduce((a: number, x) => a + (parseFloat(String(x).replace(/\D/g, "")) || 0), 0);
+
+/**
+ * Segunda pesquisa, só quando a primeira não trouxe os votos ou trouxe poucos parecidos.
+ * Pede para abrir a página do Fragrantica e copiar os números.
+ */
+async function completar(f: FichaIA & { fragrantica?: string }, alvo: string, link?: string) {
+  const v = (f.votos ?? {}) as Record<string, unknown>;
+  const semVotos = !somaVotos(v.fixacao ?? v.longevidade) || !somaVotos(v.projecao ?? v.rastro);
+  const poucos = (f.parecidos ?? []).length < 5;
+  if (!semVotos && !poucos) return;
+  type Extra = { fixacao?: number[]; projecao?: number[]; total?: number; parecidos?: FichaIA["parecidos"] };
+  try {
+    const x = await geminiJSON<Extra>([{ text: `Abra a página do perfume ${alvo} no Fragrantica${link ? ` (${link})` : ""} e copie:
+${semVotos ? `- "fixacao": as 5 contagens de votos de "Longevidade"/"Longevity" na ordem [muito fraco, fraco, moderado, longo, eterno];
+- "projecao": as 4 contagens de "Rastro"/"Sillage" na ordem [íntimo, moderado, forte, enorme];
+- "total": o número de votos da avaliação.
+Exemplo do formato: {"fixacao": [42, 194, 855, 179, 23], "projecao": [120, 610, 240, 35], "total": 1971}. Números inteiros, como aparecem na página.` : ""}
+${poucos ? `- "parecidos": de 5 a 10 perfumes parecidos (seção "Este perfume me lembra"/"This perfume reminds me of" e comparações em resenhas e lojas de contratipos), cada um com nome, casa, tipo ("inspirou" para o original que ele imita, "clone" para releituras dele, "parecido" nos outros casos) e pct de 0 a 100.` : ""}` }], { pesquisar: true, esforco: "medium" });
+    if (semVotos && somaVotos(x.fixacao)) f.votos = { ...(f.votos ?? {}), fixacao: x.fixacao, projecao: somaVotos(x.projecao) ? x.projecao : (v.projecao as number[]), total: x.total || (v.total as number) } as FichaIA["votos"];
+    if (poucos && x.parecidos?.length) {
+      const ja = new Set((f.parecidos ?? []).map((p) => p.nome.toLowerCase()));
+      f.parecidos = [...(f.parecidos ?? []), ...x.parecidos.filter((p) => p?.nome && !ja.has(p.nome.toLowerCase()))];
+    }
+  } catch (e) {
+    console.error("completar ficha", e);
   }
 }
 
@@ -265,7 +297,7 @@ Copie do Fragrantica, sem inventar e sem misturar outras fontes:
   · total = número de votos da avaliação;
   · exemplo do formato: "fixacao": [42, 194, 855, 179, 23], "projecao": [120, 610, 240, 35]. Sempre listas de números inteiros, nunca porcentagens nem textos;
   · ocasioes: Trabalho, Dia a dia, Encontro, Festa, Formal, Esporte de 0 a 100 (estime pelo perfil).
-- "concentracao": copie exatamente como está no Fragrantica (ex.: "Eau de Parfum", "Eau de Toilette", "Extrait de Parfum"). Não deduza pela linha nem pelo preço.
+- "concentracao": a que está escrita no frasco e no site da marca ou das lojas (ex.: "Eau de Parfum", "Eau de Toilette", "Extrait de Parfum"). O Fragrantica muitas vezes não mostra; nesse caso procure na marca e nas lojas. Nunca escreva "Colônia" sem o frasco dizer "Eau de Cologne".
 - "pais": o país de origem da marca (ex.: Rayhaan, Lattafa, Armaf → "Emirados Árabes Unidos"; Dior, Chanel → "França"). Pesquise se não souber.
 - Ano, perfumistas, gênero e uma descricao de 1 ou 2 frases curtas sobre o cheiro, em português.
 - forma do frasco: alto, ret, redondo ou largo. tampa: cor da tampa em hex.
@@ -273,6 +305,7 @@ Copie do Fragrantica, sem inventar e sem misturar outras fontes:
 - "fragrantica": endereço completo da página do perfume no Fragrantica.
 - fontes: sites usados e o que veio de cada um. O que não encontrar fica vazio e entra em "revisar".` }], { schema: { ...SCHEMA_FICHA, properties: { ...SCHEMA_FICHA.properties, fragrantica: { type: "STRING" } } }, pesquisar: !paginaCompleta });
     const imagem = pagina?.imagem ?? fotoDoFragrantica(c.link) ?? fotoDoFragrantica(f.fragrantica);
+    await completar(f, alvo, c.link ?? f.fragrantica);
     const { fragrantica: _fr, ...resto } = f;
     void _fr;
     return finalizar({ ...resto, perfumistas: f.perfumistas ?? [], revisar: f.revisar ?? [], fontes: f.fontes ?? [], forma: f.forma ?? "ret", tampa: /^#[0-9a-f]{6}$/i.test(f.tampa ?? "") ? f.tampa : "#141417", imagem });

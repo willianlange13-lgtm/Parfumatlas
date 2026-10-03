@@ -85,7 +85,8 @@ export function votosDe(v: Partial<Votos> | undefined, ocasioesPadrao: { nome: s
     const s = a.reduce((x, y) => x + y, 0);
     return s > 0 ? a.map((x) => Math.round((x / s) * 100)) : null;
   };
-  const fix = pct(v.fixacao, 5), proj = pct(v.projecao, 4);
+  const o = v as Record<string, unknown>;
+  const fix = pct(o.fixacao ?? o.longevidade ?? o.longevity, 5), proj = pct(o.projecao ?? o.rastro ?? o.sillage, 4);
   const eb = (v.estacoes ?? {}) as Record<string, unknown>;
   const e = { primavera: numero(eb.primavera), verao: numero(eb.verao ?? eb["verão"]), outono: numero(eb.outono), inverno: numero(eb.inverno) };
   const maxE = Math.max(e.primavera, e.verao, e.outono, e.inverno, numero(v.dia), numero(v.noite), 1);
@@ -93,8 +94,9 @@ export function votosDe(v: Partial<Votos> | undefined, ocasioesPadrao: { nome: s
   if (!fix && !proj && maxE <= 1) return undefined;
   return {
     total: numero(v.total),
-    fixacao: (fix ?? [0, 0, 100, 0, 0]) as Votos["fixacao"],
-    projecao: (proj ?? [0, 100, 0, 0]) as Votos["projecao"],
+    // sem contagem não inventa: fica zerado e a tela avisa que faltam os votos
+    fixacao: (fix ?? [0, 0, 0, 0, 0]) as Votos["fixacao"],
+    projecao: (proj ?? [0, 0, 0, 0]) as Votos["projecao"],
     estacoes: { primavera: rel(e.primavera), verao: rel(e.verao), outono: rel(e.outono), inverno: rel(e.inverno) },
     dia: rel(v.dia), noite: rel(v.noite),
     ocasioes: v.ocasioes?.length ? v.ocasioes : ocasioesPadrao,
@@ -102,5 +104,6 @@ export function votosDe(v: Partial<Votos> | undefined, ocasioesPadrao: { nome: s
 }
 
 /** Horas e metros a partir dos votos (mesma régua do Fragrantica). */
+export const temVotos = (l?: number[]) => (l ?? []).some((x) => x > 0);
 export const horasDosVotos = (f: number[]) => Math.round(f.reduce((s, x, i) => s + (x / 100) * [1.5, 3, 5.5, 9, 13][i], 0) * 10) / 10;
 export const metrosDosVotos = (p: number[]) => Math.round(p.reduce((s, x, i) => s + (x / 100) * [0.4, 1.2, 2, 3][i], 0) * 10) / 10;
