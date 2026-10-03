@@ -1,9 +1,14 @@
 import "server-only";
 
-/** A IA do sistema: ChatGPT (OpenAI) quando houver OPENAI_API_KEY; senão, Gemini. */
-export const usaOpenAI = () => Boolean(process.env.OPENAI_API_KEY);
-export const geminiConfigurado = () => usaOpenAI() || Boolean(process.env.GEMINI_API_KEY);
-export const nomeIA = () => (usaOpenAI() ? "ChatGPT" : "Gemini");
+/**
+ * Política de custo do Atlas:
+ * - Gemini é o provedor padrão quando GEMINI_API_KEY estiver configurada.
+ * - OpenAI só vira o provedor principal quando AI_PROVIDER=openai.
+ * - AI_PREMIUM_ENABLED continua reservado às pesquisas premium em background.
+ */
+export const usaOpenAI = () => process.env.AI_PROVIDER === "openai" && Boolean(process.env.OPENAI_API_KEY);
+export const geminiConfigurado = () => Boolean(process.env.GEMINI_API_KEY) || usaOpenAI();
+export const nomeIA = () => (usaOpenAI() ? "ChatGPT" : Boolean(process.env.GEMINI_API_KEY) ? "Gemini" : "IA não configurada");
 /** "gemini-flash-latest" sempre aponta para o Flash mais novo, então não sai de linha. */
 /** Se um modelo estiver fora de linha, sem cota ou sobrecarregado, tenta o seguinte. */
 const MODELOS = (leve = false) => [...new Set([process.env.GEMINI_MODEL, ...(leve ? ["gemini-flash-lite-latest", "gemini-flash-latest"] : ["gemini-flash-latest", "gemini-flash-lite-latest"])].filter(Boolean) as string[])];
@@ -51,7 +56,10 @@ export async function geminiTexto(partes: Parte[], opcoes: { pesquisar?: boolean
 async function chamar(partes: Parte[], opcoes: { schema?: object; pesquisar?: boolean; sistema?: string; temperatura?: number; leve?: boolean; esforco?: "low" | "medium"; tempo?: number; maxBuscas?: number }, json: boolean): Promise<string> {
   if (usaOpenAI()) return chamarOpenAI(partes, opcoes, json);
   const chave = process.env.GEMINI_API_KEY;
-  if (!chave) throw new Error("GEMINI_API_KEY não configurada");
+  if (!chave) {
+    if (process.env.OPENAI_API_KEY) throw new Error("GEMINI_API_KEY não configurada. Para usar OpenAI explicitamente, defina AI_PROVIDER=openai.");
+    throw new Error("GEMINI_API_KEY não configurada");
+  }
   const corpo: Record<string, unknown> = {
     contents: [{ role: "user", parts: partes }],
     generationConfig: { temperature: opcoes.temperatura ?? 0.4, ...(opcoes.pesquisar || !json ? {} : { responseMimeType: "application/json", ...(opcoes.schema ? { responseSchema: opcoes.schema } : {}) }) },
