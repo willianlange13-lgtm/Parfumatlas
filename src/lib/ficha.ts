@@ -181,19 +181,21 @@ const votosVazios = (base?: Votos): Votos => ({
   fixacao: [0, 0, 0, 0, 0],
   projecao: [0, 0, 0, 0],
   estacoes: base?.estacoes ?? { primavera: 0, verao: 0, outono: 0, inverno: 0 },
-  dia: base?.dia ?? 0, noite: base?.noite ?? 0, ocasioes: base?.ocasioes ?? [], origem: base?.origem ?? "estimativa",
+  dia: base?.dia ?? 0, noite: base?.noite ?? 0, ocasioes: base?.ocasioes ?? [], origem: "estimativa",
 });
 function invalidarVotos(f: FichaIA): FichaIA {
   const revisar = new Set(f.revisar ?? []); revisar.add("votos");
-  return { ...f, votos: votosVazios(f.votos), fixacaoH: 0, projecaoM: 0, revisar: [...revisar], completar: true };
+  return { ...f, votos: votosVazios(f.votos), fixacaoH: undefined, projecaoM: undefined, revisar: [...revisar], completar: true };
 }
-async function votosDuplicadosNoAcervo(nome: string, casa: string, fixacao?: number[] | null, projecao?: number[] | null) {
-  if (!temVotos(fixacao) || !temVotos(projecao)) return false;
-  const fx = assinaturaVotos(fixacao), pj = assinaturaVotos(projecao);
-  const { perfumes } = await carregarAcervo();
-  return [...perfumes.values()].some((p) => {
+async function votosDuplicadosNoAcervo(nome: string, casa: string, votos?: VetoresVotos & { total?: number | null; origem?: "fragrantica" | "estimativa" | null }) {
+  const ePacificAura = normal(nome) === "pacific aura" && normal(casa).includes("rayhaan");
+  if (ePacificAura || votos?.origem !== "fragrantica" || !Number(votos?.total) || !temVotos(votos?.fixacao) || !temVotos(votos?.projecao)) return false;
+  const fx = assinaturaVotos(votos.fixacao), pj = assinaturaVotos(votos.projecao), total = Number(votos.total);
+  const acervo = await carregarAcervo();
+  return acervo.colecao.some(({ perfume: p }) => {
     if (normal(p.nome) === normal(nome) && normal(p.casa) === normal(casa)) return false;
-    return assinaturaVotos(p.votos?.fixacao) === fx && assinaturaVotos(p.votos?.projecao) === pj;
+    if (p.votos?.origem !== "fragrantica" || !Number(p.votos.total) || Number(p.votos.total) !== total) return false;
+    return assinaturaVotos(p.votos.fixacao) === fx && assinaturaVotos(p.votos.projecao) === pj;
   });
 }
 
@@ -219,8 +221,8 @@ function finalizar(f: FichaIA): FichaIA {
     concentracao: concentracaoPT(f.concentracao),
     acorde: acordes[0] ? acordePrincipal(acordes[0].nome) : f.acorde,
     votos: votos ?? votosVazios(f.votos),
-    fixacaoH: votos && temVotos(votos.fixacao) ? horasDosVotos(votos.fixacao) : 0,
-    projecaoM: votos && temVotos(votos.projecao) ? metrosDosVotos(votos.projecao) : 0,
+    fixacaoH: votos && temVotos(votos.fixacao) ? horasDosVotos(votos.fixacao) : undefined,
+    projecaoM: votos && temVotos(votos.projecao) ? metrosDosVotos(votos.projecao) : undefined,
     revisar: [...revisar],
     mesmaCasa: (f.mesmaCasa ?? []).filter((x, i, l) => x?.nome && normal(x.nome) !== normal(f.nome ?? "") && l.findIndex((y) => normal(y.nome) === normal(x.nome)) === i).slice(0, 8)
       .map((x) => ({ nome: x.nome, link: x.link && /fragrantica\./i.test(x.link) ? x.link : null, imagem: fotoDoFragrantica(x.link) })),
@@ -305,7 +307,7 @@ async function fichaSalva(nome: string, casa: string): Promise<FichaIA | null> {
     const ac = (data.acordes as { valor: number }[] | null) ?? [];
     const fx = (data.votos as { fixacao?: number[]; projecao?: number[] } | null)?.fixacao ?? [];
     const pj = (data.votos as { fixacao?: number[]; projecao?: number[] } | null)?.projecao ?? [];
-    if (!ac.some((a) => a.valor > 0) || !fx.some((x) => x > 0) || votosSuspeitos({ fixacao: fx, projecao: pj }, nome, casa) || await votosDuplicadosNoAcervo(nome, casa, fx, pj)) return null;
+    if (!ac.some((a) => a.valor > 0) || !fx.some((x) => x > 0) || votosSuspeitos({ fixacao: fx, projecao: pj }, nome, casa) || await votosDuplicadosNoAcervo(nome, casa, (data.votos as Votos | null) ?? undefined)) return null;
     const { id: _i, clima: _c, ...p } = perfumeDaLinha(data);
     void _i; void _c;
     return { ...p, revisar: p.revisar ?? [] };
@@ -319,7 +321,7 @@ async function fichaSalva(nome: string, casa: string): Promise<FichaIA | null> {
  * perfumes da mesma casa sempre; votos só se faltaram. As duas pesquisas rodam ao mesmo tempo.
  */
 export async function completarFicha(f: FichaIA): Promise<FichaIA> {
-  const repetidos = await votosDuplicadosNoAcervo(f.nome, f.casa, f.votos?.fixacao, f.votos?.projecao);
+  const repetidos = await votosDuplicadosNoAcervo(f.nome, f.casa, f.votos);
   const semVotos = !temVotos(f.votos?.fixacao) || !temVotos(f.votos?.projecao) || votosSuspeitos(f.votos, f.nome, f.casa) || repetidos;
   if (!geminiConfigurado() || !semVotos) return { ...f, completar: false }; // só falta algo se faltaram os votos
   const alvo = `"${f.nome}"${f.casa ? ` da casa "${f.casa}"` : ""}`;
@@ -340,7 +342,7 @@ Se o Fragrantica não mostrar os números, use o Parfumo, resenhas e lojas, tran
   if (semVotos) {
     const respostaSuspeita = votosSuspeitos({ fixacao: x.fixacao, projecao: x.projecao }, f.nome, f.casa);
     const novos = respostaSuspeita ? null : votosDe({ ...(f.votos ?? {}), fixacao: x.fixacao ?? undefined, projecao: x.projecao ?? undefined, total: x.total || f.votos?.total, origem: x.origem ?? "estimativa" } as Partial<Votos>, f.votos?.ocasioes?.length ? f.votos.ocasioes : OCASIOES);
-    const novosDuplicados = novos ? await votosDuplicadosNoAcervo(f.nome, f.casa, novos.fixacao, novos.projecao) : false;
+    const novosDuplicados = novos ? await votosDuplicadosNoAcervo(f.nome, f.casa, novos) : false;
     if (novos && temVotos(novos.fixacao) && temVotos(novos.projecao) && !novosDuplicados) {
       out.votos = { ...novos, projecao: temVotos(novos.projecao) ? novos.projecao : (f.votos?.projecao ?? novos.projecao), estacoes: f.votos?.estacoes ?? novos.estacoes, dia: f.votos?.dia ?? novos.dia, noite: f.votos?.noite ?? novos.noite };
       out.fixacaoH = horasDosVotos(out.votos.fixacao);
@@ -448,7 +450,7 @@ Pirâmide, acordes e família vêm do Fragrantica, sem misturar. Os outros campo
     const { fragrantica: _fr, ...resto } = f;
     void _fr;
     const pronta = finalizar({ ...resto, perfumistas: f.perfumistas ?? [], revisar: f.revisar ?? [], fontes: f.fontes ?? [], forma: f.forma ?? "ret", tampa: /^#[0-9a-f]{6}$/i.test(f.tampa ?? "") ? f.tampa : "#141417", imagem });
-    const duplicados = await votosDuplicadosNoAcervo(pronta.nome || c.nome, pronta.casa || c.casa, pronta.votos?.fixacao, pronta.votos?.projecao);
+    const duplicados = await votosDuplicadosNoAcervo(pronta.nome || c.nome, pronta.casa || c.casa, pronta.votos);
     const saneada = duplicados ? invalidarVotos(pronta) : pronta;
     // votos faltando ou suspeitos: a tela pede o complemento em segundo plano (outra chamada, sem travar o cadastro)
     const link = c.link ?? (f.fragrantica && /fragrantica\./i.test(f.fragrantica) ? f.fragrantica : undefined);
