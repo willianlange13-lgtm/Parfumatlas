@@ -100,6 +100,28 @@ function schemaComum(o: unknown): unknown {
   return o;
 }
 
+/**
+ * Schema "estrito" da OpenAI: todo campo é obrigatório e nada além dele.
+ * Campo que era opcional passa a aceitar null. Assim o JSON sempre volta no formato certo.
+ */
+export function schemaEstrito(o: unknown, opcional = false): unknown {
+  if (!o || typeof o !== "object") return o;
+  const s = o as Record<string, unknown>;
+  const tipo = String(s.type ?? "").toLowerCase();
+  const nulo = (t: string) => (opcional ? [t, "null"] : t);
+  if (tipo === "object") {
+    const props = (s.properties ?? {}) as Record<string, unknown>;
+    const req = new Set((s.required as string[] | undefined) ?? []);
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(props)) out[k] = schemaEstrito(v, !req.has(k));
+    return { type: nulo("object"), properties: out, required: Object.keys(props), additionalProperties: false };
+  }
+  if (tipo === "array") return { type: nulo("array"), items: schemaEstrito(s.items) };
+  const base: Record<string, unknown> = { type: nulo(tipo === "integer" ? "integer" : tipo === "number" ? "number" : tipo === "boolean" ? "boolean" : "string") };
+  if (Array.isArray(s.enum)) base.enum = opcional ? [...s.enum, null] : s.enum;
+  return base;
+}
+
 async function chamarOpenAI(partes: Parte[], opcoes: { schema?: object; pesquisar?: boolean; sistema?: string; temperatura?: number; leve?: boolean; esforco?: "low" | "medium"; tempo?: number }, json: boolean): Promise<string> {
   const chave = process.env.OPENAI_API_KEY!;
   const conteudo = partes.map((p) => ("text" in p ? { type: "input_text", text: p.text } : { type: "input_image", image_url: `data:${p.inlineData.mimeType};base64,${p.inlineData.data}` }));
@@ -108,20 +130,27 @@ async function chamarOpenAI(partes: Parte[], opcoes: { schema?: object; pesquisa
     input: [{ role: "user", content: conteudo }],
     ...(opcoes.sistema || json ? { instructions: [json ? SEM_PERGUNTAS : "", opcoes.sistema ?? ""].filter(Boolean).join("\n\n") } : {}),
     ...(opcoes.pesquisar ? { tools: [{ type: "web_search" }] } : {}),
-    ...(json && !opcoes.pesquisar ? { text: { format: { type: "json_object" } } } : {}),
   };
+  // formato garantido: com schema, o JSON vem exatamente nele (também com a pesquisa ligada)
+  const formato = json ? (opcoes.schema ? { type: "json_schema", name: "resposta", strict: true, schema: schemaEstrito(opcoes.schema) } : opcoes.pesquisar ? null : { type: "json_object" }) : null;
   let ultimo = "";
   for (const modelo of MODELOS_OPENAI(opcoes.leve)) {
-    const r = await fetch("https://api.openai.com/v1/responses", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${chave}` },
-      // modelos gpt-5 "pensam" antes de responder: esforço baixo deixa bem mais rápido e barato
-      body: JSON.stringify({ model: modelo, ...corpo, ...(modelo.startsWith("gpt-5") ? { reasoning: { effort: opcoes.esforco ?? "low" } } : {}) }),
-      signal: AbortSignal.timeout(opcoes.tempo ?? 90000),
-    });
-    if (!r.ok) {
-      ultimo = `ChatGPT ${r.status} (${modelo}): ${(await r.text()).slice(0, 200)}`;
-      if (r.status === 404 || r.status === 400) continue; // modelo indisponível na conta: tenta o próximo
+    let r: Response | null = null;
+    for (const usarFormato of formato ? [true, false] : [false]) {
+      r = await fetch("https://api.openai.com/v1/responses", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${chave}` },
+        // modelos gpt-5 "pensam" antes de responder: esforço baixo deixa bem mais rápido e barato
+        body: JSON.stringify({ model: modelo, ...corpo, ...(usarFormato ? { text: { format: formato } } : {}), ...(modelo.startsWith("gpt-5") ? { reasoning: { effort: opcoes.esforco ?? "low" } } : {}) }),
+        signal: AbortSignal.timeout(opcoes.tempo ?? 90000),
+      });
+      if (r.ok) break;
+      ultimo = `ChatGPT ${r.status} (${modelo}): ${(await r.clone().text()).slice(0, 300)}`;
+      console.error(ultimo);
+      if (r.status !== 400) break; // 400 pode ser o formato: tenta sem ele
+    }
+    if (!r || !r.ok) {
+      if (r && (r.status === 404 || r.status === 400)) continue; // modelo indisponível na conta: tenta o próximo
       throw new Error(ultimo);
     }
     const j = await r.json();

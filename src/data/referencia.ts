@@ -58,7 +58,7 @@ export const WIKI_NOTA: Record<string, string> = {
 
 export function nota(nome: string) {
   const wiki = WIKI_NOTA[nome];
-  return { nome, foto: wiki ? `/api/nota-foto?n=${encodeURIComponent(nome)}` : null, icone: ICONE_NOTA[TIPO[nome] ?? "nuvem"] };
+  return { nome, foto: wiki ? `/api/nota-foto?n=${encodeURIComponent(nome)}&v=3` : null, icone: ICONE_NOTA[TIPO[nome] ?? "nuvem"] };
 }
 
 export const ENCICLOPEDIA: Record<string, { tipo: string; origem: string; como: string; conhecer: string[] }> = {

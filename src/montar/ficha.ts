@@ -168,14 +168,14 @@ export async function montarFicha(id: string) {
       { nome: "Fundo", tempo: "DEPOIS DE 3 H", notas: p.notas.fundo.slice(0, 4).map((x, i) => notaCor(x, PALETA[(i + 5) % PALETA.length])) },
     ],
     gauges: [
-      { nome: "Fixação", txt: hm(horas), sub: temF ? `média ponderada de ${(p.votos?.total ?? 0).toLocaleString("pt-BR")} votos` : "estimativa (votos do Fragrantica não encontrados)", ref: `Média da família: ${hm(hFam)}`, trilho: g1.trilho, valor: g1.valor, marca: g1.marca, cor: g1.cor },
+      { nome: "Fixação", txt: hm(horas), sub: !temF ? "estimativa (votos do Fragrantica não encontrados)" : p.votos?.origem === "estimativa" ? "estimativa pelas resenhas" : `média ponderada de ${(p.votos?.total ?? 0).toLocaleString("pt-BR")} votos`, ref: `Média da família: ${hm(hFam)}`, trilho: g1.trilho, valor: g1.valor, marca: g1.marca, cor: g1.cor },
       { nome: "Projeção", txt: nivelP, sub: `alcança cerca de ${metros.toFixed(1).replace(".", ",")} metro${metros >= 2 ? "s" : ""} de distância nas 2 primeiras horas`, ref: `Média da família: ${mFam.toFixed(1).replace(".", ",")} metro${mFam >= 2 ? "s" : ""}`, trilho: g2.trilho, valor: g2.valor, marca: g2.marca, cor: g2.cor },
     ],
     espectro: AC.map((a, i) => ({ curto: a.nome, v: a.valor, h: Math.round((a.valor / 100) * 190), cor: cores[i] })),
     roda: { guia: circ(rc, rcy, ri) + " " + circ(rc, rcy, rmax), seg },
     votos: [
-      { nome: temF ? "Fixação" : "Fixação · votos não encontrados", itens: votos(["Muito fraca", "Fraca", "Moderada", "Longa", "Eterna"], VF, t.sup[0]) },
-      { nome: temP ? "Projeção" : "Projeção · votos não encontrados", itens: votos(["Íntima", "Moderada", "Forte", "Enorme"], VP, t.sup[1]) },
+      { nome: !temF ? "Fixação · votos não encontrados" : p.votos?.origem === "estimativa" ? "Fixação · estimativa" : "Fixação", itens: votos(["Muito fraca", "Fraca", "Moderada", "Longa", "Eterna"], VF, t.sup[0]) },
+      { nome: !temP ? "Projeção · votos não encontrados" : p.votos?.origem === "estimativa" ? "Projeção · estimativa" : "Projeção", itens: votos(["Íntima", "Moderada", "Forte", "Enorme"], VP, t.sup[1]) },
     ],
     colunas,
     perguntas: perguntas.map((q) => ({ t: q, href: qs(q) })),

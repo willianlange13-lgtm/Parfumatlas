@@ -11,6 +11,8 @@ export interface Votos {
   dia: number;
   noite: number;
   ocasioes: { nome: string; v: number }[];
+  /** "fragrantica" quando veio da contagem real; "estimativa" quando a IA estimou pelas resenhas */
+  origem?: "fragrantica" | "estimativa";
 }
 
 export interface PontoClima { t: number; h: number; seco: boolean }

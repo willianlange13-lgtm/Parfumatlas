@@ -100,6 +100,7 @@ export function votosDe(v: Partial<Votos> | undefined, ocasioesPadrao: { nome: s
     estacoes: { primavera: rel(e.primavera), verao: rel(e.verao), outono: rel(e.outono), inverno: rel(e.inverno) },
     dia: rel(v.dia), noite: rel(v.noite),
     ocasioes: v.ocasioes?.length ? v.ocasioes : ocasioesPadrao,
+    origem: v.origem === "estimativa" ? "estimativa" : "fragrantica",
   };
 }
 

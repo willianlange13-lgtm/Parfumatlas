@@ -104,8 +104,9 @@ const SCHEMA_FICHA = {
         total: { type: "INTEGER" }, fixacao: { type: "ARRAY", items: N }, projecao: { type: "ARRAY", items: N },
         estacoes: { type: "OBJECT", properties: { primavera: N, verao: N, outono: N, inverno: N }, required: ["primavera", "verao", "outono", "inverno"] },
         dia: N, noite: N, ocasioes: { type: "ARRAY", items: { type: "OBJECT", properties: { nome: T, v: N }, required: ["nome", "v"] } },
+        origem: { type: "STRING", enum: ["fragrantica", "estimativa"] },
       },
-      required: ["fixacao", "projecao", "estacoes", "dia", "noite", "ocasioes"],
+      required: ["total", "fixacao", "projecao", "estacoes", "dia", "noite", "ocasioes", "origem"],
     },
     forma: { type: "STRING", enum: ["alto", "ret", "redondo", "largo"] }, tampa: T, imagem: T,
     fontes: { type: "ARRAY", items: { type: "OBJECT", properties: { nome: T, url: T, oQue: T }, required: ["nome", "oQue"] } },
@@ -255,15 +256,17 @@ export async function completarFicha(f: FichaIA): Promise<FichaIA> {
   const poucos = (f.parecidos ?? []).length < 5;
   if (!geminiConfigurado() || (!semVotos && !poucos)) return { ...f, completar: false };
   const alvo = `"${f.nome}"${f.casa ? ` da casa "${f.casa}"` : ""}`;
-  type Extra = { fixacao?: number[]; projecao?: number[]; total?: number; parecidos?: FichaIA["parecidos"] };
+  type Extra = { fixacao?: number[] | null; projecao?: number[] | null; total?: number | null; origem?: "fragrantica" | "estimativa" | null; parecidos?: FichaIA["parecidos"] | null };
+  const SCHEMA_EXTRA = { type: "OBJECT", properties: { fixacao: { type: "ARRAY", items: N }, projecao: { type: "ARRAY", items: N }, total: { type: "INTEGER" }, origem: { type: "STRING", enum: ["fragrantica", "estimativa"] }, parecidos: SCHEMA_FICHA.properties.parecidos }, required: [] };
   const x = await geminiJSON<Extra>([{ text: `Abra a página do perfume ${alvo} no Fragrantica${f.fragrantica ? ` (${f.fragrantica})` : ""} e copie:
 ${semVotos ? `- "fixacao": as 5 contagens de votos de "Longevidade"/"Longevity" na ordem [muito fraco, fraco, moderado, longo, eterno];
 - "projecao": as 4 contagens de "Rastro"/"Sillage" na ordem [íntimo, moderado, forte, enorme];
 - "total": o número de votos da avaliação.
-Exemplo do formato: {"fixacao": [42, 194, 855, 179, 23], "projecao": [120, 610, 240, 35], "total": 1971}. Números inteiros, como aparecem na página.` : ""}
-${poucos ? `- "parecidos": de 5 a 10 perfumes parecidos (seção "Este perfume me lembra"/"This perfume reminds me of" e comparações em resenhas e lojas de contratipos), cada um com nome, casa, tipo ("inspirou" para o original que ele imita, "clone" para releituras dele, "parecido" nos outros casos) e pct de 0 a 100.` : ""}` }], { pesquisar: true, tempo: 75000 });
+Exemplo do formato: {"fixacao": [42, 194, 855, 179, 23], "projecao": [120, 610, 240, 35], "total": 1971, "origem": "fragrantica"}. Números inteiros, como aparecem na página.
+Se não conseguir ver os números, estime pelas resenhas como porcentagens que somam 100 e use "origem": "estimativa". Nunca devolva zerado.` : ""}
+${poucos ? `- "parecidos": de 5 a 10 perfumes parecidos (seção "Este perfume me lembra"/"This perfume reminds me of" e comparações em resenhas e lojas de contratipos), cada um com nome, casa, tipo ("inspirou" para o original que ele imita, "clone" para releituras dele, "parecido" nos outros casos) e pct de 0 a 100.` : ""}` }], { schema: SCHEMA_EXTRA, pesquisar: true, tempo: 75000 });
   const out: FichaIA = { ...f, completar: false };
-  const novos = votosDe({ ...(f.votos ?? {}), fixacao: x.fixacao, projecao: x.projecao, total: x.total || f.votos?.total } as Partial<Votos>, f.votos?.ocasioes?.length ? f.votos.ocasioes : OCASIOES);
+  const novos = votosDe({ ...(f.votos ?? {}), fixacao: x.fixacao ?? undefined, projecao: x.projecao ?? undefined, total: x.total || f.votos?.total, origem: x.origem ?? "estimativa" } as Partial<Votos>, f.votos?.ocasioes?.length ? f.votos.ocasioes : OCASIOES);
   if (semVotos && novos && temVotos(novos.fixacao)) {
     out.votos = { ...novos, projecao: temVotos(novos.projecao) ? novos.projecao : (f.votos?.projecao ?? novos.projecao), estacoes: f.votos?.estacoes ?? novos.estacoes, dia: f.votos?.dia ?? novos.dia, noite: f.votos?.noite ?? novos.noite };
     out.fixacaoH = horasDosVotos(out.votos.fixacao);
@@ -293,12 +296,13 @@ Copie do Fragrantica, sem inventar e sem misturar outras fontes:
 - Pirâmide: EXATAMENTE as notas de topo, coração e base do Fragrantica, com os nomes em português como aparecem no Fragrantica Brasil (ex.: "Cidra", "Groselha Preta", "Cenoura"). Uma nota por item, sem parênteses, sem notas citadas em resenhas ou lojas.
 - "acordes": os "Principais acordes" do Fragrantica, na mesma ordem e com os mesmos nomes em português (ex.: "cítrico", "verde", "aromático", "fresco especiado", "frutado", "âmbar"). "valor" é o tamanho da barra, de 0 a 100 (a primeira é 100).
 - "familia": a família do Fragrantica em português (ex.: "Aromático Aquático").
-- "votos" com as CONTAGENS de votos do Fragrantica (números, não porcentagens):
-  · fixacao = [Muito fraco, Fraco, Moderada, Longa, Eterno] da "Longevidade";
-  · projecao = [Íntimo, Moderada, Forte, Enorme] do "Rastro";
-  · estacoes = inverno, primavera, verao, outono e dia, noite do "Quando usar";
-  · total = número de votos da avaliação;
-  · exemplo do formato: "fixacao": [42, 194, 855, 179, 23], "projecao": [120, 610, 240, 35]. Sempre listas de números inteiros, nunca porcentagens nem textos;
+- "votos": as CONTAGENS de votos do Fragrantica (números inteiros, não porcentagens):
+  · fixacao = 5 números [Muito fraco, Fraco, Moderada, Longa, Eterno] da seção "Longevidade";
+  · projecao = 4 números [Íntimo, Moderada, Forte, Enorme] da seção "Rastro";
+  · estacoes (inverno, primavera, verao, outono), dia e noite = votos da seção "Quando usar";
+  · total = número de votos da avaliação; origem = "fragrantica".
+  · exemplo: "fixacao": [42, 194, 855, 179, 23], "projecao": [120, 610, 240, 35], "estacoes": {"inverno": 60, "primavera": 410, "verao": 520, "outono": 170}, "dia": 600, "noite": 150.
+  · Se a página não mostrar esses números, NÃO deixe zerado: estime pelas resenhas e lojas como porcentagens que somam 100 (ex.: fixação moderada com 5 a 7 h → [5, 15, 55, 20, 5]; estações e dia/noite de 0 a 100) e use origem = "estimativa".
   · ocasioes: Trabalho, Dia a dia, Encontro, Festa, Formal, Esporte de 0 a 100 (estime pelo perfil).
 - "concentracao": a que está escrita no frasco e no site da marca ou das lojas (ex.: "Eau de Parfum", "Eau de Toilette", "Extrait de Parfum"). O Fragrantica muitas vezes não mostra; nesse caso procure na marca e nas lojas. Nunca escreva "Colônia" sem o frasco dizer "Eau de Cologne".
 - "pais": o país de origem da marca (ex.: Rayhaan, Lattafa, Armaf → "Emirados Árabes Unidos"; Dior, Chanel → "França"). Pesquise se não souber.
@@ -313,7 +317,7 @@ Copie do Fragrantica, sem inventar e sem misturar outras fontes:
     const pronta = finalizar({ ...resto, perfumistas: f.perfumistas ?? [], revisar: f.revisar ?? [], fontes: f.fontes ?? [], forma: f.forma ?? "ret", tampa: /^#[0-9a-f]{6}$/i.test(f.tampa ?? "") ? f.tampa : "#141417", imagem });
     // votos ou parecidos faltando: a tela pede o complemento em segundo plano (outra chamada, sem travar o cadastro)
     const link = c.link ?? (f.fragrantica && /fragrantica\./i.test(f.fragrantica) ? f.fragrantica : undefined);
-    return { ...pronta, completar: !temVotos(pronta.votos?.fixacao) || (pronta.parecidos ?? []).length < 5, fragrantica: link };
+    return { ...pronta, completar: !temVotos(pronta.votos?.fixacao) || !temVotos(pronta.votos?.projecao) || (pronta.parecidos ?? []).length < 5, fragrantica: link };
   } catch (e) {
     ultimoErroFicha = `ficha: ${e instanceof Error ? e.message.slice(0, 200) : e}`;
     console.error("fichaChatGPT", e);

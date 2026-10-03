@@ -148,8 +148,8 @@ export function CadastroCliente({ base, modoInicial }: { base: Record<string, un
   const tot = 20;
   const arco = (fr: number) => { const c = 42, r = 34, a0 = -Math.PI / 2, a1 = a0 + Math.max(0.01, fr) * 2 * Math.PI * 0.9999; return `M ${(c + Math.cos(a0) * r).toFixed(1)} ${(c + Math.sin(a0) * r).toFixed(1)} A ${r} ${r} 0 ${a1 - a0 > Math.PI ? 1 : 0} 1 ${(c + Math.cos(a1) * r).toFixed(1)} ${(c + Math.sin(a1) * r).toFixed(1)}`; };
   const seg = (n: number) => Array.from({ length: 5 }, (_, i) => (i < n ? t.amber : t.chip2));
-  const nivelF = ficha?.votos ? ficha.votos.fixacao.indexOf(Math.max(...ficha.votos.fixacao)) : -1;
-  const nivelP = ficha?.votos ? ficha.votos.projecao.indexOf(Math.max(...ficha.votos.projecao)) : -1;
+  const nivelF = ficha?.votos?.fixacao?.some((x) => x > 0) ? ficha.votos.fixacao.indexOf(Math.max(...ficha.votos.fixacao)) : -1;
+  const nivelP = ficha?.votos?.projecao?.some((x) => x > 0) ? ficha.votos.projecao.indexOf(Math.max(...ficha.votos.projecao)) : -1;
   const addNota = (k: "saida" | "coracao" | "fundo") => () => { const n = prompt("Nome da nota"); if (n && ficha) setFicha({ ...ficha, notas: { ...ficha.notas, [k]: [...ficha.notas[k], n.trim()] } }); };
   const notaChip = (n: string) => { const r = refNota(n); return { nome: n, d: r.icone, cor: t.amber, bg: r.foto ? "#FFFFFF" : hexA(t.amber, 0.14), borda: hexA(t.amber, 0.45), img: r.foto ?? "", semImg: !r.foto }; };
 
@@ -186,8 +186,8 @@ export function CadastroCliente({ base, modoInicial }: { base: Record<string, un
     campos,
     piramide: ficha ? ([["SAÍDA", "saida"], ["CORAÇÃO", "coracao"], ["FUNDO", "fundo"]] as const).map(([nome, k]) => ({ nome, notas: ficha.notas[k].map(notaChip), addNota: addNota(k) })) : [],
     desemp: ficha ? [
-      { l: "FIXAÇÃO", seg: seg(nivelF + 1), v: `${NIVEL_F[nivelF] ?? "—"}${ficha.fixacaoH ? ` · ${Math.floor(ficha.fixacaoH)}h${String(Math.round((ficha.fixacaoH % 1) * 60)).padStart(2, "0")}` : ""}` },
-      { l: "PROJEÇÃO", seg: seg(Math.round(((nivelP + 1) / 4) * 5)), v: `${NIVEL_P[nivelP] ?? "—"}${ficha.projecaoM ? ` · ${ficha.projecaoM.toFixed(1).replace(".", ",")} m` : ""}` },
+      { l: ficha.votos?.origem === "estimativa" ? "FIXAÇÃO · ESTIMATIVA" : "FIXAÇÃO", seg: seg(nivelF + 1), v: `${NIVEL_F[nivelF] ?? "—"}${ficha.fixacaoH ? ` · ${Math.floor(ficha.fixacaoH)}h${String(Math.round((ficha.fixacaoH % 1) * 60)).padStart(2, "0")}` : ""}` },
+      { l: ficha.votos?.origem === "estimativa" ? "PROJEÇÃO · ESTIMATIVA" : "PROJEÇÃO", seg: seg(Math.round(((nivelP + 1) / 4) * 5)), v: `${NIVEL_P[nivelP] ?? "—"}${ficha.projecaoM ? ` · ${ficha.projecaoM.toFixed(1).replace(".", ",")} m` : ""}` },
     ] : [],
     prog: { trilho: "M 8.0 42.0 a 34 34 0 1 0 68.0 0 a 34 34 0 1 0 -68.0 0 Z", arco: arco(ok / tot), pct: Math.round((ok / tot) * 100), ok, tot, rev: pend },
     fontes: (ficha?.fontes ?? []).map((f) => ({ nome: f.nome, info: f.oQue, ic: "✓", bg: t.amber })).concat(foto ? [{ nome: "Imagem do frasco", info: "salva no Atlas", ic: "✓", bg: t.amber }] : []),
