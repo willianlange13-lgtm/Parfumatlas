@@ -39,6 +39,8 @@ export interface Perfume {
   tampa: string;
   inspiradoEm?: string;
   /** Parecidos segundo o Fragrantica e a comunidade (perfumes que podem não estar no catálogo). */
+  /** outros perfumes da mesma marca (seção "Designer" do Fragrantica) */
+  mesmaCasa?: { nome: string; link?: string | null; imagem?: string | null }[];
   parecidos?: { nome: string; casa: string; tipo: "inspirou" | "clone" | "parecido"; pct: number; fonte?: string | null; trecho?: string | null }[];
   imagem?: string | null;
   fontes?: { nome: string; url?: string; oQue: string }[];

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Icone } from "@/components/Icone";
 import type { montarFicha } from "@/montar/ficha";
-import { Barra, Bloco, Btn, Camadas, Card, Demo, Linha, MONO, NotaChip, OURO, PalcoC, Rot, Topo } from "./kit";
+import { Barra, Bloco, Btn, Camadas, Card, Demo, MONO, NotaChip, OURO, PalcoC, Rolar, Rot, Topo } from "./kit";
 import { OpcoesPerfume } from "./OpcoesPerfume";
 import { AbasSemelhantes } from "./AbasSemelhantes";
 import type { Perfume } from "@/lib/tipos";
@@ -240,11 +240,19 @@ export function CelFicha({ v, x }: { v: V; x: ExtraFicha }) {
         {v.casa.length > 0 && (
           <>
             <Rot style={{ marginTop: 6 }}>Da mesma casa</Rot>
-            <div>
+            <Rolar gap={10}>
               {v.casa.map((m) => (
-                <Linha key={m.nome} href={m.href} dir={<span style={{ fontSize: 12, color: "var(--ink-3)" }}>{m.fam}</span>}><span style={{ fontSize: 14.5 }}>{m.nome}</span></Linha>
+                <Link key={m.nome} href={m.href} style={{ width: 104, flexShrink: 0, display: "flex", flexDirection: "column", gap: 6 }}>
+                  <span style={{ width: 104, height: 120, borderRadius: 14, background: m.imagem ? "#FFFFFF" : "var(--surface)", border: "1px solid var(--line)", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+                    {m.imagem
+                      // eslint-disable-next-line @next/next/no-img-element
+                      ? <img src={m.imagem} alt="" loading="lazy" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+                      : <span style={{ fontFamily: MONO, fontSize: 9, color: "var(--ink-3)", padding: 8, textAlign: "center" }}>{p.casa.toUpperCase()}</span>}
+                  </span>
+                  <span style={{ fontSize: 13, lineHeight: 1.25 }}>{m.nome}</span>
+                </Link>
               ))}
-            </div>
+            </Rolar>
           </>
         )}
       </Card>

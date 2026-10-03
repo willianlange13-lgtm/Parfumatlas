@@ -189,7 +189,11 @@ export async function montarFicha(id: string) {
     ],
     colunas,
     perguntas: perguntas.map((q) => ({ t: q, href: qs(q) })),
-    casa: todos.filter((x) => x.casa === p.casa && x.id !== p.id).slice(0, 3).map((x) => ({ nome: x.nome, fam: x.familia, href: `/colecao/${x.id}` })),
+    // da mesma casa: os que já estão no Atlas e os da seção "Designer" do Fragrantica
+    casa: [
+      ...todos.filter((x) => x.casa === p.casa && x.id !== p.id).slice(0, 4).map((x) => ({ nome: x.nome, fam: x.familia, href: `/colecao/${x.id}`, imagem: x.imagem ?? null })),
+      ...(p.mesmaCasa ?? []).filter((m) => !todos.some((x) => x.casa === p.casa && norm(x.nome) === norm(m.nome))).map((m) => ({ nome: m.nome, fam: "", href: `/buscar/resultado?nome=${encodeURIComponent(m.nome)}&casa=${encodeURIComponent(p.casa)}`, imagem: m.imagem ?? null })),
+    ].slice(0, 10),
     cab: {
       id: p.id, nome: p.nome, nomeUp: p.nome.toUpperCase(), acordeUp: p.acorde.toUpperCase(), tampa: p.tampa,
       vidro: `linear-gradient(160deg, rgba(255,255,255,.28) 0%, ${hexA(cor, 0.2)} 45%, ${hexA(cor, 0.4)} 100%)`,

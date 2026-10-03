@@ -64,7 +64,7 @@ export function AbasSemelhantes({ colunas, perfumeId }: { colunas: Coluna[]; per
       </div>
       {perfumeId && (
         <button type="button" onClick={refazer} disabled={busca === "buscando"} style={{ alignSelf: "flex-start", background: "none", border: "none", padding: 0, color: "var(--ink-3)", fontSize: 13, textDecoration: "underline", textUnderlineOffset: 3 }}>
-          {busca === "buscando" ? "Buscando parecidos… (até 1 minuto)" : "Buscar os parecidos de novo"}
+          {busca === "buscando" ? "Buscando parecidos… (até 1 minuto)" : "Buscar os parecidos e a mesma casa de novo"}
         </button>
       )}
       {busca && busca !== "buscando" && <span style={{ fontSize: 13, color: "#E0A08F" }}>{busca}</span>}

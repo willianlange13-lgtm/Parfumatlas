@@ -13,12 +13,12 @@ export async function POST(request: NextRequest) {
   const { perfume } = await buscarEntrada(id);
   if (!perfume) return NextResponse.json({ erro: "Perfume não encontrado." }, { status: 404 });
   try {
-    const parecidos = await buscarParecidos(perfume.nome, perfume.casa);
-    if (!parecidos.length) return NextResponse.json({ erro: "Não achei parecidos comparados diretamente com este perfume." }, { status: 404 });
+    const { parecidos, mesmaCasa } = await buscarParecidos(perfume.nome, perfume.casa);
+    if (!parecidos.length && !mesmaCasa.length) return NextResponse.json({ erro: "Não achei parecidos comparados diretamente com este perfume." }, { status: 404 });
     const supabase = await createClient();
     const idBanco = await garantirPerfume(supabase, id);
     if (!idBanco) return NextResponse.json({ erro: "Perfume não encontrado." }, { status: 404 });
-    const { error } = await supabase.from("perfumes").update(linhaDoPerfume({ ...perfume, parecidos })).eq("id", idBanco);
+    const { error } = await supabase.from("perfumes").update(linhaDoPerfume({ ...perfume, parecidos: parecidos.length ? parecidos : perfume.parecidos, mesmaCasa: mesmaCasa.length ? mesmaCasa : perfume.mesmaCasa })).eq("id", idBanco);
     if (error) return NextResponse.json({ erro: error.message }, { status: 500 });
     return NextResponse.json({ n: parecidos.length });
   } catch (e) {
