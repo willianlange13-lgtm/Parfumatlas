@@ -2,12 +2,13 @@ import "server-only";
 
 /**
  * Política de custo do Atlas:
- * - Gemini é o provedor padrão quando GEMINI_API_KEY estiver configurada.
- * - OpenAI só vira o provedor principal quando AI_PROVIDER=openai.
+ * - Gemini é o provedor padrão sempre que GEMINI_API_KEY estiver configurada.
+ * - OpenAI só é escolhida explicitamente com AI_PROVIDER=openai, ou como fallback
+ *   de compatibilidade quando não existe uma chave Gemini.
  * - AI_PREMIUM_ENABLED continua reservado às pesquisas premium em background.
  */
-export const usaOpenAI = () => process.env.AI_PROVIDER === "openai" && Boolean(process.env.OPENAI_API_KEY);
-export const geminiConfigurado = () => Boolean(process.env.GEMINI_API_KEY) || usaOpenAI();
+export const usaOpenAI = () => Boolean(process.env.OPENAI_API_KEY) && (process.env.AI_PROVIDER === "openai" || !process.env.GEMINI_API_KEY);
+export const geminiConfigurado = () => Boolean(process.env.GEMINI_API_KEY) || Boolean(process.env.OPENAI_API_KEY);
 export const nomeIA = () => (usaOpenAI() ? "ChatGPT" : Boolean(process.env.GEMINI_API_KEY) ? "Gemini" : "IA não configurada");
 /** "gemini-flash-latest" sempre aponta para o Flash mais novo, então não sai de linha. */
 /** Se um modelo estiver fora de linha, sem cota ou sobrecarregado, tenta o seguinte. */
@@ -56,10 +57,7 @@ export async function geminiTexto(partes: Parte[], opcoes: { pesquisar?: boolean
 async function chamar(partes: Parte[], opcoes: { schema?: object; pesquisar?: boolean; sistema?: string; temperatura?: number; leve?: boolean; esforco?: "low" | "medium"; tempo?: number; maxBuscas?: number }, json: boolean): Promise<string> {
   if (usaOpenAI()) return chamarOpenAI(partes, opcoes, json);
   const chave = process.env.GEMINI_API_KEY;
-  if (!chave) {
-    if (process.env.OPENAI_API_KEY) throw new Error("GEMINI_API_KEY não configurada. Para usar OpenAI explicitamente, defina AI_PROVIDER=openai.");
-    throw new Error("GEMINI_API_KEY não configurada");
-  }
+  if (!chave) throw new Error("Nenhum provedor de IA configurado");
   const corpo: Record<string, unknown> = {
     contents: [{ role: "user", parts: partes }],
     generationConfig: { temperature: opcoes.temperatura ?? 0.4, ...(opcoes.pesquisar || !json ? {} : { responseMimeType: "application/json", ...(opcoes.schema ? { responseSchema: opcoes.schema } : {}) }) },
@@ -78,8 +76,8 @@ async function chamar(partes: Parte[], opcoes: { schema?: object; pesquisar?: bo
       });
       if (r.ok) break externo;
       ultimo = `Gemini ${r.status} (${modelo}): ${(await r.clone().text()).slice(0, 200)}`;
-      if (r.status === 503 && tentativa === 0) { await espera(1500); continue; } // sobrecarga passageira: tenta de novo
-      if ([404, 429, 503].includes(r.status)) continue externo; // fora de linha, sem cota ou ocupado: próximo modelo
+      if (r.status === 503 && tentativa === 0) { await espera(1500); continue; }
+      if ([404, 429, 503].includes(r.status)) continue externo;
       break externo;
     }
   }
@@ -139,12 +137,10 @@ async function chamarOpenAI(partes: Parte[], opcoes: { schema?: object; pesquisa
     ...(opcoes.sistema || json ? { instructions: [json ? SEM_PERGUNTAS : "", opcoes.sistema ?? ""].filter(Boolean).join("\n\n") } : {}),
     ...(opcoes.pesquisar ? { tools: [{ type: "web_search" }] } : {}),
   };
-  // formato garantido: com schema, o JSON vem exatamente nele (também com a pesquisa ligada)
   const formato = json ? (opcoes.schema ? { type: "json_schema", name: "resposta", strict: true, schema: schemaEstrito(opcoes.schema) } : opcoes.pesquisar ? null : { type: "json_object" }) : null;
   let ultimo = "";
   for (const modelo of MODELOS_OPENAI(opcoes.leve)) {
     let r: Response | null = null;
-    // cada busca na internet custa (~1 centavo de dólar): teto por chamada; se a conta recusar o teto ou o formato, tenta sem
     const teto = opcoes.pesquisar ? (opcoes.maxBuscas ?? 3) : 0;
     const tentativas = [
       ...(formato && teto ? [{ fmt: true, teto: true }] : []),
@@ -156,17 +152,16 @@ async function chamarOpenAI(partes: Parte[], opcoes: { schema?: object; pesquisa
       r = await fetch("https://api.openai.com/v1/responses", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${chave}` },
-        // modelos gpt-5 "pensam" antes de responder: esforço baixo deixa bem mais rápido e barato
         body: JSON.stringify({ model: modelo, ...corpo, ...(usarTeto ? { max_tool_calls: teto } : {}), ...(usarFormato ? { text: { format: formato } } : {}), ...(modelo.startsWith("gpt-5") ? { reasoning: { effort: opcoes.esforco ?? "low" } } : {}) }),
         signal: AbortSignal.timeout(opcoes.tempo ?? 90000),
       });
       if (r.ok) break;
       ultimo = `ChatGPT ${r.status} (${modelo}): ${(await r.clone().text()).slice(0, 300)}`;
       console.error(ultimo);
-      if (r.status !== 400) break; // 400 pode ser o formato: tenta sem ele
+      if (r.status !== 400) break;
     }
     if (!r || !r.ok) {
-      if (r && (r.status === 404 || r.status === 400)) continue; // modelo indisponível na conta: tenta o próximo
+      if (r && (r.status === 404 || r.status === 400)) continue;
       throw new Error(ultimo);
     }
     const j = await r.json();
@@ -183,8 +178,6 @@ async function chamarOpenAI(partes: Parte[], opcoes: { schema?: object; pesquisa
 }
 
 // ---------------- Pesquisa longa em segundo plano (OpenAI) ----------------
-// A Vercel corta pedidos depois de 2 minutos. Pesquisas profundas rodam na própria OpenAI
-// ("background") e o app consulta o resultado depois, quantas vezes precisar.
 
 /** Começa a pesquisa e devolve o código dela na OpenAI. */
 export async function iniciarPesquisaFundo(texto: string, schema: object, esforco: "low" | "medium" | "high" = "low", maxBuscas = 8, modeloPadrao = "gpt-5-mini"): Promise<string> {
@@ -201,7 +194,6 @@ export async function iniciarPesquisaFundo(texto: string, schema: object, esforc
     ...(modelo.startsWith("gpt-5") || modelo.startsWith("o") ? { reasoning: { effort: esforco } } : {}),
   };
   const formato = { text: { format: { type: "json_schema", name: "resposta", strict: true, schema: schemaEstrito(schema) } } };
-  // teto de buscas na internet (economia); se a conta não aceitar algum parâmetro, tenta sem ele
   const tentativas = [{ ...formato, max_tool_calls: maxBuscas }, formato, {}];
   for (let i = 0; i < tentativas.length; i++) {
     const r = await fetch("https://api.openai.com/v1/responses", {
