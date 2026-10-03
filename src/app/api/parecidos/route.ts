@@ -2,19 +2,21 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createClient, supabaseConfigurado } from "@/lib/supabase/server";
 import { buscarEntrada, garantirPerfume, linhaDoPerfume, perfumeDaLinha } from "@/lib/dados";
 import { parecidoDoLink } from "@/lib/ficha";
-import { lerPesquisaFundo, usaOpenAI } from "@/lib/gemini";
+import { lerPesquisaFundo } from "@/lib/gemini";
 import { fotoConferida } from "@/lib/fotos";
-import { chave, converter, iniciarBuscaSemelhantes, ordenar, reaproveitar, type Resultado } from "@/lib/semelhantes";
+import { buscarSemelhantesGratis, chave, converter, iniciarBuscaSemelhantes, ordenar, reaproveitar, type Resultado } from "@/lib/semelhantes";
 import type { Perfume } from "@/lib/tipos";
 
 /**
  * Semelhantes de um perfume salvo.
- * buscar: reaproveita a lista de outro perfume com o mesmo original ou começa a pesquisa em segundo plano;
- * verificar: consulta a pesquisa e salva quando fica pronta; remover / adicionar: edição da pessoa.
+ * Prioridade: reaproveitar DNA já pesquisado -> Gemini -> OpenAI premium explicitamente habilitada.
  */
-export const maxDuration = 60; // a conferência das fotos roda em paralelo (até ~5 s)
+export const maxDuration = 60;
 
 type Corpo = { id: string; acao: "buscar" | "verificar" | "remover" | "adicionar"; nova?: boolean; nome?: string; link?: string };
+
+const premiumOpenAI = () => process.env.AI_PREMIUM_ENABLED === "true" && Boolean(process.env.OPENAI_API_KEY);
+const geminiGratis = () => Boolean(process.env.GEMINI_API_KEY);
 
 export async function POST(request: NextRequest) {
   const b = (await request.json()) as Corpo;
@@ -45,26 +47,43 @@ export async function POST(request: NextRequest) {
     }
 
     if (b.acao === "buscar") {
-      if (!usaOpenAI()) return NextResponse.json({ erro: "A pesquisa de semelhantes usa o ChatGPT: configure a chave da OpenAI." }, { status: 400 });
-      // 1) reaproveita: outro perfume com o mesmo original já foi pesquisado
+      // 1) custo zero: reaproveita pesquisa pronta de outro perfume com o mesmo DNA/original.
       const dna = perfume.dnaOriginal ?? (atuais.find((x) => x.tipo === "inspirou") ? chave(atuais.find((x) => x.tipo === "inspirou")!.nome) : null);
       if (!b.nova && dna) {
         const { data } = await supabase.from("perfumes").select("*").eq("votos->>dnaOriginal", dna).neq("id", id).limit(1).maybeSingle();
         const outro = data ? perfumeDaLinha(data) : null;
         if (outro?.parecidos?.length) {
-          await salvar({ ...perfume, parecidos: reaproveitar(outro, perfume), dnaOriginal: dna });
-          return NextResponse.json({ estado: "pronta", reaproveitado: outro.nome });
+          const parecidos = reaproveitar(outro, perfume);
+          await salvar({ ...perfume, parecidos, dnaOriginal: dna, buscaParecidos: null });
+          return NextResponse.json({ estado: "pronta", reaproveitado: outro.nome, n: parecidos.length, provedor: "cache-dna" });
         }
       }
-      // 2) pesquisa nova, em segundo plano na OpenAI
-      const codigo = await iniciarBuscaSemelhantes(perfume);
-      await salvar({ ...perfume, buscaParecidos: { id: codigo, inicio: Date.now() } });
-      return NextResponse.json({ estado: "pendente" });
+
+      // 2) padrão econômico: Gemini direto. Não passa pelo roteador que prioriza OpenAI.
+      if (geminiGratis()) {
+        const resultado = await buscarSemelhantesGratis(perfume);
+        const { parecidos, dnaOriginal } = converter(resultado, perfume);
+        await salvar({ ...perfume, parecidos, dnaOriginal: dnaOriginal ?? perfume.dnaOriginal ?? null, buscaParecidos: null });
+        return NextResponse.json({ estado: "pronta", n: parecidos.length, provedor: "gemini" });
+      }
+
+      // 3) OpenAI só entra quando o dono habilita AI_PREMIUM_ENABLED=true.
+      if (premiumOpenAI()) {
+        const codigo = await iniciarBuscaSemelhantes(perfume);
+        await salvar({ ...perfume, buscaParecidos: { id: codigo, inicio: Date.now() } });
+        return NextResponse.json({ estado: "pendente", provedor: "openai-premium" });
+      }
+
+      return NextResponse.json({ erro: "Configure GEMINI_API_KEY para pesquisa econômica ou habilite AI_PREMIUM_ENABLED=true para usar OpenAI." }, { status: 400 });
     }
 
-    // verificar
+    // "verificar" só é necessário para a pesquisa premium em background.
     const busca = perfume.buscaParecidos;
     if (!busca) return NextResponse.json({ estado: "nada" });
+    if (!premiumOpenAI()) {
+      await salvar({ ...perfume, buscaParecidos: null });
+      return NextResponse.json({ estado: "falhou", erro: "Pesquisa premium desativada." });
+    }
     if (Date.now() - busca.inicio > 20 * 60 * 1000) {
       await salvar({ ...perfume, buscaParecidos: null });
       return NextResponse.json({ estado: "falhou", erro: "A pesquisa passou de 20 minutos e foi cancelada." });
@@ -76,10 +95,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ estado: "falhou", erro: `A pesquisa falhou (${r.erro ?? "sem motivo"}).` });
     }
     const { parecidos: brutos, dnaOriginal } = converter(r.dados, perfume);
-    // fotos conferidas: abre a página do Fragrantica de cada um quando dá (o número inventado trocava o frasco)
     const parecidos = await Promise.all(brutos.map(async (x) => (x.trecho === "adicionado por você" ? x : { ...x, imagem: (await fotoConferida(x.link, x.nome)) ?? (x.tipo === "inspirou" ? x.imagem ?? null : null) })));
     await salvar({ ...perfume, parecidos, dnaOriginal: dnaOriginal ?? perfume.dnaOriginal ?? null, buscaParecidos: null });
-    return NextResponse.json({ estado: "pronta", n: parecidos.length });
+    return NextResponse.json({ estado: "pronta", n: parecidos.length, provedor: "openai-premium" });
   } catch (e) {
     return NextResponse.json({ erro: e instanceof Error ? e.message.slice(0, 200) : "Não deu certo agora." }, { status: 500 });
   }
