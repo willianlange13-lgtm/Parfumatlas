@@ -123,6 +123,24 @@ export function votosDe(v: Partial<Votos> | undefined, ocasioesPadrao: { nome: s
   };
 }
 
+/**
+ * Níveis do ajuste pessoal ("como fica em você"), com a faixa em horas/metros.
+ * O valor `h`/`m` é o mesmo usado por horasDosVotos/metrosDosVotos, para a régua ser uma só.
+ */
+export const NIVEIS_FIXACAO = [
+  { nome: "Muito fraca", faixa: "até 2h", h: 1.5 },
+  { nome: "Fraca", faixa: "2 a 4h", h: 3 },
+  { nome: "Moderada", faixa: "4 a 7h", h: 5.5 },
+  { nome: "Longa", faixa: "7 a 12h", h: 9 },
+  { nome: "Eterna", faixa: "mais de 12h", h: 13 },
+];
+export const NIVEIS_PROJECAO = [
+  { nome: "Íntima", faixa: "até 0,5 m", m: 0.4 },
+  { nome: "Moderada", faixa: "0,5 a 1,5 m", m: 1.2 },
+  { nome: "Forte", faixa: "1,5 a 2,5 m", m: 2 },
+  { nome: "Enorme", faixa: "mais de 2,5 m", m: 3 },
+];
+
 /** Horas e metros a partir dos votos (mesma régua do Fragrantica). */
 export const temVotos = (l?: number[]) => (l ?? []).some((x) => x > 0);
 export const horasDosVotos = (f: number[]) => Math.round(f.reduce((s, x, i) => s + (x / 100) * [1.5, 3, 5.5, 9, 13][i], 0) * 10) / 10;

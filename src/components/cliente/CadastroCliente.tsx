@@ -43,6 +43,8 @@ export function CadastroCliente({ base, modoInicial }: { base: Record<string, un
   const [ficha, setFicha] = useState<Ficha | null>(null);
   const [situacao, setSituacao] = useState("tenho");
   const [anotacao, setAnotacao] = useState("");
+  const [minhaFixacao, setMinhaFixacao] = useState<number | null>(null);
+  const [minhaProjecao, setMinhaProjecao] = useState<number | null>(null);
   const [ocupado, setOcupado] = useState<"" | "lendo" | "ficha" | "salvando">("");
   const [ouvindo, setOuvindo] = useState(false);
   const [fala, setFala] = useState("");
@@ -118,7 +120,7 @@ export function CadastroCliente({ base, modoInicial }: { base: Record<string, un
   async function salvar() {
     if (!ficha) return;
     setOcupado("salvando"); setErro("");
-    const r = await fetch("/api/salvar", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ficha, situacao, anotacao, foto: foto ? { mime: foto.mime, base64: foto.base64 } : undefined }) });
+    const r = await fetch("/api/salvar", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ficha, situacao, anotacao, minhaFixacao, minhaProjecao, foto: foto ? { mime: foto.mime, base64: foto.base64 } : undefined }) });
     const j = await r.json();
     setOcupado("");
     if (!r.ok) setErro(j.erro ?? "Não consegui salvar.");
@@ -201,7 +203,7 @@ export function CadastroCliente({ base, modoInicial }: { base: Record<string, un
     erro,
   };
   const cel = {
-    modo, setModo: (m: Modo) => { setModo(m); setErro(""); }, foto: foto?.url ?? null, lido, cands, sel, ficha, setFicha, situacao, setSituacao, anotacao, setAnotacao, ocupado, ouvindo, fala, erro,
+    modo, setModo: (m: Modo) => { setModo(m); setErro(""); }, foto: foto?.url ?? null, lido, cands, sel, ficha, setFicha, situacao, setSituacao, anotacao, setAnotacao, minhaFixacao, setMinhaFixacao, minhaProjecao, setMinhaProjecao, ocupado, ouvindo, fala, erro,
     identificar, pesquisou, completando, escolher, ouvir, salvar, fotoEscolhida: v.fotoEscolhida, campos, prog: v.prog, fontes: v.fontes, desemp: v.desemp,
     quando: ficha?.votos ? [["Inverno", ficha.votos.estacoes.inverno], ["Primavera", ficha.votos.estacoes.primavera], ["Verão", ficha.votos.estacoes.verao], ["Outono", ficha.votos.estacoes.outono], ["Dia", ficha.votos.dia], ["Noite", ficha.votos.noite]] as [string, number][] : [],
   };

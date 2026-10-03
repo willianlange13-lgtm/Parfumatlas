@@ -4,6 +4,7 @@ import { Icone } from "@/components/Icone";
 import { Frasco } from "@/components/Frasco";
 import type { Perfume } from "@/lib/tipos";
 import { Anel, Card, Circ, MONO, NotaChip, OURO, Rot } from "./kit";
+import { NIVEIS_FIXACAO, NIVEIS_PROJECAO } from "@/lib/normalizar";
 
 type Modo = "foto" | "link" | "nome" | "voz";
 type Cand = { nome: string; casa: string; concentracao: string; por: string; pct: number; link?: string; imagem?: string | null };
@@ -11,13 +12,26 @@ type Ficha = Omit<Perfume, "id" | "clima"> & { revisar: string[]; completar?: bo
 type Campo = { l: string; v: string; st: string; mudar: (e: React.ChangeEvent<HTMLInputElement>) => void };
 export type CadCel = {
   modo: Modo; setModo: (m: Modo) => void; foto: string | null; lido: string[]; cands: Cand[]; sel: number; ficha: Ficha | null; setFicha: (f: Ficha) => void;
-  situacao: string; setSituacao: (s: string) => void; anotacao: string; setAnotacao: (s: string) => void; ocupado: string; ouvindo: boolean; fala: string; erro: string;
+  situacao: string; setSituacao: (s: string) => void; anotacao: string; setAnotacao: (s: string) => void; minhaFixacao: number | null; setMinhaFixacao: (n: number | null) => void; minhaProjecao: number | null; setMinhaProjecao: (n: number | null) => void; ocupado: string; ouvindo: boolean; fala: string; erro: string;
   identificar: (m: "foto" | "link" | "nome", texto?: string, f?: undefined, rapido?: boolean) => void; pesquisou: boolean; completando: boolean; escolher: (c: Cand, i: number) => void; ouvir: () => void; salvar: () => void;
   fotoEscolhida: (e: React.ChangeEvent<HTMLInputElement>) => void; campos: Campo[]; prog: { pct: number; ok: number; tot: number; rev: number }; fontes: { nome: string; info: string }[]; desemp: { l: string; seg: string[]; v: string }[]; quando: [string, number][];
 };
 
 const MODOS: [Modo, string, string][] = [["foto", "Foto", "camera"], ["link", "Link", "link"], ["nome", "Nome", "texto"], ["voz", "Voz", "mic"]];
 const TIT: Record<Modo, string> = { foto: "Adicionar perfume", link: "Adicionar por link", nome: "Adicionar por nome", voz: "Adicionar por voz" };
+
+/** Seletor de nível: toque de novo no mesmo nível para desmarcar. */
+function Nivel({ titulo, niveis, val, set }: { titulo: string; niveis: string[]; val: number | null; set: (n: number | null) => void }) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+      <span style={{ fontFamily: MONO, fontSize: 9, letterSpacing: ".1em", color: "var(--ink-3)" }}>{titulo}</span>
+      <div style={{ display: "flex", gap: 4 }}>
+        {niveis.map((nome, i) => <button key={nome} type="button" onClick={() => set(val === i + 1 ? null : i + 1)} aria-label={nome} style={{ flex: 1, height: 10, borderRadius: 3, border: "none", padding: 0, background: val && i < val ? OURO : "var(--chip-2)" }} />)}
+      </div>
+      <span style={{ fontSize: 12.5, textAlign: "right", color: "var(--ink-2)" }}>{val ? niveis[val - 1] : "toque para marcar · senão vale a média da comunidade"}</span>
+    </div>
+  );
+}
 
 function Passos({ n, txt }: { n: number; txt: string }) {
   return (
@@ -212,6 +226,9 @@ export function CelCadastro({ c, modoInicial }: { c: CadCel; modoInicial?: strin
             <button key={k} type="button" className={`c-pill ${c.situacao === k ? "on" : ""}`} style={{ height: 36, borderRadius: 18 }} onClick={() => c.setSituacao(k)}>{nome}</button>
           ))}
         </div>
+        <Rot>Como fica em você (opcional)</Rot>
+        <Nivel titulo="FIXAÇÃO NA SUA PELE" niveis={NIVEIS_FIXACAO.map((n) => `${n.nome} · ${n.faixa}`)} val={c.minhaFixacao} set={c.setMinhaFixacao} />
+        <Nivel titulo="PROJEÇÃO NA SUA PELE" niveis={NIVEIS_PROJECAO.map((n) => `${n.nome} · ${n.faixa}`)} val={c.minhaProjecao} set={c.setMinhaProjecao} />
         {c.prog.rev > 0 && (
           <div style={{ display: "flex", gap: 10, padding: "12px 14px", borderRadius: 16, background: "var(--chip)", fontSize: 12.5, lineHeight: 1.45, color: "var(--ink-2)" }}>
             <Icone nome="check" tamanho={16} />Ficha com {c.prog.ok} de {c.prog.tot} campos. Os campos marcados para revisar ficam guardados para você conferir depois.
