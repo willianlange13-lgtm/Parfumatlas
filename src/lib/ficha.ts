@@ -164,6 +164,41 @@ function concentracaoPT(c?: string) {
   return c ?? "";
 }
 
+/** Vetores que já apareceram em prompts antigos e não podem ser aceitos como dado pesquisado. */
+type VetoresVotos = { fixacao?: number[] | null; projecao?: number[] | null };
+const assinaturaVotos = (v?: number[] | null) => (v ?? []).map((x) => Math.round(Number(x) || 0)).join(",");
+const PACIFIC_FIXACAO = "42,194,855,179,23";
+const PACIFIC_PROJECAO = "120,610,240,35";
+function votosSuspeitos(v?: VetoresVotos | null, nome = "", casa = "") {
+  const fx = assinaturaVotos(v?.fixacao), pj = assinaturaVotos(v?.projecao);
+  if (fx === "0,0,100,0,0" || fx === "5,15,55,20,5") return true;
+  const copiaPacific = fx === PACIFIC_FIXACAO && pj === PACIFIC_PROJECAO;
+  const ePacificAura = normal(nome) === "pacific aura" && normal(casa).includes("rayhaan");
+  return copiaPacific && !ePacificAura;
+}
+const votosVazios = (base?: Votos): Votos => ({
+  total: base?.total ?? 0,
+  fixacao: [0, 0, 0, 0, 0],
+  projecao: [0, 0, 0, 0],
+  estacoes: base?.estacoes ?? { primavera: 0, verao: 0, outono: 0, inverno: 0 },
+  dia: base?.dia ?? 0, noite: base?.noite ?? 0, ocasioes: base?.ocasioes ?? [], origem: "estimativa",
+});
+function invalidarVotos(f: FichaIA): FichaIA {
+  const revisar = new Set(f.revisar ?? []); revisar.add("votos");
+  return { ...f, votos: votosVazios(f.votos), fixacaoH: undefined, projecaoM: undefined, revisar: [...revisar], completar: true };
+}
+async function votosDuplicadosNoAcervo(nome: string, casa: string, votos?: VetoresVotos & { total?: number | null; origem?: "fragrantica" | "estimativa" | null }) {
+  const ePacificAura = normal(nome) === "pacific aura" && normal(casa).includes("rayhaan");
+  if (ePacificAura || votos?.origem !== "fragrantica" || !Number(votos?.total) || !temVotos(votos?.fixacao ?? undefined) || !temVotos(votos?.projecao ?? undefined)) return false;
+  const fx = assinaturaVotos(votos.fixacao), pj = assinaturaVotos(votos.projecao), total = Number(votos.total);
+  const acervo = await carregarAcervo();
+  return acervo.colecao.some(({ perfume: p }) => {
+    if (normal(p.nome) === normal(nome) && normal(p.casa) === normal(casa)) return false;
+    if (p.votos?.origem !== "fragrantica" || !Number(p.votos.total) || Number(p.votos.total) !== total) return false;
+    return assinaturaVotos(p.votos.fixacao) === fx && assinaturaVotos(p.votos.projecao) === pj;
+  });
+}
+
 /** Deixa a ficha no padrão do Fragrantica Brasil e corrige números inconsistentes. */
 function finalizar(f: FichaIA): FichaIA {
   const revisar = new Set(f.revisar ?? []);
@@ -175,7 +210,9 @@ function finalizar(f: FichaIA): FichaIA {
   if (acordes.length && acordes.every((a) => !a.valor)) acordes = acordes.map((a, i) => ({ ...a, valor: Math.max(30, 100 - i * 12) }));
   // uma só família, dentre as 8 do Atlas
   const familia = familiaAtlas((f.familia ?? "").split(/\s+/).map((w) => FAMILIA[w.toLowerCase()] ?? w).join(" "), acordes[0]?.nome);
-  const votos = votosDe(f.votos as Partial<Votos>, f.votos?.ocasioes?.length ? f.votos.ocasioes : OCASIOES);
+  const brutoSuspeito = votosSuspeitos(f.votos, f.nome, f.casa);
+  const votosLidos = brutoSuspeito ? null : votosDe(f.votos as Partial<Votos>, f.votos?.ocasioes?.length ? f.votos.ocasioes : OCASIOES);
+  const votos = votosLidos ?? null;
   if (!votos || !temVotos(votos.fixacao) || !temVotos(votos.projecao)) revisar.add("votos");
   return {
     ...f,
@@ -183,9 +220,9 @@ function finalizar(f: FichaIA): FichaIA {
     pais: /desconhecid|unknown|n\/a|^-$/i.test(f.pais ?? "") ? "" : f.pais,
     concentracao: concentracaoPT(f.concentracao),
     acorde: acordes[0] ? acordePrincipal(acordes[0].nome) : f.acorde,
-    votos: votos ?? f.votos,
-    fixacaoH: votos && temVotos(votos.fixacao) ? horasDosVotos(votos.fixacao) : f.fixacaoH,
-    projecaoM: votos && temVotos(votos.projecao) ? metrosDosVotos(votos.projecao) : f.projecaoM,
+    votos: votos ?? votosVazios(f.votos),
+    fixacaoH: votos && temVotos(votos.fixacao) ? horasDosVotos(votos.fixacao) : undefined,
+    projecaoM: votos && temVotos(votos.projecao) ? metrosDosVotos(votos.projecao) : undefined,
     revisar: [...revisar],
     mesmaCasa: (f.mesmaCasa ?? []).filter((x, i, l) => x?.nome && normal(x.nome) !== normal(f.nome ?? "") && l.findIndex((y) => normal(y.nome) === normal(x.nome)) === i).slice(0, 8)
       .map((x) => ({ nome: x.nome, link: x.link && /fragrantica\./i.test(x.link) ? x.link : null, imagem: fotoDoFragrantica(x.link) })),
@@ -268,9 +305,9 @@ async function fichaSalva(nome: string, casa: string): Promise<FichaIA | null> {
     if (!data || !(data.notas_saida as string[] | null)?.length) return null;
     // só reaproveita ficha completa (acordes com força e votos); senão, pesquisa de novo
     const ac = (data.acordes as { valor: number }[] | null) ?? [];
-    const fx = (data.votos as { fixacao?: number[] } | null)?.fixacao ?? [];
-    // [0,0,100,0,0] era o valor de reserva antigo (votos não encontrados): pesquisa de novo
-    if (!ac.some((a) => a.valor > 0) || !fx.some((x) => x > 0) || fx.join() === "0,0,100,0,0") return null;
+    const fx = (data.votos as { fixacao?: number[]; projecao?: number[] } | null)?.fixacao ?? [];
+    const pj = (data.votos as { fixacao?: number[]; projecao?: number[] } | null)?.projecao ?? [];
+    if (!ac.some((a) => a.valor > 0) || !fx.some((x) => x > 0) || votosSuspeitos({ fixacao: fx, projecao: pj }, nome, casa) || await votosDuplicadosNoAcervo(nome, casa, (data.votos as Votos | null) ?? undefined)) return null;
     const { id: _i, clima: _c, ...p } = perfumeDaLinha(data);
     void _i; void _c;
     return { ...p, revisar: p.revisar ?? [] };
@@ -284,7 +321,8 @@ async function fichaSalva(nome: string, casa: string): Promise<FichaIA | null> {
  * perfumes da mesma casa sempre; votos só se faltaram. As duas pesquisas rodam ao mesmo tempo.
  */
 export async function completarFicha(f: FichaIA): Promise<FichaIA> {
-  const semVotos = !temVotos(f.votos?.fixacao) || !temVotos(f.votos?.projecao);
+  const repetidos = await votosDuplicadosNoAcervo(f.nome, f.casa, f.votos);
+  const semVotos = !temVotos(f.votos?.fixacao) || !temVotos(f.votos?.projecao) || votosSuspeitos(f.votos, f.nome, f.casa) || repetidos;
   if (!geminiConfigurado() || !semVotos) return { ...f, completar: false }; // só falta algo se faltaram os votos
   const alvo = `"${f.nome}"${f.casa ? ` da casa "${f.casa}"` : ""}`;
   type Extra = { fixacao?: number[] | null; projecao?: number[] | null; total?: number | null; origem?: "fragrantica" | "estimativa" | null };
@@ -295,15 +333,17 @@ export async function completarFicha(f: FichaIA): Promise<FichaIA> {
 - "fixacao": as 5 contagens de votos de "Longevidade"/"Longevity" na ordem [muito fraco, fraco, moderado, longo, eterno];
 - "projecao": as 4 contagens de "Rastro"/"Sillage" na ordem [íntimo, moderado, forte, enorme];
 - "total": o número de votos da avaliação.
-Exemplo: {"fixacao": [42, 194, 855, 179, 23], "projecao": [120, 610, 240, 35], "total": 1971, "origem": "fragrantica"}.
-Se o Fragrantica não mostrar os números, use o Parfumo, resenhas e lojas, transforme em porcentagens que somam 100 e use "origem": "estimativa". Nunca devolva zerado.` }], { schema: SCHEMA_EXTRA, pesquisar: true, leve: true, tempo: 80000, maxBuscas: 3 }).catch(() => ({}) as Extra)
+Formato obrigatório: "fixacao" deve ter exatamente 5 inteiros copiados da fonte e "projecao" exatamente 4 inteiros; "total" é o total real encontrado. Nunca copie números desta instrução.
+Se o Fragrantica não mostrar os números, use o Parfumo, resenhas e lojas, transforme em porcentagens coerentes que somam 100 e use "origem": "estimativa". Nunca devolva zerado e nunca reutilize um vetor fixo de exemplo.` }], { schema: SCHEMA_EXTRA, pesquisar: true, leve: true, tempo: 80000, maxBuscas: 3 }).catch(() => ({}) as Extra)
       : Promise.resolve({} as Extra),
     Promise.resolve([] as NonNullable<FichaIA["mesmaCasa"]>), // "da mesma casa" saiu da ficha
   ]);
   const out: FichaIA = { ...f, completar: false };
   if (semVotos) {
-    const novos = votosDe({ ...(f.votos ?? {}), fixacao: x.fixacao ?? undefined, projecao: x.projecao ?? undefined, total: x.total || f.votos?.total, origem: x.origem ?? "estimativa" } as Partial<Votos>, f.votos?.ocasioes?.length ? f.votos.ocasioes : OCASIOES);
-    if (novos && temVotos(novos.fixacao)) {
+    const respostaSuspeita = votosSuspeitos({ fixacao: x.fixacao, projecao: x.projecao }, f.nome, f.casa);
+    const novos = respostaSuspeita ? null : votosDe({ ...(f.votos ?? {}), fixacao: x.fixacao ?? undefined, projecao: x.projecao ?? undefined, total: x.total || f.votos?.total, origem: x.origem ?? "estimativa" } as Partial<Votos>, f.votos?.ocasioes?.length ? f.votos.ocasioes : OCASIOES);
+    const novosDuplicados = novos ? await votosDuplicadosNoAcervo(f.nome, f.casa, novos) : false;
+    if (novos && temVotos(novos.fixacao) && temVotos(novos.projecao) && !novosDuplicados) {
       out.votos = { ...novos, projecao: temVotos(novos.projecao) ? novos.projecao : (f.votos?.projecao ?? novos.projecao), estacoes: f.votos?.estacoes ?? novos.estacoes, dia: f.votos?.dia ?? novos.dia, noite: f.votos?.noite ?? novos.noite };
       out.fixacaoH = horasDosVotos(out.votos.fixacao);
       if (temVotos(out.votos.projecao)) out.projecaoM = metrosDosVotos(out.votos.projecao);
@@ -398,8 +438,8 @@ Pirâmide, acordes e família vêm do Fragrantica, sem misturar. Os outros campo
   · projecao = 4 números [Íntimo, Moderada, Forte, Enorme] da seção "Rastro";
   · estacoes (inverno, primavera, verao, outono), dia e noite = votos da seção "Quando usar";
   · total = número de votos da avaliação; origem = "fragrantica".
-  · exemplo: "fixacao": [42, 194, 855, 179, 23], "projecao": [120, 610, 240, 35], "estacoes": {"inverno": 60, "primavera": 410, "verao": 520, "outono": 170}, "dia": 600, "noite": 150.
-  · Se o Fragrantica não mostrar esses números, NÃO deixe zerado: use a fixação e o rastro do Parfumo, as resenhas e as lojas e transforme em porcentagens que somam 100 (ex.: fixação moderada com 5 a 7 h → [5, 15, 55, 20, 5]; estações e dia/noite de 0 a 100) e use origem = "estimativa".
+  · Cada número precisa vir da pesquisa atual. Nunca copie números exemplificativos ou vetores fixos da instrução.
+  · Se o Fragrantica não mostrar esses números, NÃO deixe zerado: use a fixação e o rastro do Parfumo, as resenhas e as lojas e transforme em porcentagens coerentes que somam 100, concentrando a maior parcela na categoria indicada pelas fontes; estações e dia/noite ficam de 0 a 100. Use origem = "estimativa".
 - "concentracao": a que está escrita no frasco e no site da marca ou das lojas (ex.: "Eau de Parfum", "Eau de Toilette", "Extrait de Parfum"). O Fragrantica muitas vezes não mostra; nesse caso procure na marca e nas lojas. Nunca escreva "Colônia" sem o frasco dizer "Eau de Cologne".
 - "pais": o país de origem da marca (ex.: Rayhaan, Lattafa, Armaf → "Emirados Árabes Unidos"; Dior, Chanel → "França"). Pesquise se não souber.
 - Ano, gênero e "descricao": UMA frase curta (até 15 palavras) sobre o cheiro, em português.
@@ -410,10 +450,12 @@ Pirâmide, acordes e família vêm do Fragrantica, sem misturar. Os outros campo
     const { fragrantica: _fr, ...resto } = f;
     void _fr;
     const pronta = finalizar({ ...resto, perfumistas: f.perfumistas ?? [], revisar: f.revisar ?? [], fontes: f.fontes ?? [], forma: f.forma ?? "ret", tampa: /^#[0-9a-f]{6}$/i.test(f.tampa ?? "") ? f.tampa : "#141417", imagem });
-    // votos ou parecidos faltando: a tela pede o complemento em segundo plano (outra chamada, sem travar o cadastro)
+    const duplicados = await votosDuplicadosNoAcervo(pronta.nome || c.nome, pronta.casa || c.casa, pronta.votos);
+    const saneada = duplicados ? invalidarVotos(pronta) : pronta;
+    // votos faltando ou suspeitos: a tela pede o complemento em segundo plano (outra chamada, sem travar o cadastro)
     const link = c.link ?? (f.fragrantica && /fragrantica\./i.test(f.fragrantica) ? f.fragrantica : undefined);
-    const traduzida = await traduzirSobras(pronta);
-    return { ...traduzida, acorde: traduzida.acordes[0] ? acordePrincipal(acordePT(traduzida.acordes[0].nome)) : traduzida.acorde, completar: !temVotos(pronta.votos?.fixacao) || !temVotos(pronta.votos?.projecao), fragrantica: link };
+    const traduzida = await traduzirSobras(saneada);
+    return { ...traduzida, acorde: traduzida.acordes[0] ? acordePrincipal(acordePT(traduzida.acordes[0].nome)) : traduzida.acorde, completar: !temVotos(saneada.votos?.fixacao) || !temVotos(saneada.votos?.projecao), fragrantica: link };
   } catch (e) {
     ultimoErroFicha = `ficha: ${e instanceof Error ? e.message.slice(0, 200) : e}`;
     console.error("fichaChatGPT", e);
