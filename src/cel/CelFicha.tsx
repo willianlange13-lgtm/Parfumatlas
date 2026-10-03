@@ -210,7 +210,7 @@ export function CelFicha({ v, x }: { v: V; x: ExtraFicha }) {
           </div>
         ))}
       </Card>
-      <AbasSemelhantes colunas={v.colunas} perfumeId={p.id} />
+      <AbasSemelhantes itens={v.semelhantes} perfumeId={p.id} />
       {v.casa.length > 0 && (
         <div style={{ display: "flex", flexDirection: "column", gap: 12, flexShrink: 0 }}>
             <Rot>Da mesma casa</Rot>

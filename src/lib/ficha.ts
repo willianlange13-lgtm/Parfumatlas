@@ -113,10 +113,15 @@ const SCHEMA_FICHA = {
     fontes: { type: "ARRAY", items: { type: "OBJECT", properties: { nome: T, url: T, oQue: T }, required: ["nome", "oQue"] } },
     revisar: L,
     mesmaCasa: { type: "ARRAY", items: { type: "OBJECT", properties: { nome: T, link: T }, required: ["nome", "link"] } },
-    parecidos: { type: "ARRAY", items: { type: "OBJECT", properties: { nome: T, casa: T, tipo: { type: "STRING", enum: ["inspirou", "clone", "parecido"] }, pct: { type: "INTEGER" }, fonte: T, trecho: T }, required: ["nome", "casa", "tipo", "pct", "fonte", "trecho"] } },
+    parecidos: { type: "ARRAY", items: { type: "OBJECT", properties: { nome: T, casa: T, tipo: { type: "STRING", enum: ["inspirou", "clone", "parecido"] }, pct: { type: "INTEGER" }, fonte: T, trecho: T, link: T }, required: ["nome", "casa", "tipo", "pct", "fonte", "trecho", "link"] } },
   },
   required: ["nome", "casa", "familia", "acorde", "notas", "acordes", "votos", "forma", "tampa", "fontes", "revisar"],
 };
+
+// a ficha principal não procura parecidos nem a mesma casa (isso vem na segunda etapa, em segundo plano)
+const { parecidos: _p, mesmaCasa: _m, ...PROPS_PRINCIPAIS } = SCHEMA_FICHA.properties;
+void _p; void _m;
+const SCHEMA_PRINCIPAL = { ...SCHEMA_FICHA, properties: { ...PROPS_PRINCIPAIS, fragrantica: { type: "STRING" } } };
 
 const REGRA_PARECIDOS = `COMO MONTAR OS PARECIDOS (faça as duas buscas):
 A) Descubra se este perfume é inspirado num original famoso (ex.: Pacific Aura → Louis Vuitton Pacific Chill). Se for, o original entra com tipo "inspirou".
@@ -124,7 +129,11 @@ B) Pesquise os CLONES e alternativas desse original: busque "<original> clone", 
 C) Copie também a lista "Este Perfume me Lembra do" ("This perfume reminds me of") da página deste perfume no Fragrantica; os que ainda não estiverem na lista entram com tipo "parecido".
 D) NUNCA use a lista "Quem gosta deste, também gosta de" ("People who like this also like"), e nunca inclua um perfume só por ser da mesma família ou também ser cítrico/fresco.
 E) Junte tudo sem repetir, de 8 a 15 perfumes, do mais parecido ao menos. "pct": semelhança de 60 a 99 segundo as fontes (o original e os clones mais citados no topo).
-F) "fonte": o endereço da página onde a relação aparece (lista de clones, resenha, vídeo, a página do Fragrantica); "trecho": a frase dessa página que cita o perfume (ex.: "Elliur is a great Pacific Chill clone"). Será conferido abrindo a página.`;
+F) "fonte": o endereço da página onde a relação aparece (lista de clones, resenha, vídeo, a página do Fragrantica); "trecho": a frase dessa página que cita o perfume (ex.: "Elliur is a great Pacific Chill clone"). Será conferido abrindo a página.
+G) "link": o endereço da página DO PARECIDO no Fragrantica (ex.: https://www.fragrantica.com/perfume/Bidaya-Parfums/Elliur-12345.html), para mostrar a foto do frasco. Vazio se não achar.`;
+
+/** O link do Fragrantica é mesmo deste perfume? (o nome precisa estar no endereço) */
+const linkBate = (url: string | null | undefined, nome: string) => Boolean(url && normal(decodeURIComponent(url).replace(/[-_/]+/g, " ")).includes(normal(nome)));
 
 const fotoDoFragrantica = (url?: string | null) => {
   const id = url?.match(/fragrantica\.com(?:\.br)?\/perfume\/[^?#]*-(\d+)\.html/i)?.[1];
@@ -260,38 +269,38 @@ async function fichaSalva(nome: string, casa: string): Promise<FichaIA | null> {
 }
 
 /**
- * Segunda pesquisa, pedida pela tela depois que a ficha já apareceu:
- * abre a página do Fragrantica para copiar os votos e completar os parecidos.
+ * Segunda etapa, pedida pela tela depois que a ficha já apareceu (o cadastro não espera por ela):
+ * parecidos e mesma casa sempre; votos só se faltaram. As duas pesquisas rodam ao mesmo tempo.
  */
 export async function completarFicha(f: FichaIA): Promise<FichaIA> {
+  if (!geminiConfigurado()) return { ...f, completar: false };
   const semVotos = !temVotos(f.votos?.fixacao) || !temVotos(f.votos?.projecao);
-  const poucos = (f.parecidos ?? []).length < 5;
-  if (!geminiConfigurado() || (!semVotos && !poucos)) return { ...f, completar: false };
   const alvo = `"${f.nome}"${f.casa ? ` da casa "${f.casa}"` : ""}`;
-  type Extra = { fixacao?: number[] | null; projecao?: number[] | null; total?: number | null; origem?: "fragrantica" | "estimativa" | null; parecidos?: FichaIA["parecidos"] | null };
-  const SCHEMA_EXTRA = { type: "OBJECT", properties: { fixacao: { type: "ARRAY", items: N }, projecao: { type: "ARRAY", items: N }, total: { type: "INTEGER" }, origem: { type: "STRING", enum: ["fragrantica", "estimativa"] }, parecidos: SCHEMA_FICHA.properties.parecidos }, required: [] };
-  const x = await geminiJSON<Extra>([{ text: `Abra a página do perfume ${alvo} no Fragrantica${f.fragrantica ? ` (${f.fragrantica})` : ""} (e, se lá não aparecer, no Parfumo e em resenhas) e copie:
-${semVotos ? `- "fixacao": as 5 contagens de votos de "Longevidade"/"Longevity" na ordem [muito fraco, fraco, moderado, longo, eterno];
+  type Extra = { fixacao?: number[] | null; projecao?: number[] | null; total?: number | null; origem?: "fragrantica" | "estimativa" | null };
+  const SCHEMA_EXTRA = { type: "OBJECT", properties: { fixacao: { type: "ARRAY", items: N }, projecao: { type: "ARRAY", items: N }, total: { type: "INTEGER" }, origem: { type: "STRING", enum: ["fragrantica", "estimativa"] } }, required: [] };
+  const [x, viz] = await Promise.all([
+    semVotos
+      ? geminiJSON<Extra>([{ text: `Abra a página do perfume ${alvo} no Fragrantica${f.fragrantica ? ` (${f.fragrantica})` : ""} e copie:
+- "fixacao": as 5 contagens de votos de "Longevidade"/"Longevity" na ordem [muito fraco, fraco, moderado, longo, eterno];
 - "projecao": as 4 contagens de "Rastro"/"Sillage" na ordem [íntimo, moderado, forte, enorme];
 - "total": o número de votos da avaliação.
-Exemplo do formato: {"fixacao": [42, 194, 855, 179, 23], "projecao": [120, 610, 240, 35], "total": 1971, "origem": "fragrantica"}. Números inteiros, como aparecem na página.
-Se o Fragrantica não mostrar os números, procure no Parfumo (nota de fixação e de rastro), em resenhas e em lojas, transforme em porcentagens que somam 100 e use "origem": "estimativa". Nunca devolva zerado.` : ""}
-${poucos ? `- "parecidos": a lista completa, cada um com nome, casa, tipo, pct, fonte e trecho, seguindo as regras abaixo.
-${REGRA_PARECIDOS}` : ""}` }], { schema: SCHEMA_EXTRA, pesquisar: true, tempo: 75000 });
+Exemplo: {"fixacao": [42, 194, 855, 179, 23], "projecao": [120, 610, 240, 35], "total": 1971, "origem": "fragrantica"}.
+Se o Fragrantica não mostrar os números, use o Parfumo, resenhas e lojas, transforme em porcentagens que somam 100 e use "origem": "estimativa". Nunca devolva zerado.` }], { schema: SCHEMA_EXTRA, pesquisar: true, leve: true, tempo: 80000 }).catch(() => ({}) as Extra)
+      : Promise.resolve({} as Extra),
+    buscarParecidos(f.nome, f.casa).catch(() => null),
+  ]);
   const out: FichaIA = { ...f, completar: false };
-  const novos = votosDe({ ...(f.votos ?? {}), fixacao: x.fixacao ?? undefined, projecao: x.projecao ?? undefined, total: x.total || f.votos?.total, origem: x.origem ?? "estimativa" } as Partial<Votos>, f.votos?.ocasioes?.length ? f.votos.ocasioes : OCASIOES);
-  if (semVotos && novos && temVotos(novos.fixacao)) {
-    out.votos = { ...novos, projecao: temVotos(novos.projecao) ? novos.projecao : (f.votos?.projecao ?? novos.projecao), estacoes: f.votos?.estacoes ?? novos.estacoes, dia: f.votos?.dia ?? novos.dia, noite: f.votos?.noite ?? novos.noite };
-    out.fixacaoH = horasDosVotos(out.votos.fixacao);
-    if (temVotos(out.votos.projecao)) out.projecaoM = metrosDosVotos(out.votos.projecao);
-    out.revisar = (f.revisar ?? []).filter((r) => r !== "votos");
+  if (semVotos) {
+    const novos = votosDe({ ...(f.votos ?? {}), fixacao: x.fixacao ?? undefined, projecao: x.projecao ?? undefined, total: x.total || f.votos?.total, origem: x.origem ?? "estimativa" } as Partial<Votos>, f.votos?.ocasioes?.length ? f.votos.ocasioes : OCASIOES);
+    if (novos && temVotos(novos.fixacao)) {
+      out.votos = { ...novos, projecao: temVotos(novos.projecao) ? novos.projecao : (f.votos?.projecao ?? novos.projecao), estacoes: f.votos?.estacoes ?? novos.estacoes, dia: f.votos?.dia ?? novos.dia, noite: f.votos?.noite ?? novos.noite };
+      out.fixacaoH = horasDosVotos(out.votos.fixacao);
+      if (temVotos(out.votos.projecao)) out.projecaoM = metrosDosVotos(out.votos.projecao);
+      out.revisar = (f.revisar ?? []).filter((r) => r !== "votos");
+    }
   }
-  if (x.parecidos?.length) x.parecidos = await verificarParecidos(f.nome, x.parecidos);
-  if (poucos && x.parecidos?.length) {
-    const ja = new Set((f.parecidos ?? []).map((p) => p.nome.toLowerCase()));
-    out.parecidos = [...(f.parecidos ?? []), ...x.parecidos.filter((p) => p?.nome && p?.casa && !ja.has(p.nome.toLowerCase()) && p.nome.toLowerCase() !== f.nome.toLowerCase() && (Number(p.pct) || 70) >= 60)]
-      .slice(0, 15).map((p) => ({ ...p, pct: Math.max(40, Math.min(99, Math.round(Number(p.pct) || 70))) }));
-  }
+  if (viz?.parecidos.length) out.parecidos = viz.parecidos;
+  if (viz?.mesmaCasa.length) out.mesmaCasa = viz.mesmaCasa;
   return out;
 }
 
@@ -301,9 +310,10 @@ export async function buscarParecidos(nome: string, casa: string): Promise<{ par
   const r = await geminiJSON<{ parecidos: FichaIA["parecidos"]; mesmaCasa: FichaIA["mesmaCasa"] }>([{ text: `Abra a página do perfume "${nome}"${casa ? ` da casa "${casa}"` : ""} no Fragrantica e devolva:
 - "parecidos": a lista completa, cada um com nome, casa, tipo, pct, fonte e trecho, seguindo as regras abaixo.
 - "mesmaCasa": até 8 outros perfumes da mesma marca, da seção "Designer ${casa || "da marca"}" da página, cada um com o nome (sem a marca) e "link", o endereço da página dele no Fragrantica.
-${REGRA_PARECIDOS}` }], { schema: SCHEMA_P, pesquisar: true, esforco: "medium", tempo: 100000 });
+${REGRA_PARECIDOS}` }], { schema: SCHEMA_P, pesquisar: true, tempo: 85000 });
   const { ok, descartados } = await conferirParecidos(nome, r.parecidos);
-  const parecidos = ok.filter((x) => x?.nome && x?.casa && x.nome.toLowerCase() !== nome.toLowerCase() && (Number(x.pct) || 70) >= 60).slice(0, 15).map((x) => ({ ...x, pct: Math.min(99, Math.round(Number(x.pct) || 70)) }));
+  const parecidos = ok.filter((x) => x?.nome && x?.casa && x.nome.toLowerCase() !== nome.toLowerCase() && (Number(x.pct) || 70) >= 60).slice(0, 15)
+    .map((x) => ({ ...x, pct: Math.min(99, Math.round(Number(x.pct) || 70)), imagem: linkBate(x.link, x.nome) ? fotoDoFragrantica(x.link) : null }));
   const mesmaCasa = (r.mesmaCasa ?? []).filter((x, i, l) => x?.nome && normal(x.nome) !== normal(nome) && l.findIndex((y) => normal(y.nome) === normal(x.nome)) === i).slice(0, 8)
     .map((x) => ({ nome: x.nome, link: x.link && /fragrantica\./i.test(x.link) ? x.link : null, imagem: fotoDoFragrantica(x.link) }));
   return { parecidos, mesmaCasa, descartados };
@@ -340,11 +350,8 @@ Pirâmide, acordes e família vêm do Fragrantica, sem misturar. Os outros campo
 - "pais": o país de origem da marca (ex.: Rayhaan, Lattafa, Armaf → "Emirados Árabes Unidos"; Dior, Chanel → "França"). Pesquise se não souber.
 - Ano, perfumistas, gênero e uma descricao de 1 ou 2 frases curtas sobre o cheiro, em português.
 - forma do frasco: alto, ret, redondo ou largo. tampa: cor da tampa em hex.
-- "parecidos": a lista completa, cada um com nome, casa, tipo, pct, fonte e trecho, seguindo as regras abaixo.
-${REGRA_PARECIDOS}
 - "fragrantica": endereço completo da página do perfume no Fragrantica.
-- "mesmaCasa": até 8 outros perfumes da mesma marca, da seção "Designer ${c.casa || "da marca"}" da página dele no Fragrantica, cada um com o nome (sem a marca) e "link", o endereço da página dele no Fragrantica. Não repita este perfume.
-- fontes: sites usados e o que veio de cada um. O que não encontrar fica vazio e entra em "revisar".` }], { schema: { ...SCHEMA_FICHA, properties: { ...SCHEMA_FICHA.properties, fragrantica: { type: "STRING" } } }, pesquisar: !paginaCompleta });
+- fontes: sites usados e o que veio de cada um. O que não encontrar fica vazio e entra em "revisar".` }], { schema: SCHEMA_PRINCIPAL, pesquisar: !paginaCompleta });
     const imagem = pagina?.imagem ?? fotoDoFragrantica(c.link) ?? fotoDoFragrantica(f.fragrantica);
     f.parecidos = await verificarParecidos(f.nome || c.nome, f.parecidos);
     const { fragrantica: _fr, ...resto } = f;
@@ -352,7 +359,7 @@ ${REGRA_PARECIDOS}
     const pronta = finalizar({ ...resto, perfumistas: f.perfumistas ?? [], revisar: f.revisar ?? [], fontes: f.fontes ?? [], forma: f.forma ?? "ret", tampa: /^#[0-9a-f]{6}$/i.test(f.tampa ?? "") ? f.tampa : "#141417", imagem });
     // votos ou parecidos faltando: a tela pede o complemento em segundo plano (outra chamada, sem travar o cadastro)
     const link = c.link ?? (f.fragrantica && /fragrantica\./i.test(f.fragrantica) ? f.fragrantica : undefined);
-    return { ...pronta, completar: !temVotos(pronta.votos?.fixacao) || !temVotos(pronta.votos?.projecao) || (pronta.parecidos ?? []).length < 5, fragrantica: link };
+    return { ...pronta, completar: true, fragrantica: link };
   } catch (e) {
     ultimoErroFicha = `ficha: ${e instanceof Error ? e.message.slice(0, 200) : e}`;
     console.error("fichaChatGPT", e);

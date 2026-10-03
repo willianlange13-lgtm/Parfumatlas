@@ -134,6 +134,16 @@ export async function montarFicha(id: string) {
   if (pesquisados.some((x) => x.tipo === "inspirou") && !s.inspirados.length) { colunas[0].nome = "INSPIROU-SE EM"; colunas[0].sub = "o original e as releituras"; }
   colunas.forEach((c) => { c.itens.sort((a, b) => b.sim - a.sim); c.itens = c.itens.slice(0, 15); });
 
+  // lista única de semelhantes, com foto do frasco, tenha ou não na coleção
+  const fotoDe = (nome: string, casa: string, img?: string | null) => img ?? todos.find((x) => norm(x.nome) === norm(nome) && (!casa || norm(x.casa) === norm(casa)))?.imagem ?? null;
+  const semelhantesLista = (pesquisados.length
+    ? pesquisados.map((pr) => {
+        const achado = todos.find((x) => norm(x.nome) === norm(pr.nome) && (!pr.casa || norm(x.casa) === norm(pr.casa)));
+        return { nome: pr.nome, casa: pr.casa, pct: pr.pct, original: pr.tipo === "inspirou", imagem: fotoDe(pr.nome, pr.casa, pr.imagem), href: achado ? `/colecao/${achado.id}` : `/buscar/resultado?nome=${encodeURIComponent(pr.nome)}&casa=${encodeURIComponent(pr.casa)}` };
+      })
+    : [...s.inspirados, ...s.naColecao.map((x) => ({ ...x, tem: true })), ...s.fora.map((x) => ({ ...x, tem: false }))].map((x) => ({ nome: x.p.nome, casa: x.p.casa, pct: x.sim, original: false, imagem: x.p.imagem ?? null, href: `/colecao/${x.p.id}` }))
+  ).filter((x, i, l) => l.findIndex((y) => norm(y.nome) === norm(x.nome)) === i).sort((a, b) => Number(b.original) - Number(a.original) || b.pct - a.pct).slice(0, 15);
+
   const inspNaColecao = s.inspirados.filter((x) => x.tem).length;
   const relacao = s.inspirados.length ? `Original · ${inspNaColecao || s.inspirados.length} inspirado${(inspNaColecao || s.inspirados.length) > 1 ? "s" : ""} ${inspNaColecao ? "na sua coleção" : "conhecidos"}` : p.inspiradoEm ? `Inspirado em ${acervo.perfumes.get(p.inspiradoEm)?.nome ?? "outro perfume"}` : "";
   const original = (p.parecidos ?? []).find((x) => x.tipo === "inspirou");
@@ -188,6 +198,7 @@ export async function montarFicha(id: string) {
       { nome: !temP ? "Projeção · votos não encontrados" : p.votos?.origem === "estimativa" ? "Projeção · estimativa" : "Projeção", itens: votos(["Íntima", "Moderada", "Forte", "Enorme"], VP, t.sup[1]) },
     ],
     colunas,
+    semelhantes: semelhantesLista,
     perguntas: perguntas.map((q) => ({ t: q, href: qs(q) })),
     // da mesma casa: os que já estão no Atlas e os da seção "Designer" do Fragrantica
     casa: [

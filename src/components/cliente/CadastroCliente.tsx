@@ -50,6 +50,7 @@ export function CadastroCliente({ base, modoInicial }: { base: Record<string, un
   const [pesquisou, setPesquisou] = useState(false);
   const [completando, setCompletando] = useState(false);
   const link = useRef<string | undefined>(undefined);
+  const salvoId = useRef<string | null>(null); // ficha salva antes da segunda etapa terminar
 
   async function identificar(m: "foto" | "link" | "nome", texto?: string, f?: { mime: string; base64: string }, rapido = false) {
     setOcupado("lendo"); setErro(""); setFicha(null); setSel(-1); setPesquisou(false);
@@ -92,7 +93,9 @@ export function CadastroCliente({ base, modoInicial }: { base: Record<string, un
       const r = await fetch("/api/ficha/completar", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(base), signal: AbortSignal.timeout(130000) });
       const j = (await r.json()) as Ficha;
       // junta só o que a segunda busca traz, sem desfazer o que a pessoa já editou
-      setFicha((f) => (f ? { ...f, votos: j.votos ?? f.votos, fixacaoH: j.fixacaoH ?? f.fixacaoH, projecaoM: j.projecaoM ?? f.projecaoM, parecidos: j.parecidos ?? f.parecidos, revisar: f.revisar.filter((x) => x !== "votos" || (j.revisar ?? []).includes("votos")) } : f));
+      setFicha((f) => (f ? { ...f, votos: j.votos ?? f.votos, fixacaoH: j.fixacaoH ?? f.fixacaoH, projecaoM: j.projecaoM ?? f.projecaoM, parecidos: j.parecidos ?? f.parecidos, mesmaCasa: j.mesmaCasa ?? f.mesmaCasa, revisar: f.revisar.filter((x) => x !== "votos" || (j.revisar ?? []).includes("votos")) } : f));
+      // se a pessoa já salvou, leva o que chegou para a ficha salva
+      if (salvoId.current) await fetch("/api/ficha/anexar", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: salvoId.current, parecidos: j.parecidos, mesmaCasa: j.mesmaCasa, votos: j.votos, fixacaoH: j.fixacaoH, projecaoM: j.projecaoM }) }).then(() => router.refresh()).catch(() => {});
     } catch { /* fica com o que já tem */ } finally {
       setCompletando(false);
     }
@@ -119,7 +122,7 @@ export function CadastroCliente({ base, modoInicial }: { base: Record<string, un
     const j = await r.json();
     setOcupado("");
     if (!r.ok) setErro(j.erro ?? "Não consegui salvar.");
-    else router.push(`/colecao/${j.id}`);
+    else { salvoId.current = j.id; router.push(`/colecao/${j.id}`); }
   }
 
   const muda = (k: string) => (e: React.ChangeEvent<HTMLInputElement>) => {

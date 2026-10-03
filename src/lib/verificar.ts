@@ -15,7 +15,7 @@ const CONFIAVEIS = /fragrantica\.|parfumo\.|basenotes\.|reddit\.com|youtube\.com
 
 async function textoDaPagina(url: string): Promise<string | null> {
   try {
-    const r = await fetch(url, { headers: { "User-Agent": UA, "Accept-Language": "pt-BR,pt;q=0.9,en;q=0.8", Accept: "text/html" }, signal: AbortSignal.timeout(7000), redirect: "follow" });
+    const r = await fetch(url, { headers: { "User-Agent": UA, "Accept-Language": "pt-BR,pt;q=0.9,en;q=0.8", Accept: "text/html" }, signal: AbortSignal.timeout(5000), redirect: "follow" });
     if (!r.ok) return null;
     const html = (await r.text()).slice(0, 1_500_000);
     if (html.length < 1500 || /cf-challenge|Just a moment|captcha/i.test(html.slice(0, 5000))) return null;
