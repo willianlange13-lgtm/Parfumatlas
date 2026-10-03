@@ -8,8 +8,9 @@ import { EC, glifo, frascoMini, ICONE_CLIMA, t, dataBR, mesAno, n3 } from "@/des
 import type { Entrada } from "@/lib/tipos";
 import { NIVEIS_FIXACAO } from "@/lib/normalizar";
 
-// foto do seu frasco ou a oficial (Fragrantica); sem nenhuma, o desenho
-const fr = (e: Entrada) => ({ ...frascoMini(e.perfume.nome, e.perfume.casa, e.perfume.acorde, e.perfume.forma, e.perfume.tampa, corDoAcorde(e.perfume.acorde)), foto: e.foto ?? e.perfume.imagem ?? null });
+// foto do seu frasco (preenche o quadro) ou a oficial do Fragrantica (fundo branco); sem nenhuma, o desenho.
+// No destaque grande do topo vale só a oficial (decisão do Willian).
+const fr = (e: Entrada) => ({ ...frascoMini(e.perfume.nome, e.perfume.casa, e.perfume.acorde, e.perfume.forma, e.perfume.tampa, corDoAcorde(e.perfume.acorde)), foto: e.foto ?? e.perfume.imagem ?? null, oficial: !e.foto });
 /** Quanto dura, com dado real: o ajuste "em você" ou a média da comunidade (nunca uma conta inventada). */
 function duracao(e: Entrada) {
   const meu = e.minhaFixacao ? NIVEIS_FIXACAO[e.minhaFixacao - 1] : null;
@@ -66,7 +67,7 @@ export async function montarInicio(outra = 0) {
     anel: glifo(d.vetor.map((x) => Math.max(18, x)), EC),
     dia: fd ? { ...fd, fundo: fd.fundo, vidro: fd.vidro, id: escolhido!.id, porque, href: `/colecao/${escolhido!.perfumeId}`, outra: `/?outra=${outra + 1}`, clima: [clima.cidade, `${temp} °C`, descricaoAr(umid)].filter(Boolean).join(" · ") } : { ...base.dia, nome: "—", id: "", href: "/adicionar", outra: "/", clima: "" },
     hero: destaque
-      ? { foto: destaque.foto ?? destaque.perfume.imagem ?? null, casaUp: destaque.perfume.casa.toUpperCase(), l1: nomeH.slice(0, meio).join(" "), l2: nomeH.slice(meio).join(" "), conc: (destaque.perfume.concentracao ?? "").toUpperCase(), entrada: `ENTRADA Nº ${n3(destaque.numero)} · ADICIONADO EM ${mesAno(destaque.adicionadoEm)}` }
+      ? { foto: destaque.perfume.imagem ?? null, casaUp: destaque.perfume.casa.toUpperCase(), l1: nomeH.slice(0, meio).join(" "), l2: nomeH.slice(meio).join(" "), conc: (destaque.perfume.concentracao ?? "").toUpperCase(), entrada: `ENTRADA Nº ${n3(destaque.numero)} · ADICIONADO EM ${mesAno(destaque.adicionadoEm)}` }
       : { foto: null, casaUp: "", l1: "PARFUM", l2: "ATLAS", conc: "", entrada: "" },
     cur: { nota: c.nota, foto: nota(c.nota).foto ?? "", titulo: c.titulo, texto: curTexto, link: `Ver a nota ${c.nota.toLowerCase()}`, href: `/descobrir?nota=${encodeURIComponent(c.nota)}` },
     previsao: `previsão para ${clima.cidade}, um perfume da sua coleção para cada dia`,
