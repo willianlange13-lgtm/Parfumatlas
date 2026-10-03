@@ -43,6 +43,14 @@ export const WIKI_NOTA: Record<string, string> = {
   Canela: "Cinnamon", Cardamomo: "Cardamom", Gengibre: "Ginger", Açafrão: "Saffron", "Noz-moscada": "Nutmeg", Pimenta: "Black_pepper", "Pimenta-rosa": "Schinus_terebinthifolia", Alcaçuz: "Liquorice",
   Incenso: "Frankincense", Benjoim: "Benzoin_resin", Mirra: "Myrrh", Couro: "Leather", Tabaco: "Tobacco",
   Baunilha: "Vanilla", Tonka: "Tonka_bean", Praliné: "Praline_(nut_confection)",
+  Cidra: "Citron", Coentro: "Coriander", Manjericão: "Basil", Cenoura: "Carrot", "Semente de cenoura": "Carrot", Figo: "Common_fig", Damasco: "Apricot", Ameixa: "Plum",
+  Melancia: "Watermelon", Pepino: "Cucumber", Coco: "Coconut", Cereja: "Cherry", Framboesa: "Raspberry", Morango: "Strawberry", Maracujá: "Passiflora_edulis", Manga: "Mango",
+  "Limão-siciliano": "Lemon", Lima: "Key_lime", Yuzu: "Yuzu", Petitgrain: "Bitter_orange",
+  Magnólia: "Magnolia", Lírio: "Lilium", "Lírio-do-vale": "Lily_of_the_valley", Ylang: "Cananga_odorata", "Ylang-ylang": "Cananga_odorata", Osmanthus: "Osmanthus_fragrans", Gardênia: "Gardenia_jasminoides", Heliotropo: "Heliotropium_arborescens", Mimosa: "Acacia_dealbata",
+  Sálvia: "Salvia_sclarea", "Sálvia esclareia": "Salvia_sclarea", Tomilho: "Thyme", Artemísia: "Artemisia_absinthium", Eucalipto: "Eucalyptus", Chá: "Tea", "Chá verde": "Green_tea", "Chá preto": "Black_tea",
+  Cravo: "Clove", "Cravo-da-índia": "Clove", Anis: "Anise", "Anis-estrelado": "Illicium_verum", "Pimenta-preta": "Black_pepper", Elemi: "Elemi", Cominho: "Cumin",
+  Cacau: "Cocoa_bean", Chocolate: "Chocolate", Caramelo: "Caramel", Rum: "Rum", Amêndoa: "Almond", Avelã: "Hazelnut", Pistache: "Pistachio", Leite: "Milk",
+  Guaiaco: "Guaiacum_officinale", "Madeira de guaiaco": "Guaiacum_officinale", Cashmeran: "Cashmere_wool", Papiro: "Cyperus_papyrus", Labdano: "Labdanum", Olíbano: "Frankincense", Opoponax: "Opopanax",
 };
 
 export function nota(nome: string) {

@@ -23,7 +23,7 @@ function paraTexto(html: string) {
 /** Baixa a página do perfume e devolve o texto, a foto oficial e o título. Null se o site bloquear. */
 export async function lerPagina(url: string): Promise<Pagina | null> {
   try {
-    const r = await fetch(url, { headers: { "User-Agent": UA, "Accept-Language": "pt-BR,pt;q=0.9,en;q=0.8", Accept: "text/html" }, signal: AbortSignal.timeout(12000), redirect: "follow" });
+    const r = await fetch(url, { headers: { "User-Agent": UA, "Accept-Language": "pt-BR,pt;q=0.9,en;q=0.8", Accept: "text/html" }, signal: AbortSignal.timeout(8000), redirect: "follow" });
     if (!r.ok) return null;
     const html = await r.text();
     if (html.length < 2000 || /cf-challenge|Just a moment|captcha/i.test(html.slice(0, 5000))) return null;

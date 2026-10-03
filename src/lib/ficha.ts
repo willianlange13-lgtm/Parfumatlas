@@ -1,5 +1,5 @@
 import "server-only";
-import { geminiConfigurado, geminiJSON, geminiTexto } from "@/lib/gemini";
+import { geminiConfigurado, geminiJSON, geminiTexto, usaOpenAI } from "@/lib/gemini";
 import { carregarAcervo } from "@/lib/dados";
 import { lerPagina, linkDePerfume, type Pagina } from "@/lib/pagina";
 import type { Perfume } from "@/lib/tipos";
@@ -45,7 +45,7 @@ function doLink(url: string): Candidato | null {
   }
 }
 
-const SCHEMA_ID = { type: "OBJECT", properties: { lido: { type: "ARRAY", items: { type: "STRING" } }, candidatos: { type: "ARRAY", items: { type: "OBJECT", properties: { nome: { type: "STRING" }, casa: { type: "STRING" }, concentracao: { type: "STRING" }, por: { type: "STRING" }, pct: { type: "INTEGER" } }, required: ["nome", "casa", "concentracao", "por", "pct"] } } }, required: ["lido", "candidatos"] };
+const SCHEMA_ID = { type: "OBJECT", properties: { lido: { type: "ARRAY", items: { type: "STRING" } }, candidatos: { type: "ARRAY", items: { type: "OBJECT", properties: { nome: { type: "STRING" }, casa: { type: "STRING" }, concentracao: { type: "STRING" }, por: { type: "STRING" }, pct: { type: "INTEGER" }, link: { type: "STRING" } }, required: ["nome", "casa", "concentracao", "por", "pct"] } } }, required: ["lido", "candidatos"] };
 
 /**
  * Descobre qual é o perfume. Para economizar a cota da IA:
@@ -71,6 +71,10 @@ export async function identificar(modo: "foto" | "link" | "nome", texto?: string
           [{ text: `Identifique o perfume da foto. Leia o que estiver escrito no frasco e descreva frasco e tampa. Dê até 3 candidatos, do mais provável ao menos, com a confiança em %. Em "por", explique em poucas palavras por que (ex.: "Rótulo e frasco batem com a foto", "Mesmo frasco da casa, rótulo diferente"). Concentração em maiúsculas (ex.: EAU DE PARFUM). Responda em português.` }, { inlineData: { mimeType: foto.mime, data: foto.base64 } }],
           { schema: SCHEMA_ID },
         );
+      }
+      if (usaOpenAI()) {
+        const r = await geminiJSON<Identificacao>([{ text: `O usuário digitou ou falou: "${texto}". Pesquise no Fragrantica e liste até 3 perfumes que existem de verdade e que ele pode querer dizer, do mais provável ao menos. Para cada um: nome, casa, concentração (em maiúsculas), um motivo curto em português em "por", a confiança em "pct" (0 a 100) e o endereço da página no Fragrantica em "link".` }], { schema: SCHEMA_ID, pesquisar: true });
+        if (r.candidatos?.length) return r;
       }
       const r = await geminiJSON<Identificacao>([{ text: `O usuário digitou ou falou: "${texto}". Liste até 3 perfumes que existem de verdade e que ele pode querer dizer, do mais provável ao menos, com nome, casa e concentração (em maiúsculas). Em "por", um motivo curto em português. Se não reconhecer, devolva a lista vazia.` }], { schema: SCHEMA_ID, leve: true });
       if (r.candidatos?.length) return r;
@@ -105,6 +109,11 @@ const SCHEMA_FICHA = {
   required: ["nome", "casa", "familia", "acorde", "notas", "acordes", "votos", "forma", "tampa", "fontes", "revisar"],
 };
 
+const fotoDoFragrantica = (url?: string | null) => {
+  const id = url?.match(/fragrantica\.com(?:\.br)?\/perfume\/[^?#]*-(\d+)\.html/i)?.[1];
+  return id ? `https://fimgs.net/mdimg/perfume/375x500.${id}.jpg` : null;
+};
+
 /** Último erro da IA ao montar a ficha (aparece na tela e no diagnóstico). */
 export let ultimoErroFicha = "";
 
@@ -114,6 +123,7 @@ export async function gerarFicha(c: { nome: string; casa: string; concentracao?:
   if (geminiConfigurado()) {
     ultimoErroFicha = "";
     const alvo = `"${c.nome}" da casa "${c.casa}"${c.concentracao ? ` (${c.concentracao})` : ""}`;
+    if (usaOpenAI()) return fichaChatGPT(c, alvo, local);
     // 1) a página do link, lida direto (dados reais e a foto oficial)
     let pagina: Pagina | null = c.link ? await lerPagina(c.link) : null;
     // 2) pesquisa na internet, se não houver página ou para completar
@@ -164,4 +174,31 @@ Regras:
     return { ...resto, revisar: [] };
   }
   return null;
+}
+
+/** ChatGPT: uma única chamada com pesquisa na internet monta a ficha inteira (como no chat). */
+async function fichaChatGPT(c: { nome: string; casa: string; concentracao?: string; link?: string }, alvo: string, local?: Perfume): Promise<FichaIA | null> {
+  const pagina = c.link ? await lerPagina(c.link) : null;
+  try {
+    const f = await geminiJSON<FichaIA & { fragrantica?: string }>([{ text: `Pesquise na internet o perfume ${alvo}${c.link ? ` (página: ${c.link})` : ""}. Use como fonte principal o Fragrantica e confira com o Parfumo, o site da marca e lojas.
+${pagina ? `Texto da página já baixada:\n${pagina.texto.slice(0, 12000)}\n` : ""}
+Monte a ficha completa com o que as fontes trazem. Não invente: o que não achar fica vazio (ou 0) e entra em "revisar".
+- Tudo em português do Brasil, inclusive as notas ("Mandarina", "Hortelã", "Âmbar cinzento").
+- "acorde" principal, um de: ${ACORDE_PRINCIPAL}. "acordes": nomes entre ${ACORDES_OK}, força de 0 a 100 na ordem do Fragrantica.
+- fixacaoH em horas (média dos relatos) e projecaoM em metros.
+- votos.fixacao: 5 porcentagens (muito fraca, fraca, moderada, duradoura, muito longa); votos.projecao: 4 (íntima, moderada, forte, enorme); estações, dia e noite de 0 a 100; ocasioes: Trabalho, Dia a dia, Encontro, Festa, Formal, Esporte (0 a 100). Se o site não mostrar os números, estime pelos relatos e ponha "votos" em "revisar".
+- descricao: 1 ou 2 frases curtas sobre o cheiro. genero: Masculino, Feminino ou Unissex. familia: a do Fragrantica, em português.
+- forma do frasco: alto, ret, redondo ou largo. tampa: cor da tampa em hex.
+- "fragrantica": endereço completo da página do perfume no Fragrantica.
+- fontes: sites usados e o que veio de cada um.` }], { schema: { ...SCHEMA_FICHA, properties: { ...SCHEMA_FICHA.properties, fragrantica: { type: "STRING" } } }, pesquisar: true });
+    const imagem = pagina?.imagem ?? fotoDoFragrantica(c.link) ?? fotoDoFragrantica(f.fragrantica);
+    const { fragrantica: _fr, ...resto } = f;
+    void _fr;
+    return { ...resto, perfumistas: f.perfumistas ?? [], revisar: f.revisar ?? [], fontes: f.fontes ?? [], forma: f.forma ?? "ret", tampa: /^#[0-9a-f]{6}$/i.test(f.tampa ?? "") ? f.tampa : "#141417", imagem };
+  } catch (e) {
+    ultimoErroFicha = `ficha: ${e instanceof Error ? e.message.slice(0, 200) : e}`;
+    console.error("fichaChatGPT", e);
+    if (local) { const { id: _i, clima: _c, ...resto } = local; void _i; void _c; return { ...resto, revisar: [] }; }
+    return null;
+  }
 }

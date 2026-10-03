@@ -94,8 +94,9 @@ async function chamarOpenAI(partes: Parte[], opcoes: { schema?: object; pesquisa
     const r = await fetch("https://api.openai.com/v1/responses", {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${chave}` },
-      body: JSON.stringify({ model: modelo, ...corpo }),
-      signal: AbortSignal.timeout(90000),
+      // modelos gpt-5 "pensam" antes de responder: esforço baixo deixa bem mais rápido e barato
+      body: JSON.stringify({ model: modelo, ...corpo, ...(modelo.startsWith("gpt-5") ? { reasoning: { effort: "low" } } : {}) }),
+      signal: AbortSignal.timeout(100000),
     });
     if (!r.ok) {
       ultimo = `ChatGPT ${r.status} (${modelo}): ${(await r.text()).slice(0, 200)}`;
