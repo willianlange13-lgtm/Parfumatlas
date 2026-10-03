@@ -106,6 +106,7 @@ const SCHEMA_FICHA = {
     forma: { type: "STRING", enum: ["alto", "ret", "redondo", "largo"] }, tampa: T, imagem: T,
     fontes: { type: "ARRAY", items: { type: "OBJECT", properties: { nome: T, url: T, oQue: T }, required: ["nome", "oQue"] } },
     revisar: L,
+    parecidos: { type: "ARRAY", items: { type: "OBJECT", properties: { nome: T, casa: T, tipo: { type: "STRING", enum: ["inspirou", "clone", "parecido"] }, pct: { type: "INTEGER" } }, required: ["nome", "casa", "tipo", "pct"] } },
   },
   required: ["nome", "casa", "familia", "acorde", "notas", "acordes", "votos", "forma", "tampa", "fontes", "revisar"],
 };
@@ -122,7 +123,10 @@ const FAMILIA: Record<string, string> = { aromatic: "Aromático", aquatic: "Aqu�
 function finalizar(f: FichaIA): FichaIA {
   const revisar = new Set(f.revisar ?? []);
   const notas = { saida: notasPT(f.notas?.saida), coracao: notasPT(f.notas?.coracao), fundo: notasPT(f.notas?.fundo) };
-  let acordes = (f.acordes ?? []).map((a) => ({ nome: acordePT(a.nome), valor: Math.max(0, Math.min(100, Math.round(Number(a.valor) || 0))) })).filter((a, i, l) => a.nome && l.findIndex((x) => x.nome === a.nome) === i);
+  const num = (x: unknown) => parseFloat(String(x ?? "").replace(",", ".").replace("%", "")) || 0;
+  const brutos = (f.acordes ?? []).map((a) => { const o = a as unknown as Record<string, unknown>; return { nome: acordePT(String(o.nome ?? o.name ?? "")), valor: num(o.valor ?? o.value ?? o.forca ?? o.width) }; });
+  const escala = Math.max(...brutos.map((a) => a.valor), 0) <= 1 ? 100 : 1; // veio de 0 a 1
+  let acordes = brutos.map((a) => ({ nome: a.nome, valor: Math.max(0, Math.min(100, Math.round(a.valor * escala))) })).filter((a, i, l) => a.nome && l.findIndex((x) => x.nome === a.nome) === i);
   if (acordes.length && acordes.every((a) => !a.valor)) acordes = acordes.map((a, i) => ({ ...a, valor: Math.max(30, 100 - i * 12) }));
   const familia = (f.familia ?? "").split(/\s+/).map((w) => FAMILIA[w.toLowerCase()] ?? w).join(" ");
   const votos = votosDe(f.votos as Partial<Votos>, f.votos?.ocasioes?.length ? f.votos.ocasioes : OCASIOES);
@@ -135,6 +139,7 @@ function finalizar(f: FichaIA): FichaIA {
     fixacaoH: votos ? horasDosVotos(votos.fixacao) : f.fixacaoH,
     projecaoM: votos ? metrosDosVotos(votos.projecao) : f.projecaoM,
     revisar: [...revisar],
+    parecidos: (f.parecidos ?? []).filter((x) => x?.nome && x?.casa && x.nome.toLowerCase() !== (f.nome ?? "").toLowerCase()).slice(0, 10).map((x) => ({ ...x, pct: Math.max(40, Math.min(99, Math.round(Number(x.pct) || 70))) })),
   };
 }
 
@@ -218,6 +223,7 @@ Copie do Fragrantica, sem inventar e sem misturar outras fontes:
   · ocasioes: Trabalho, Dia a dia, Encontro, Festa, Formal, Esporte de 0 a 100 (estime pelo perfil).
 - Ano, concentração, perfumistas, gênero, país da casa e uma descricao de 1 ou 2 frases curtas sobre o cheiro, em português.
 - forma do frasco: alto, ret, redondo ou largo. tampa: cor da tampa em hex.
+- "parecidos": até 10 perfumes semelhantes, da seção "Este perfume me lembra" do Fragrantica e das comparações da comunidade (resenhas, vídeos, lojas de contratipos). Para cada um: nome, casa, "tipo" ("inspirou" se é o original em que este se inspira, "clone" se é uma releitura inspirada neste, "parecido" nos outros casos) e "pct", a semelhança de 0 a 100.
 - "fragrantica": endereço completo da página do perfume no Fragrantica.
 - fontes: sites usados e o que veio de cada um. O que não encontrar fica vazio e entra em "revisar".` }], { schema: { ...SCHEMA_FICHA, properties: { ...SCHEMA_FICHA.properties, fragrantica: { type: "STRING" } } }, pesquisar: true });
     const imagem = pagina?.imagem ?? fotoDoFragrantica(c.link) ?? fotoDoFragrantica(f.fragrantica);

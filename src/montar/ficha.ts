@@ -97,6 +97,23 @@ export async function montarFicha(id: string) {
   ];
   if (!colunas[0].itens.length) { colunas[0].nome = "INSPIROU-SE EM"; colunas[0].sub = "o original e as releituras"; const orig = p.inspiradoEm ? acervo.perfumes.get(p.inspiradoEm) : null; colunas[0].itens = orig ? [sem(orig, 94, porQue(orig), meus.some((m) => m.perfumeId === orig.id) ? "Na sua coleção" : "", t.ink, t.sup[1])] : []; }
 
+  // parecidos que a IA trouxe do Fragrantica e da comunidade (podem não estar no catálogo)
+  const norm = (x: string) => x.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
+  const jaListado = new Set(colunas.flatMap((c) => c.itens.map((i) => norm(i.nome))));
+  for (const pr of p.parecidos ?? []) {
+    if (jaListado.has(norm(pr.nome))) continue;
+    jaListado.add(norm(pr.nome));
+    const achado = todos.find((x) => norm(x.nome) === norm(pr.nome) && (!pr.casa || norm(x.casa) === norm(pr.casa)));
+    const tem = achado ? meus.some((m) => m.perfumeId === achado.id) : false;
+    const base: Perfume = achado ?? { id: "", nome: pr.nome, casa: pr.casa, perfumistas: [], familia: "", acorde: p.acorde, notas: { saida: [], coracao: [], fundo: [] }, acordes: [], forma: "ret", tampa: "#141417" };
+    const item = { ...sem(base, pr.pct, pr.tipo === "inspirou" ? "o original" : pr.tipo === "clone" ? "inspirado nele" : "parecido", tem ? "Na sua coleção" : pr.tipo === "inspirou" ? "Original" : "", t.ink, t.sup[1]), href: achado ? `/colecao/${achado.id}` : `/buscar/resultado?nome=${encodeURIComponent(pr.nome)}&casa=${encodeURIComponent(pr.casa)}` };
+    if (pr.tipo !== "parecido") colunas[0].itens.push(item);
+    else if (tem) colunas[1].itens.push(item);
+    else colunas[2].itens.push(item);
+  }
+  if ((p.parecidos ?? []).some((x) => x.tipo === "inspirou") && !s.inspirados.length) { colunas[0].nome = "INSPIROU-SE EM"; colunas[0].sub = "o original e as releituras"; }
+  colunas.forEach((c) => { c.itens.sort((a, b) => b.sim - a.sim); c.itens = c.itens.slice(0, 6); });
+
   const inspNaColecao = s.inspirados.filter((x) => x.tem).length;
   const relacao = s.inspirados.length ? `Original · ${inspNaColecao || s.inspirados.length} inspirado${(inspNaColecao || s.inspirados.length) > 1 ? "s" : ""} ${inspNaColecao ? "na sua coleção" : "conhecidos"}` : p.inspiradoEm ? `Inspirado em ${acervo.perfumes.get(p.inspiradoEm)?.nome ?? "outro perfume"}` : "";
   const casaInfo = CASAS[p.casa];
