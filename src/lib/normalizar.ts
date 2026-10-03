@@ -6,6 +6,11 @@ const tira = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCa
 // nome em inglês ou variação → nome usado no Fragrantica Brasil
 const NOTA: Record<string, string> = {
   // variações que vieram no primeiro lote do acervo (Rayhaan)
+  "amendoa amarga": "Amêndoa amarga", "bitter almond": "Amêndoa amarga", aquozone: "Aquozone", "cana-de-acucar": "Cana-de-açúcar", "cana de acucar": "Cana-de-açúcar", "sugar cane": "Cana-de-açúcar",
+  cascalone: "Cascalone", civeta: "Civeta", civet: "Civeta", cumarina: "Cumarina", coumarin: "Cumarina", hibisco: "Hibisco", hibiscus: "Hibisco", "leite condensado": "Leite condensado", "condensed milk": "Leite condensado",
+  licor: "Licor", liquor: "Licor", "madeira de ambar": "Madeira de âmbar", "amber wood": "Madeira de âmbar", amberwood: "Madeira de âmbar", maltol: "Maltol", "mandarina verde": "Mandarina verde", "green mandarin": "Mandarina verde",
+  "notas alcoolicas": "Notas alcoólicas", "boozy notes": "Notas alcoólicas", orquidea: "Orquídea", orchid: "Orquídea", "pimenta de szechuan": "Pimenta de Sichuan", "pimenta de sichuan": "Pimenta de Sichuan", "sichuan pepper": "Pimenta de Sichuan",
+  "raspas de limao": "Raspas de limão", "lemon zest": "Raspas de limão", "raiz de orris": "Raiz de íris", "orris root": "Raiz de íris", "oleo de cade": "Óleo de cade", cade: "Óleo de cade",
   "cravo-da-india": "Cravo", "cravo da india": "Cravo", citricos: "Cítricos", citrus: "Cítricos", especiarias: "Especiarias", spices: "Especiarias", davana: "Davana",
   "flor de toranja": "Flor de toranja", "grapefruit blossom": "Flor de toranja", ladano: "Labdano", "madeira guaiac": "Madeira de guaiaco", "pimenta rosa": "Pimenta-rosa", sapoti: "Sapoti", sapodilla: "Sapoti",
   citron: "Cidra", cidra: "Cidra", mandarin: "Mandarina", "mandarin orange": "Mandarina", tangerine: "Tangerina", mint: "Hortelã", peppermint: "Hortelã", spearmint: "Hortelã",
@@ -44,7 +49,7 @@ const NOTA: Record<string, string> = {
 // nomes já em português (os valores das tabelas) também contam como conhecidos: não precisam de tradução
 let notasPT_: Set<string> | null = null, acordesPT_: Set<string> | null = null;
 export function notaConhecida(n: string) {
-  const limpa = n.replace(/\([^)]*\)/g, "").split(/\s*\/\s*/)[0].replace(/\s+/g, " ").trim();
+  const limpa = n.replace(/[®™]/g, "").replace(/\([^)]*\)/g, "").split(/\s*\/\s*/)[0].replace(/\s+/g, " ").trim();
   notasPT_ ??= new Set(Object.values(NOTA).map(tira));
   return Boolean(NOTA[tira(limpa)] ?? NOTA[limpa.toLowerCase()]) || notasPT_.has(tira(limpa));
 }
@@ -55,7 +60,7 @@ export const acordeConhecido = (a: string) => {
 };
 
 export function notaPT(n: string) {
-  const limpa = n.replace(/\([^)]*\)/g, "").split(/\s*\/\s*/)[0].replace(/\s+/g, " ").trim();
+  const limpa = n.replace(/[®™]/g, "").replace(/\([^)]*\)/g, "").split(/\s*\/\s*/)[0].replace(/\s+/g, " ").trim();
   const t = tira(limpa);
   const traduzida = NOTA[t] ?? NOTA[limpa.toLowerCase()];
   if (traduzida) return traduzida;

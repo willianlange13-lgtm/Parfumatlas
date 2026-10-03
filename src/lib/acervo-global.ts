@@ -44,7 +44,9 @@ export function linhaDoImport(o: Record<string, unknown>): LinhaAcervo | { erro:
     fragrantica: linkValido(o.u ?? o.fragrantica ?? o.link, nome),
     notas_saida: notasPT(lista(o.s ?? notas.saida)), notas_coracao: notasPT(lista(o.m ?? notas.coracao)), notas_fundo: notasPT(lista(o.f ?? notas.fundo)),
     acordes: [...new Set(lista(o.a ?? o.acordes).map(acordePT))],
-    fixacao_nivel: nivel(o.fx ?? o.fixacao, FIX), projecao_nivel: nivel(o.pj ?? o.projecao, PROJ),
+    // o nível pode vir com outros nomes de campo (com acento, em inglês ou como os rótulos do Fragrantica)
+    fixacao_nivel: nivel(o.fx ?? o.fixacao ?? o["fixação"] ?? o.longevidade ?? o.longevity ?? o.duracao ?? o["duração"] ?? o.fixacao_nivel, FIX),
+    projecao_nivel: nivel(o.pj ?? o.projecao ?? o["projeção"] ?? o.rastro ?? o.sillage ?? o.projection ?? o.projecao_nivel, PROJ),
   };
 }
 
