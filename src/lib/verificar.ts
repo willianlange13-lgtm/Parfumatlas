@@ -31,6 +31,11 @@ async function textoDaPagina(url: string): Promise<string | null> {
  * Corta relações inventadas, como um clone de outro original.
  */
 export async function verificarParecidos<T extends Parecido>(nome: string, lista: T[] | null | undefined): Promise<T[]> {
+  return (await conferirParecidos(nome, lista)).ok;
+}
+
+/** Igual a verificarParecidos, mas também diz quais foram descartados (para mostrar na tela). */
+export async function conferirParecidos<T extends Parecido>(nome: string, lista: T[] | null | undefined): Promise<{ ok: T[]; descartados: string[] }> {
   const itens = (lista ?? []).filter((x) => x?.nome && x?.fonte && /^https?:\/\//.test(x.fonte));
   const original = itens.find((x) => x.tipo === "inspirou")?.nome;
   const conferidos = await Promise.all(
@@ -38,7 +43,9 @@ export async function verificarParecidos<T extends Parecido>(nome: string, lista
       const pagina = await textoDaPagina(x.fonte!);
       // a fonte é a própria página deste perfume (lista "Este perfume me lembra do"): basta citar o parecido
       const paginaDele = cita(normal(decodeURIComponent(x.fonte!)), nome);
-      if (paginaDele) return (pagina ? cita(pagina, x.nome) : cita(normal(x.trecho ?? ""), x.nome) && CONFIAVEIS.test(x.fonte!)) ? x : null;
+      // só confia na página baixada se ela trouxe de fato a lista (às vezes o site entrega outra coisa ou carrega a lista depois)
+      const temLista = pagina && cita(pagina, nome) && /me lembra|reminds me/.test(pagina);
+      if (paginaDele) return (temLista ? cita(pagina!, x.nome) : cita(normal(x.trecho ?? ""), x.nome) && CONFIAVEIS.test(x.fonte!)) ? x : null;
       const outros = [nome, ...(x.tipo === "clone" && original ? [original] : [])];
       if (pagina) return cita(pagina, x.nome) && outros.some((o) => cita(pagina, o)) ? x : null;
       // página não abriu: aceita só de site conhecido e com trecho citando os dois
@@ -46,5 +53,6 @@ export async function verificarParecidos<T extends Parecido>(nome: string, lista
       return CONFIAVEIS.test(x.fonte!) && cita(t, x.nome) && outros.some((o) => cita(t, o)) ? x : null;
     }),
   );
-  return conferidos.filter(Boolean) as T[];
+  const semFonte = (lista ?? []).filter((x) => x?.nome && !(x.fonte && /^https?:\/\//.test(x.fonte))).map((x) => x.nome);
+  return { ok: conferidos.filter(Boolean) as T[], descartados: [...semFonte, ...itens.filter((_, i) => !conferidos[i]).map((x) => x.nome)] };
 }

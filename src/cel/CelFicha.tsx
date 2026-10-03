@@ -211,6 +211,25 @@ export function CelFicha({ v, x }: { v: V; x: ExtraFicha }) {
         ))}
       </Card>
       <AbasSemelhantes colunas={v.colunas} perfumeId={p.id} />
+      {v.casa.length > 0 && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 12, flexShrink: 0 }}>
+            <Rot>Da mesma casa</Rot>
+            <Rolar gap={10}>
+              {v.casa.map((m) => (
+                <Link key={m.nome} href={m.href} style={{ width: 104, flexShrink: 0, display: "flex", flexDirection: "column", gap: 6 }}>
+                  <span style={{ width: 104, height: 120, borderRadius: 14, background: m.imagem ? "#FFFFFF" : "var(--surface)", border: "1px solid var(--line)", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+                    {m.imagem
+                      // eslint-disable-next-line @next/next/no-img-element
+                      ? <img src={m.imagem} alt="" loading="lazy" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+                      : <span style={{ fontFamily: MONO, fontSize: 9, color: "var(--ink-3)", padding: 8, textAlign: "center" }}>{p.casa.toUpperCase()}</span>}
+                  </span>
+                  <span style={{ fontSize: 13, lineHeight: 1.25 }}>{m.nome}</span>
+                </Link>
+              ))}
+            </Rolar>
+          </div>
+      )}
+
 
       {/* 08 · sommelier e anotações */}
       <Card pad={16} gap={12}>
@@ -236,24 +255,6 @@ export function CelFicha({ v, x }: { v: V; x: ExtraFicha }) {
           <div style={{ borderLeft: `2px solid ${OURO}`, paddingLeft: 14, fontSize: 15, lineHeight: 1.5 }}>{cab.anotacao}</div>
         ) : (
           <Link href={`/editar/${p.id}`} style={{ fontSize: 14, color: "var(--ink-2)" }}>Nenhuma anotação ainda. <span style={{ borderBottom: "1px solid var(--prata)" }}>Escrever uma</span></Link>
-        )}
-        {v.casa.length > 0 && (
-          <>
-            <Rot style={{ marginTop: 6 }}>Da mesma casa</Rot>
-            <Rolar gap={10}>
-              {v.casa.map((m) => (
-                <Link key={m.nome} href={m.href} style={{ width: 104, flexShrink: 0, display: "flex", flexDirection: "column", gap: 6 }}>
-                  <span style={{ width: 104, height: 120, borderRadius: 14, background: m.imagem ? "#FFFFFF" : "var(--surface)", border: "1px solid var(--line)", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
-                    {m.imagem
-                      // eslint-disable-next-line @next/next/no-img-element
-                      ? <img src={m.imagem} alt="" loading="lazy" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
-                      : <span style={{ fontFamily: MONO, fontSize: 9, color: "var(--ink-3)", padding: 8, textAlign: "center" }}>{p.casa.toUpperCase()}</span>}
-                  </span>
-                  <span style={{ fontSize: 13, lineHeight: 1.25 }}>{m.nome}</span>
-                </Link>
-              ))}
-            </Rolar>
-          </>
         )}
       </Card>
       {v.demo && <Demo />}

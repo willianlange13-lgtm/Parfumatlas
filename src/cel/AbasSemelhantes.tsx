@@ -34,7 +34,7 @@ export function AbasSemelhantes({ colunas, perfumeId }: { colunas: Coluna[]; per
       const r = await fetch("/api/parecidos", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: perfumeId }), signal: AbortSignal.timeout(130000) });
       const j = await r.json();
       if (!r.ok) setBusca(j.erro ?? "Não consegui buscar agora.");
-      else { setBusca(""); router.refresh(); }
+      else { setBusca(`Encontrei ${j.n} confirmado${j.n === 1 ? "" : "s"}.${j.descartados?.length ? ` Descartei por a fonte não confirmar: ${j.descartados.join(", ")}.` : ""}`); router.refresh(); }
     } catch {
       setBusca("A busca demorou demais. Tente de novo.");
     }
@@ -67,7 +67,7 @@ export function AbasSemelhantes({ colunas, perfumeId }: { colunas: Coluna[]; per
           {busca === "buscando" ? "Buscando parecidos… (até 1 minuto)" : "Buscar os parecidos e a mesma casa de novo"}
         </button>
       )}
-      {busca && busca !== "buscando" && <span style={{ fontSize: 13, color: "#E0A08F" }}>{busca}</span>}
+      {busca && busca !== "buscando" && <span style={{ fontSize: 13, color: busca.startsWith("Encontrei") ? "var(--ink-3)" : "#E0A08F" }}>{busca}</span>}
     </div>
   );
 }
