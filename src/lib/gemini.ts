@@ -1,4 +1,5 @@
 import "server-only";
+import { registrarIA } from "@/lib/telemetria-ia";
 
 /**
  * Política de custo do Atlas:
@@ -21,7 +22,7 @@ type Parte = { text: string } | { inlineData: { mimeType: string; data: string }
  * Chama o Gemini e devolve JSON. Com `pesquisar`, liga a busca do Google e a leitura de links
  * (nesse modo a API não aceita schema, então o JSON vem pedido no próprio texto).
  */
-export async function geminiJSON<T>(partes: Parte[], opcoes: { schema?: object; pesquisar?: boolean; sistema?: string; temperatura?: number; leve?: boolean; esforco?: "low" | "medium"; tempo?: number; maxBuscas?: number } = {}): Promise<T> {
+export async function geminiJSON<T>(partes: Parte[], opcoes: { schema?: object; pesquisar?: boolean; sistema?: string; temperatura?: number; leve?: boolean; esforco?: "low" | "medium"; tempo?: number; maxBuscas?: number; tarefa?: string } = {}): Promise<T> {
   const inicio = Date.now();
   const texto = await chamar(partes, opcoes, true);
   const lido = lerJSON<T>(texto);
@@ -54,10 +55,12 @@ export async function geminiTexto(partes: Parte[], opcoes: { pesquisar?: boolean
   return chamar(partes, opcoes, false);
 }
 
-async function chamar(partes: Parte[], opcoes: { schema?: object; pesquisar?: boolean; sistema?: string; temperatura?: number; leve?: boolean; esforco?: "low" | "medium"; tempo?: number; maxBuscas?: number }, json: boolean): Promise<string> {
+async function chamar(partes: Parte[], opcoes: { schema?: object; pesquisar?: boolean; sistema?: string; temperatura?: number; leve?: boolean; esforco?: "low" | "medium"; tempo?: number; maxBuscas?: number; tarefa?: string }, json: boolean): Promise<string> {
   if (usaOpenAI()) return chamarOpenAI(partes, opcoes, json);
   const chave = process.env.GEMINI_API_KEY;
   if (!chave) throw new Error("Nenhum provedor de IA configurado");
+  const inicioChamada = Date.now();
+  let modeloUsado = "";
   const corpo: Record<string, unknown> = {
     contents: [{ role: "user", parts: partes }],
     generationConfig: { temperature: opcoes.temperatura ?? 0.4, ...(opcoes.pesquisar || !json ? {} : { responseMimeType: "application/json", ...(opcoes.schema ? { responseSchema: opcoes.schema } : {}) }) },
@@ -67,6 +70,7 @@ async function chamar(partes: Parte[], opcoes: { schema?: object; pesquisar?: bo
   let r: Response | null = null;
   let ultimo = "";
   externo: for (const modelo of MODELOS(opcoes.leve)) {
+    modeloUsado = modelo;
     for (let tentativa = 0; tentativa < 2; tentativa++) {
       r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent`, {
         method: "POST",
@@ -84,6 +88,20 @@ async function chamar(partes: Parte[], opcoes: { schema?: object; pesquisar?: bo
   if (!r) throw new Error("Gemini: nenhum modelo disponível");
   if (!r.ok) throw new Error(ultimo || `Gemini ${r.status}`);
   const j = await r.json();
+  const uso = j.usageMetadata ?? {};
+  const consultas = j.candidates?.[0]?.groundingMetadata?.webSearchQueries;
+  registrarIA({
+    tarefa: opcoes.tarefa ?? (opcoes.pesquisar ? "pesquisa" : "geracao"),
+    provedor: "gemini",
+    modelo: modeloUsado,
+    pesquisaWeb: Boolean(opcoes.pesquisar),
+    duracaoMs: Date.now() - inicioChamada,
+    sucesso: true,
+    status: r.status,
+    buscasReais: Array.isArray(consultas) ? consultas.length : 0,
+    inputTokens: Number(uso.promptTokenCount ?? 0) || null,
+    outputTokens: Number(uso.candidatesTokenCount ?? 0) || null,
+  });
   const texto: string = (j.candidates?.[0]?.content?.parts ?? []).map((p: { text?: string }) => p.text ?? "").join("");
   if (!texto) throw new Error(`Gemini respondeu vazio (${j.candidates?.[0]?.finishReason ?? j.promptFeedback?.blockReason ?? "sem motivo"})`);
   return texto;
@@ -128,8 +146,9 @@ export function schemaEstrito(o: unknown, opcional = false): unknown {
   return base;
 }
 
-async function chamarOpenAI(partes: Parte[], opcoes: { schema?: object; pesquisar?: boolean; sistema?: string; temperatura?: number; leve?: boolean; esforco?: "low" | "medium"; tempo?: number; maxBuscas?: number }, json: boolean): Promise<string> {
+async function chamarOpenAI(partes: Parte[], opcoes: { schema?: object; pesquisar?: boolean; sistema?: string; temperatura?: number; leve?: boolean; esforco?: "low" | "medium"; tempo?: number; maxBuscas?: number; tarefa?: string }, json: boolean): Promise<string> {
   const chave = process.env.OPENAI_API_KEY!;
+  const inicioChamada = Date.now();
   const conteudo = partes.map((p) => ("text" in p ? { type: "input_text", text: p.text } : { type: "input_image", image_url: `data:${p.inlineData.mimeType};base64,${p.inlineData.data}` }));
   if (json) conteudo.push({ type: "input_text", text: `Responda só com um JSON válido${opcoes.schema ? ` neste formato (JSON Schema): ${JSON.stringify(schemaComum(opcoes.schema))}` : ""}.` });
   const corpo: Record<string, unknown> = {
@@ -165,6 +184,19 @@ async function chamarOpenAI(partes: Parte[], opcoes: { schema?: object; pesquisa
       throw new Error(ultimo);
     }
     const j = await r.json();
+    const buscasReais = (j.output ?? []).filter((o: { type?: string }) => o.type === "web_search_call").length;
+    registrarIA({
+      tarefa: opcoes.tarefa ?? (opcoes.pesquisar ? "pesquisa" : "geracao"),
+      provedor: "openai",
+      modelo,
+      pesquisaWeb: Boolean(opcoes.pesquisar),
+      duracaoMs: Date.now() - inicioChamada,
+      sucesso: true,
+      status: r.status,
+      buscasReais,
+      inputTokens: Number(j.usage?.input_tokens ?? 0) || null,
+      outputTokens: Number(j.usage?.output_tokens ?? 0) || null,
+    });
     const texto: string = (j.output ?? [])
       .filter((o: { type: string }) => o.type === "message")
       .flatMap((o: { content?: { type: string; text?: string }[] }) => o.content ?? [])
