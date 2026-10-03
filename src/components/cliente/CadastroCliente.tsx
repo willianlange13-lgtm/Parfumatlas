@@ -182,7 +182,7 @@ export function CadastroCliente({ base, modoInicial }: { base: Record<string, un
     candVazio: ocupado === "lendo" ? "Procurando…" : "Tire uma foto do frasco, cole um link, digite o nome ou toque em Voz. Os candidatos aparecem aqui.",
     candidatos: cands.map((c, i) => {
       const s = i === sel, cor = CORES[i % 3];
-      return { nome: c.nome, casaUp: c.casa.toUpperCase(), conc: c.concentracao || "—", por: c.por, pct: c.pct, corPct: s ? OURO : t.ink3, tampa: "#C9A227",
+      return { foto: c.imagem ?? null, nome: c.nome, casaUp: c.casa.toUpperCase(), conc: c.concentracao || "—", por: c.por, pct: c.pct, corPct: s ? OURO : t.ink3, tampa: "#C9A227",
         vidro: `linear-gradient(115deg, rgba(255,255,255,.35) 0%, ${hexA(cor, 0.32)} 45%, ${hexA(cor, 0.6)} 100%)`, palco: `radial-gradient(ellipse at 50% 85%, ${hexA(cor, 0.3)} 0%, rgba(0,0,0,0) 70%)`,
         bg: s ? t.chip2 : "transparent", borda: s ? OURO : t.line, btn: s ? (ocupado === "ficha" ? "Montando ficha…" : "✓ É este") : "É este", btnBg: s ? t.btn : "transparent", btnCor: s ? t.onBtn : t.ink, btnBorda: s ? "none" : `1px solid ${t.line2}`, pick: () => escolher(c, i) };
     }),

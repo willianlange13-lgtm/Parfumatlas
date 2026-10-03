@@ -21,7 +21,7 @@ export async function montarDNA() {
   const lacunas = d.lacunas.map((l) => {
     const p = acervo.perfumes.get(l.perfumeId)!;
     const cor = l.falta === "Floral" ? "#8E99AD" : l.falta === "Couro" ? "#6E7A90" : l.falta === "Verde" ? "#B4BDCC" : "#C9D1DE";
-    return { falta: l.falta.toUpperCase(), cor, nome: p.nome, casa: p.casa, por: l.por, tampa: p.tampa, fundo: `linear-gradient(160deg, ${hexA(cor, 0.22)} 0%, ${hexA(cor, 0.04)} 100%)`, vidro: `linear-gradient(115deg, rgba(255,255,255,.35) 0%, ${hexA(cor, 0.32)} 45%, ${hexA(cor, 0.55)} 100%)`, href: `/colecao/${p.id}` };
+    return { foto: p.imagem ?? null, falta: l.falta.toUpperCase(), cor, nome: p.nome, casa: p.casa, por: l.por, tampa: p.tampa, fundo: `linear-gradient(160deg, ${hexA(cor, 0.22)} 0%, ${hexA(cor, 0.04)} 100%)`, vidro: `linear-gradient(115deg, rgba(255,255,255,.35) 0%, ${hexA(cor, 0.32)} 45%, ${hexA(cor, 0.55)} 100%)`, href: `/colecao/${p.id}` };
   });
   const N = Math.max(13, itens.length);
   const estacoes = d.estacoes.map((e) => ({ nome: e.nome, n: e.n, blocos: Array.from({ length: N }, (_, i) => (i < e.n ? t.amber : t.chip2)) }));

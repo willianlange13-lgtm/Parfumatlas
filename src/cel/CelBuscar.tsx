@@ -6,7 +6,7 @@ import { Icone } from "@/components/Icone";
 import { Btn, Card, Mini, MONO, NotaChip, OURO, Rot, TituloAba } from "./kit";
 import { ouvirUmaVez, reduzirFoto } from "./voz";
 
-export type ItemBusca = { id: string; nome: string; casa: string; acorde: string; forma: string; tampa: string; ano: number | null; notas: string[]; tem: boolean; quero: boolean; pct: number; inspiradoEm: string | null };
+export type ItemBusca = { imagem?: string | null; id: string; nome: string; casa: string; acorde: string; forma: string; tampa: string; ano: number | null; notas: string[]; tem: boolean; quero: boolean; pct: number; inspiradoEm: string | null };
 type Cand = { nome: string; casa: string; concentracao: string; por: string; pct: number; link?: string };
 type Recente = { nome: string; casa: string; href: string; sub: string; pct: number; tem: boolean };
 
@@ -29,7 +29,7 @@ const hrefCand = (c: Cand) => `/buscar/resultado?nome=${encodeURIComponent(c.nom
 function LinhaP({ p, dir, sub, borda = true }: { p: ItemBusca; dir?: React.ReactNode; sub?: string; borda?: boolean }) {
   return (
     <Link href={hrefDe(p)} prefetch={false} style={{ display: "flex", alignItems: "center", gap: 12, padding: "11px 0", borderTop: borda ? "1px solid var(--line)" : "none" }}>
-      <Mini nome={p.nome} casa={p.casa} acorde={p.acorde} forma={p.forma} tampa={p.tampa} w={46} h={52} />
+      <Mini nome={p.nome} casa={p.casa} acorde={p.acorde} forma={p.forma} tampa={p.tampa} foto={p.imagem} oficial={Boolean(p.imagem)} w={46} h={52} />
       <div style={{ flexGrow: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 3 }}>
         <span style={{ fontSize: 15, fontWeight: 500, lineHeight: 1.2 }}>{p.nome}</span>
         <span style={{ fontFamily: MONO, fontSize: 9.5, letterSpacing: ".08em", color: "var(--ink-3)", textTransform: "uppercase" }}>{p.casa}</span>
@@ -168,7 +168,7 @@ export function CelBuscar({ lista, modoInicial }: { lista: ItemBusca[]; modoInic
                       const p = lista.find((x) => normal(x.nome) === normal(r.nome));
                       return (
                         <Link key={r.href} href={r.href} prefetch={false} style={{ display: "flex", alignItems: "center", gap: 12, padding: "11px 0", borderTop: i ? "1px solid var(--line)" : "none" }}>
-                          {p ? <Mini nome={p.nome} casa={p.casa} acorde={p.acorde} forma={p.forma} tampa={p.tampa} w={46} h={52} /> : <span style={{ width: 46, height: 52, borderRadius: 12, background: "var(--surface)", border: "1px solid var(--line)" }} />}
+                          {p ? <Mini nome={p.nome} casa={p.casa} acorde={p.acorde} forma={p.forma} tampa={p.tampa} foto={p.imagem} oficial={Boolean(p.imagem)} w={46} h={52} /> : <span style={{ width: 46, height: 52, borderRadius: 12, background: "var(--surface)", border: "1px solid var(--line)" }} />}
                           <div style={{ flexGrow: 1, display: "flex", flexDirection: "column", gap: 3 }}>
                             <span style={{ fontSize: 15, fontWeight: 500 }}>{r.nome}</span>
                             <span style={{ fontFamily: MONO, fontSize: 9.5, letterSpacing: ".08em", color: "var(--ink-3)" }}>{r.casa.toUpperCase()}</span>

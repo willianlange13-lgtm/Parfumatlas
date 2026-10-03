@@ -30,7 +30,7 @@ export function CelNovidades({ v, limite }: { v: V; limite: number }) {
         <Card fundo="destaque" pad={16}>
           <div style={{ display: "flex", gap: 14, alignItems: "stretch" }}>
             <Link href={`/colecao/${d.id}`} style={{ width: 120, height: 150, flexShrink: 0, borderRadius: 18, border: "1px solid var(--line)", background: "radial-gradient(ellipse at 50% 85%, rgba(201,209,222,.14) 0%, var(--surface) 75%)", display: "flex", alignItems: "flex-end", justifyContent: "center", paddingBottom: 14 }}>
-              <FrascoMedidas bw={74} bh={84} br="34px" capW={34} tampa={d.tampa} vidro={d.vidro} rot={d.rot} nome={d.nome} k={0.85} />
+              <FrascoMedidas bw={74} bh={84} br="34px" capW={34} tampa={d.tampa} vidro={d.vidro} rot={d.rot} nome={d.nome} k={0.85} foto={d.foto} />
             </Link>
             <div style={{ display: "flex", flexDirection: "column", gap: 6, minWidth: 0 }}>
               <span style={{ alignSelf: "flex-start", padding: "3px 8px", borderRadius: 6, background: OURO, color: "#1A1407", fontSize: 10.5, fontWeight: 600 }}>MAIS AFINIDADE</span>
@@ -63,7 +63,7 @@ export function CelNovidades({ v, limite }: { v: V; limite: number }) {
           <div style={{ display: "flex", gap: 12 }}>
             <Link href={c.href} style={{ position: "relative", width: 104, minHeight: 150, flexShrink: 0, borderRadius: 16, background: c.palco, border: "1px solid var(--line)", display: "flex", alignItems: "flex-end", justifyContent: "center", paddingBottom: 12 }}>
               <span style={{ position: "absolute", left: 7, top: 7, padding: "2px 6px", borderRadius: 6, background: "var(--bg)", fontFamily: MONO, fontSize: 8.5, letterSpacing: ".06em" }}>{c.tipo}</span>
-              <FrascoMedidas bw={c.bw} bh={c.bh} br={c.br} capW={c.capW} tampa={c.tampa} vidro={c.vidro} rot={c.rot} nome={c.nome} k={0.6} />
+              <FrascoMedidas bw={c.bw} bh={c.bh} br={c.br} capW={c.capW} tampa={c.tampa} vidro={c.vidro} rot={c.rot} nome={c.nome} k={0.6} foto={c.foto} />
             </Link>
             <div style={{ display: "flex", flexDirection: "column", gap: 5, minWidth: 0, flexGrow: 1 }}>
               <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 6 }}>

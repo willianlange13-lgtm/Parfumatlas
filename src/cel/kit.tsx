@@ -236,7 +236,10 @@ export function Rolar({ children, gap = 8 }: { children: ReactNode; gap?: number
 }
 
 /** Frasco desenhado a partir das medidas que o servidor já calculou. */
-export function FrascoMedidas({ bw, bh, br, capW, tampa, vidro, rot, nome, k = 1 }: { bw: number; bh: number; br: string; capW: number; tampa: string; vidro: string; rot: string; nome?: string; k?: number }) {
+export function FrascoMedidas({ bw, bh, br, capW, tampa, vidro, rot, nome, k = 1, foto }: { bw: number; bh: number; br: string; capW: number; tampa: string; vidro: string; rot: string; nome?: string; k?: number; foto?: string | null }) {
+  // com foto (sua ou a oficial do Fragrantica), mostra a foto; o desenho fica só para quem não tem
+  // eslint-disable-next-line @next/next/no-img-element
+  if (foto) return <img src={foto} alt={nome ?? ""} style={{ width: "100%", height: "100%", objectFit: "contain", background: "#FFFFFF", borderRadius: 10 }} />;
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }} aria-hidden="true">
       <span style={{ width: capW * k, height: 22 * k, borderRadius: 3, background: tampa, boxShadow: "inset 0 0 0 1px rgba(255,255,255,.14)" }} />

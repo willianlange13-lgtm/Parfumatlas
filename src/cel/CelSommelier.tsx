@@ -5,7 +5,7 @@ import { Icone } from "@/components/Icone";
 import { Logo } from "@/components/Logo";
 import { Card, Circ, FrascoMedidas, MONO, OURO, Rot } from "./kit";
 
-type Sug = { rotulo: string; nome: string; marca: string; porque: string; dados: string[]; href: string; bw: number; bh: number; br: string; capW: number; tampa: string; vidro: string; palco: string; borda: string; rotCor: string };
+type Sug = { foto?: string | null; rotulo: string; nome: string; marca: string; porque: string; dados: string[]; href: string; bw: number; bh: number; br: string; capW: number; tampa: string; vidro: string; palco: string; borda: string; rotCor: string };
 type Msg = { eu?: boolean; som?: boolean; texto: string; foto?: string | null; semFoto?: boolean; sugestoes?: Sug[] | null; look?: { nome: string; cor: string }[] | null; layering?: { base: string; toque: string; porque: string; baseRot: string; toqueRot: string } | null; demo?: boolean };
 type Op = { nome: string; bg: string; pick: () => void };
 export type VSom = {
@@ -172,7 +172,7 @@ export function CelSommelier({ v }: { v: VSom }) {
                   <Link key={s.nome} href={s.href || "/colecao"} style={{ width: 216, flexShrink: 0, borderRadius: 20, border: `1px solid ${s.borda}`, background: s.borda === OURO ? "var(--tile)" : "var(--surface)", padding: 12, display: "flex", flexDirection: "column", gap: 10 }}>
                     <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
                       <span style={{ width: 46, height: 52, borderRadius: 12, background: s.palco, border: "1px solid var(--line)", display: "flex", alignItems: "flex-end", justifyContent: "center", paddingBottom: 4, flexShrink: 0 }}>
-                        <FrascoMedidas bw={s.bw} bh={s.bh} br={s.br} capW={s.capW} tampa={s.tampa} vidro={s.vidro} rot="" k={0.85} />
+                        <FrascoMedidas bw={s.bw} bh={s.bh} br={s.br} capW={s.capW} tampa={s.tampa} vidro={s.vidro} rot="" k={0.85} foto={s.foto} />
                       </span>
                       <span style={{ display: "flex", flexDirection: "column", gap: 2, minWidth: 0 }}>
                         <span style={{ fontFamily: MONO, fontSize: 8.5, letterSpacing: ".12em", color: s.rotCor }}>{s.rotulo}</span>

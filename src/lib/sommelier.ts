@@ -29,7 +29,7 @@ export function paraTela(r: Resposta, perfumes: Map<string, Perfume>, t: Record<
     const cor = top ? OURO : corDoAcorde(p.acorde);
     const F = FORM[p.forma] ?? FORM.ret;
     return {
-      rotulo: s.rotulo.toUpperCase(), nome: p.nome, marca: p.casa, porque: s.porque, dados: s.dados.slice(0, 2), href: `/colecao/${p.id}`,
+      foto: p.imagem ?? null, rotulo: s.rotulo.toUpperCase(), nome: p.nome, marca: p.casa, porque: s.porque, dados: s.dados.slice(0, 2), href: `/colecao/${p.id}`,
       bw: F[0], bh: F[1], br: F[2], capW: Math.round(F[0] * 0.5), tampa: p.tampa,
       vidro: `linear-gradient(115deg, rgba(255,255,255,.35) 0%, ${hexA(cor, 0.32)} 45%, ${hexA(cor, 0.55)} 100%)`,
       palco: `radial-gradient(ellipse at 50% 85%, ${hexA(cor, 0.3)} 0%, rgba(0,0,0,0) 70%)`,

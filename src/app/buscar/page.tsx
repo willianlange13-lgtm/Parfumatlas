@@ -12,7 +12,7 @@ export default async function Buscar({ searchParams }: PageProps<"/buscar">) {
   const meus = new Set(naColecao(acervo.colecao).map((e) => e.perfumeId));
   const quero = new Set(acervo.colecao.filter((e) => e.situacao === "quero").map((e) => e.perfumeId));
   const lista: ItemBusca[] = [...acervo.perfumes.values()].map((p) => ({
-    id: p.id, nome: p.nome, casa: p.casa, acorde: p.acorde, forma: p.forma, tampa: p.tampa, ano: p.ano ?? null,
+    imagem: p.imagem ?? null, id: p.id, nome: p.nome, casa: p.casa, acorde: p.acorde, forma: p.forma, tampa: p.tampa, ano: p.ano ?? null,
     notas: [...p.notas.saida, ...p.notas.coracao, ...p.notas.fundo], tem: meus.has(p.id), quero: quero.has(p.id),
     pct: afinidade(p, acervo.colecao), inspiradoEm: p.inspiradoEm ? acervo.perfumes.get(p.inspiradoEm)?.nome ?? null : null,
   }));

@@ -32,7 +32,7 @@ export async function montarLancamentos(filtro = "voce", limite = 80) {
   const card = (l: (typeof lista)[number]) => {
     const p = l.perfume, f = F[p.forma] ?? F.ret, cor = corDoAcorde(p.acorde), q = quero.has(p.id);
     return {
-      id: p.id, tipo: l.tipo, nome: p.nome, casaUp: p.casa.toUpperCase(), ano: p.ano ?? "", pct: l.pct, corPct: l.pct >= 90 ? OURO : t.ink, porque: l.porque,
+      foto: p.imagem ?? null, id: p.id, tipo: l.tipo, nome: p.nome, casaUp: p.casa.toUpperCase(), ano: p.ano ?? "", pct: l.pct, corPct: l.pct >= 90 ? OURO : t.ink, porque: l.porque,
       notas: [p.notas.saida[0], p.notas.coracao[0], p.notas.fundo[0]].filter(Boolean).join(" · "),
       bw: f[0], bh: f[1], br: f[2], capW: Math.round(f[0] * 0.48), lw: f[0] - 14, tampa: p.tampa, rot: p.casa.split(" ")[0].toUpperCase().slice(0, 8),
       vidro: `linear-gradient(115deg, rgba(255,255,255,.35) 0%, ${hexA(cor, 0.32)} 45%, ${hexA(cor, 0.6)} 100%)`, palco: `radial-gradient(ellipse at 50% 85%, ${hexA(cor, 0.3)} 0%, ${t.surface} 72%)`,
@@ -54,7 +54,7 @@ export async function montarLancamentos(filtro = "voce", limite = 80) {
     filtros: FILTROS.map(([k, nome]) => ({ nome, bg: k === filtro ? t.btn : "transparent", cor: k === filtro ? t.onBtn : t.ink2, href: `/novidades?filtro=${k}` })),
     dest: dp
       ? {
-          id: dp.id, nome: dp.nome, rot: dp.casa.split(" ")[0].toUpperCase(), linha: [dp.casa.toUpperCase(), dp.ano, d.tipo].filter(Boolean).join(" · "), porque: d.porque, pct: d.pct,
+          foto: dp.imagem ?? null, id: dp.id, nome: dp.nome, rot: dp.casa.split(" ")[0].toUpperCase(), linha: [dp.casa.toUpperCase(), dp.ano, d.tipo].filter(Boolean).join(" · "), porque: d.porque, pct: d.pct,
           tampa: dp.tampa, vidro: `linear-gradient(115deg, rgba(255,255,255,.35) 0%, ${hexA(cor, 0.35)} 40%, ${hexA(cor, 0.7)} 100%)`,
           comparar: ligado ? `/comparar?a=${dp.id}&b=${ligado.id}` : `/comparar?a=${dp.id}`, som: `/sommelier?perfume=${dp.id}`,
         }
