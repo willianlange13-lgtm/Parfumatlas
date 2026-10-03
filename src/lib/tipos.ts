@@ -43,7 +43,7 @@ export interface Perfume {
   mesmaCasa?: { nome: string; link?: string | null; imagem?: string | null }[];
   parecidos?: { nome: string; casa: string; tipo: "inspirou" | "clone" | "parecido"; pct: number; fonte?: string | null; trecho?: string | null; link?: string | null; imagem?: string | null;
     /** faixa de parentesco ("88–92%"), tipo de relação, ⭐ fora do radar, semelhança e diferença */
-    faixa?: string | null; relacao?: string | null; radar?: boolean; semelhanca?: string | null; diferenca?: string | null }[];
+    faixa?: string | null; relacao?: string | null; radar?: boolean; relevancia?: number; semelhanca?: string | null; diferenca?: string | null }[];
   /** pesquisa de semelhantes em andamento na OpenAI (código e hora de início) */
   buscaParecidos?: { id: string; inicio: number } | null;
   /** original que este perfume imita (chave para reaproveitar a pesquisa) */

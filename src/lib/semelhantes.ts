@@ -19,40 +19,41 @@ const SCHEMA = {
         properties: {
           nome: T, casa: T, link: T,
           relacao: { type: "STRING", enum: ["clone direto", "dupe", "mesmo DNA", "interpretação", "similar por acordes"] },
-          radar: { type: "BOOLEAN" }, pctMin: I, pctMax: I, semelhanca: T, diferenca: T,
+          radar: { type: "BOOLEAN" }, pctMin: I, pctMax: I, relevancia: I, semelhanca: T, diferenca: T,
         },
-        required: ["nome", "casa", "link", "relacao", "radar", "pctMin", "pctMax", "semelhanca", "diferenca"],
+        required: ["nome", "casa", "link", "relacao", "radar", "pctMin", "pctMax", "relevancia", "semelhanca", "diferenca"],
       },
     },
   },
   required: ["parentes"],
 };
 
-export type Resultado = { original?: { nome: string; casa: string; link: string } | null; parentes: { nome: string; casa: string; link: string; relacao: string; radar: boolean; pctMin: number; pctMax: number; semelhanca: string; diferenca: string }[] };
+export type Resultado = { original?: { nome: string; casa: string; link: string } | null; parentes: { nome: string; casa: string; link: string; relacao: string; radar: boolean; pctMin: number; pctMax: number; relevancia?: number; semelhanca: string; diferenca: string }[] };
 
 /** Método de parentesco olfativo, em versão curta (o texto de entrada também custa). */
 function pedido(p: Perfume) {
   const notas = [...p.notas.saida, ...p.notas.coracao, ...p.notas.fundo].slice(0, 12).join(", ");
-  return `Encontre os parentes olfativos do perfume "${p.nome}" da casa "${p.casa}"${notas ? ` (notas: ${notas})` : ""}.
+  const orig = (p.parecidos ?? []).find((x) => x.tipo === "inspirou");
+  const original = orig ? `${orig.nome} (${orig.casa})` : null;
+  return `Encontre os parentes olfativos do perfume "${p.nome}" da casa "${p.casa}"${notas ? ` (notas: ${notas})` : ""}.${original ? ` Ele é inspirado no ${original}.` : ""}
 
-Método (faça as rotas, com poucas buscas bem escolhidas):
-A) Se ele for inspirado num original, identifique o original ("original") e pesquise também os clones/dupes/alternativas DESSE original.
-B) Busque em inglês: "<perfume> clone", "<perfume> dupe", "<perfume> vs", "<original> clone", "<original> alternative"; e comparações lado a lado (Reddit, Fragrantica, Parfumo, YouTube).
-C) Procure lançamentos dos últimos 2–3 anos de casas árabes (Al Haramain, Afnan, Lattafa, French Avenue/Fragrance World, Maison Alhambra, Armaf, Rasasi, Paris Corner, Zimaya, Maison Asrar, Bidaya, Atralia, Al Absar…) com a mesma combinação de notas.
-D) Popularidade não é parentesco: um perfume pouco citado pode ser mais próximo. Dê peso maior a quem testou os dois lado a lado.
-E) NUNCA use listas "quem gosta deste também gosta de" e nunca inclua um perfume só por ser da mesma família.
+Método (poucas buscas, bem escolhidas):
+1) ${original ? `PRIMEIRO pesquise as listas de clones e alternativas do ${original}: "${orig!.nome} clone", "best ${orig!.nome} dupes", "${orig!.nome} alternative" (Reddit, Fragrantica, YouTube, blogs, lojas). Todo clone citado em 2 ou mais fontes TEM que entrar.` : `Descubra se ele é inspirado num original famoso ("original"). Se for, PRIMEIRO pesquise as listas de clones e alternativas desse original ("<original> clone", "best <original> dupes"). Todo clone citado em 2 ou mais fontes TEM que entrar.`}
+2) Depois: "${p.nome} clone", "${p.nome} vs", comparações lado a lado e lançamentos recentes de casas árabes com a mesma combinação de notas.
+3) Nunca use listas "quem gosta deste também gosta de" e nunca inclua um perfume só por ser da mesma família.
 
-Devolva "parentes": os 9 melhores (sem repetir o próprio perfume nem o original), cada um com:
+Devolva "parentes": os 9 melhores (sem o próprio perfume nem o original), cada um com:
 - nome (sem a casa), casa, "link" (página dele no Fragrantica, para a foto);
 - relacao: "clone direto", "dupe", "mesmo DNA", "interpretação" ou "similar por acordes";
-- radar: true se for um achado fora do radar (marca menor ou lançamento pouco citado);
-- pctMin e pctMax: faixa estimada de parentesco (ex.: 88 e 92). Não invente precisão;
-- semelhanca e diferenca: no máximo 12 palavras cada (ex.: "mesma abertura cítrica e mentolada" / "drydown mais amadeirado").
+- pctMin e pctMax: faixa estimada de parentesco no cheiro (ex.: 88 e 92), sem inventar precisão;
+- relevancia de 1 a 5: quanto a comunidade conhece e recomenda esse perfume como alternativa (5 = aparece na maioria das listas de clones e resenhas; 1 = quase ninguém cita);
+- radar: true se for um achado pouco citado (relevancia 1 ou 2) mas com cheiro muito próximo;
+- semelhanca e diferenca: no máximo 12 palavras cada.
 Se não houver original, "original" fica null.`;
 }
 
 /** Começa a pesquisa em segundo plano na OpenAI (devolve o código para consultar depois). */
-export const iniciarBuscaSemelhantes = (p: Perfume) => iniciarPesquisaFundo(pedido(p), SCHEMA, "low", 8);
+export const iniciarBuscaSemelhantes = (p: Perfume) => iniciarPesquisaFundo(pedido(p), SCHEMA, "medium", 10);
 
 const fotoFragrantica = (url?: string | null) => {
   const id = url?.match(/fragrantica\.com(?:\.br)?\/perfume\/[^?#]*-(\d+)\.html/i)?.[1];
@@ -66,7 +67,8 @@ const foto = (url: string | null | undefined, nome: string) => {
 
 /** Ordem final: parentesco manda; a casa desempata (até ~5 pontos). Fica com 7, idealmente 2 ⭐. */
 export function ordenar(lista: Parecido[]): Parecido[] {
-  const nota = (x: Parecido) => x.pct + bonusCasa(x.casa);
+  // parentesco manda; casa (até +5) e reconhecimento na comunidade (−5 a +5) desempatam
+  const nota = (x: Parecido) => x.pct + bonusCasa(x.casa) + ((x.relevancia ?? 3) - 3) * 2.5;
   const ord = [...lista].filter((x) => x.tipo !== "inspirou").sort((a, b) => nota(b) - nota(a));
   const original = lista.filter((x) => x.tipo === "inspirou");
   const manuais = ord.filter((x) => x.trecho === "adicionado por você");
@@ -100,7 +102,8 @@ export function converter(r: Resultado, p: Perfume): { parecidos: Parecido[]; dn
     lista.push({
       nome: x.nome, casa: x.casa, tipo: x.relacao === "clone direto" ? "clone" : "parecido", pct: Math.round((min + max) / 2),
       link: x.link, imagem: foto(x.link, x.nome), faixa: min === max ? `~${min}%` : `${min}–${max}%`, relacao: x.relacao,
-      radar: Boolean(x.radar) || nivelCasa(x.casa) === 3, semelhanca: x.semelhanca?.slice(0, 120) ?? null, diferenca: x.diferenca?.slice(0, 120) ?? null,
+      relevancia: Math.max(1, Math.min(5, Math.round(Number(x.relevancia) || 3))),
+      radar: Boolean(x.radar) || (Number(x.relevancia) || 3) <= 2, semelhanca: x.semelhanca?.slice(0, 120) ?? null, diferenca: x.diferenca?.slice(0, 120) ?? null,
     });
   }
   const manuais = (p.parecidos ?? []).filter((x) => x.trecho === "adicionado por você" && !lista.some((y) => chave(y.nome) === chave(x.nome)));
