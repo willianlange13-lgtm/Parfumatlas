@@ -1,7 +1,7 @@
 # Parfum Atlas
 
 Arquivo pessoal de fragrâncias. Site no computador e app no celular (PWA), com voz e Alexa.
-Next.js 16 + Supabase + ChatGPT (ou Gemini).
+Next.js 16 + Supabase + Gemini por padrão, com OpenAI opcional.
 
 ## O que tem
 
@@ -16,10 +16,21 @@ Sem banco ligado, tudo abre com a coleção de exemplo (marcada como "ilustrativ
 1. **Supabase**: crie um projeto. Em *SQL Editor > New query*, cole `supabase/migrations/0001_inicial.sql` e rode.
 2. Em *Authentication > URL Configuration*, coloque a URL da Vercel em *Site URL* e adicione `https://SEU-DOMINIO/auth/callback` em *Redirect URLs*.
 3. Depois do seu primeiro login, desligue novos cadastros em *Authentication > Sign In / Providers > Allow new users to sign up*. O sistema é só seu.
-4. **IA**: crie a chave do ChatGPT em https://platform.openai.com/api-keys (com crédito) e cadastre como `OPENAI_API_KEY`. O Gemini (`GEMINI_API_KEY`) também funciona, mas a cota gratuita acaba rápido.
-5. **Avisos**: rode `npx web-push generate-vapid-keys` e guarde as duas chaves.
-6. **Vercel**: importe o repositório e cadastre as variáveis de `.env.example`. O `vercel.json` já agenda o aviso diário (7h30 em Campo Grande).
-7. No celular, abra o site e use *Adicionar à tela inicial*. No iPhone, os avisos só chegam com o app instalado assim.
+4. **IA econômica**: crie uma chave no Google AI Studio e cadastre como `GEMINI_API_KEY`. Quando essa chave existe, o Atlas usa Gemini por padrão, mesmo que uma `OPENAI_API_KEY` também esteja cadastrada.
+5. **OpenAI opcional**: mantenha `OPENAI_API_KEY` apenas como compatibilidade/fallback. Para forçar OpenAI como provedor principal, use `AI_PROVIDER=openai`. A pesquisa pesada de semelhantes só pode usar OpenAI quando `AI_PREMIUM_ENABLED=true`.
+6. **Avisos**: rode `npx web-push generate-vapid-keys` e guarde as duas chaves.
+7. **Vercel**: importe o repositório e cadastre as variáveis de `.env.example`. O `vercel.json` já agenda o aviso diário (7h30 em Campo Grande).
+8. No celular, abra o site e use *Adicionar à tela inicial*. No iPhone, os avisos só chegam com o app instalado assim.
+
+### Estratégia de custo da IA
+
+O Atlas evita chamadas pagas sempre que possível:
+
+- recomendações do Sommelier já têm fallback local por clima, ocasião, projeção e tempo sem uso;
+- a busca de semelhantes primeiro tenta reaproveitar um resultado existente do mesmo DNA/original no Supabase;
+- quando precisa pesquisar semelhantes, o caminho padrão usa Gemini;
+- OpenAI fica reservada ao fallback de compatibilidade ou a pesquisas premium explicitamente habilitadas;
+- resultados de parentesco olfativo ficam salvos no banco para reaproveitamento posterior.
 
 ## Alexa (opcional)
 
