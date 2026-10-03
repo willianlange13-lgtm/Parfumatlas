@@ -28,7 +28,7 @@ const hrefCand = (c: Cand) => `/buscar/resultado?nome=${encodeURIComponent(c.nom
 
 function LinhaP({ p, dir, sub, borda = true }: { p: ItemBusca; dir?: React.ReactNode; sub?: string; borda?: boolean }) {
   return (
-    <Link href={hrefDe(p)} style={{ display: "flex", alignItems: "center", gap: 12, padding: "11px 0", borderTop: borda ? "1px solid var(--line)" : "none" }}>
+    <Link href={hrefDe(p)} prefetch={false} style={{ display: "flex", alignItems: "center", gap: 12, padding: "11px 0", borderTop: borda ? "1px solid var(--line)" : "none" }}>
       <Mini nome={p.nome} casa={p.casa} acorde={p.acorde} forma={p.forma} tampa={p.tampa} w={46} h={52} />
       <div style={{ flexGrow: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 3 }}>
         <span style={{ fontSize: 15, fontWeight: 500, lineHeight: 1.2 }}>{p.nome}</span>
@@ -122,7 +122,7 @@ export function CelBuscar({ lista, modoInicial }: { lista: ItemBusca[]; modoInic
         <Card pad={16} gap={4}>
           <Rot style={{ marginBottom: 6 }}>É algum destes?</Rot>
           {cands.map((c, i) => (
-            <Link key={i} href={hrefCand(c)} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 0", borderTop: i ? "1px solid var(--line)" : "none" }}>
+            <Link key={i} href={hrefCand(c)} prefetch={false} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 0", borderTop: i ? "1px solid var(--line)" : "none" }}>
               <div style={{ flexGrow: 1, display: "flex", flexDirection: "column", gap: 2 }}>
                 <span style={{ fontSize: 15, fontWeight: 500 }}>{c.nome}</span>
                 <span style={{ fontFamily: MONO, fontSize: 9.5, letterSpacing: ".08em", color: "var(--ink-3)" }}>{c.casa.toUpperCase()}{c.concentracao ? ` · ${c.concentracao}` : ""}</span>
@@ -167,7 +167,7 @@ export function CelBuscar({ lista, modoInicial }: { lista: ItemBusca[]; modoInic
                     {recentes.map((r, i) => {
                       const p = lista.find((x) => normal(x.nome) === normal(r.nome));
                       return (
-                        <Link key={r.href} href={r.href} style={{ display: "flex", alignItems: "center", gap: 12, padding: "11px 0", borderTop: i ? "1px solid var(--line)" : "none" }}>
+                        <Link key={r.href} href={r.href} prefetch={false} style={{ display: "flex", alignItems: "center", gap: 12, padding: "11px 0", borderTop: i ? "1px solid var(--line)" : "none" }}>
                           {p ? <Mini nome={p.nome} casa={p.casa} acorde={p.acorde} forma={p.forma} tampa={p.tampa} w={46} h={52} /> : <span style={{ width: 46, height: 52, borderRadius: 12, background: "var(--surface)", border: "1px solid var(--line)" }} />}
                           <div style={{ flexGrow: 1, display: "flex", flexDirection: "column", gap: 3 }}>
                             <span style={{ fontSize: 15, fontWeight: 500 }}>{r.nome}</span>

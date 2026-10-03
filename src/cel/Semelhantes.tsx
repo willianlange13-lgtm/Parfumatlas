@@ -72,13 +72,13 @@ export function Semelhantes({ itens, perfumeId, buscando, nome }: { itens: Item[
       </div>
       {itens.map((it, k) => (
         <div key={it.nome} style={{ display: "flex", gap: 12, alignItems: "flex-start", padding: "10px 0", borderTop: k ? "1px solid var(--line)" : "none" }}>
-          <Link href={it.href} style={{ width: 64, height: 76, flexShrink: 0, borderRadius: 12, background: it.imagem ? "#FFFFFF" : "var(--surface)", border: `1px solid ${it.original ? OURO : "var(--line)"}`, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
+          <Link href={it.href} prefetch={false} style={{ width: 64, height: 76, flexShrink: 0, borderRadius: 12, background: it.imagem ? "#FFFFFF" : "var(--surface)", border: `1px solid ${it.original ? OURO : "var(--line)"}`, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden" }}>
             {it.imagem
               // eslint-disable-next-line @next/next/no-img-element
               ? <img src={it.imagem} alt="" loading="lazy" style={{ width: "100%", height: "100%", objectFit: "contain" }} onError={(e) => { e.currentTarget.style.display = "none"; }} />
               : <span style={{ fontFamily: MONO, fontSize: 8, color: "var(--ink-3)", padding: 4, textAlign: "center" }}>{it.casa.toUpperCase()}</span>}
           </Link>
-          <Link href={it.href} style={{ flexGrow: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 3 }}>
+          <Link href={it.href} prefetch={false} style={{ flexGrow: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 3 }}>
             <span style={{ fontSize: 15, fontWeight: 500, lineHeight: 1.2 }}>{it.radar ? "⭐ " : ""}{it.nome}</span>
             <span style={{ fontFamily: MONO, fontSize: 9.5, letterSpacing: ".06em", color: "var(--ink-3)", textTransform: "uppercase" }}>{it.casa}{it.manual ? " · adicionado por você" : ""}</span>
             <span style={{ fontSize: 12.5, color: OURO }}>{it.original ? `o original${it.faixa && it.faixa !== "o original" ? ` · 🧬 ${it.faixa}` : ""}` : `🧬 ${it.faixa}`}{it.relacao && !it.original ? ` · ${it.relacao}` : ""}</span>
