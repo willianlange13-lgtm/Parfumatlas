@@ -45,6 +45,40 @@ function climaDe(b: Base) {
   return { n: 180 + ((b.nome.length * 31) % 200), pontos };
 }
 
+/** Número do perfume no Fragrantica: a foto oficial fica em fimgs.net. */
+const FRAGRANTICA: Record<string, number> = {
+  "aventus": 9828,
+  "cdni": 34696,
+  "blue-talisman": 84224,
+  "erba-pura": 55157,
+  "bleu-chanel": 25967,
+  "oud-wood": 1826,
+  "layton": 39314,
+  "le-male-elixir": 81642,
+  "khamrah": 75805,
+  "sauvage-elixir": 68415,
+  "br540": 33519,
+  "adg-profondo": 59532,
+  "neroli-portofino": 12192,
+  "angels-share": 62615,
+  "khamrah-qahwa": 88175,
+  "supremacy-silver": 27352,
+  "explorer": 52002,
+  "absolu-aventus": 106624,
+  "aventus-cologne": 51692,
+  "khamrah-dukhan": 104529,
+  "le-male-elixir-absolu": 101529,
+  "erba-gold": 76683,
+  "sauvage-eau-forte": 95863,
+  "portrait-lady": 10464,
+  "ombre-leather": 50239,
+  "green-irish-tweed": 474,
+  "eau-sauvage": 231,
+  "fleur-narcotique": 27571,
+  "lust-in-paradise": 53588
+};
+const fotoOficial = (id: string) => (FRAGRANTICA[id] ? `https://fimgs.net/mdimg/perfume/375x500.${FRAGRANTICA[id]}.jpg` : null);
+
 function p(b: Base): Perfume {
   return {
     id: b.id, nome: b.nome, casa: b.casa, ano: b.ano, concentracao: b.conc ?? "Eau de Parfum", perfumistas: b.perf,
@@ -52,7 +86,7 @@ function p(b: Base): Perfume {
     notas: { saida: b.saida, coracao: b.coracao, fundo: b.fundo },
     acordes: b.acordes.map(([nome, valor]) => ({ nome, valor })),
     fixacaoH: b.fix, projecaoM: b.proj, votos: votosDe(b), clima: climaDe(b),
-    forma: b.forma, tampa: b.tampa, inspiradoEm: b.insp, imagem: null,
+    forma: b.forma, tampa: b.tampa, inspiradoEm: b.insp, imagem: fotoOficial(b.id),
     fontes: [{ nome: "Fragrantica", oQue: "notas e votos" }, { nome: "Parfumo", oQue: "ano e família" }],
   };
 }

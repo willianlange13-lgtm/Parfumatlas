@@ -108,14 +108,14 @@ export function Qtd({ n }: { n: number | string }) {
 /** Bolinha da nota (foto real ou ícone) com ou sem nome. */
 export function NotaChip({ nome, tam = 28, rotulo = true, fs = 13 }: { nome: string; tam?: number; rotulo?: boolean; fs?: number }) {
   const r = refNota(nome);
-  const bola = r.foto ? (
-    <span style={{ width: tam, height: tam, borderRadius: "50%", overflow: "hidden", background: "#FFFFFF", flexShrink: 0 }}>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={r.foto} alt={nome} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-    </span>
-  ) : (
-    <span style={{ width: tam, height: tam, borderRadius: "50%", background: "var(--chip-2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+  // ícone por baixo; a foto cobre por cima (se ela não carregar, fica o ícone)
+  const bola = (
+    <span style={{ position: "relative", width: tam, height: tam, borderRadius: "50%", overflow: "hidden", background: "var(--chip-2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
       <svg viewBox="0 0 24 24" style={{ width: tam * 0.55, height: tam * 0.55, fill: "none", stroke: "var(--prata)", strokeWidth: 1.6 }}><path d={r.icone} /></svg>
+      {r.foto ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={r.foto} alt="" loading="lazy" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
+      ) : null}
     </span>
   );
   if (!rotulo) return bola;

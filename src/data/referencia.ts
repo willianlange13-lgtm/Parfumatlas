@@ -28,13 +28,26 @@ const TIPO: Record<string, string> = {
   Almíscar: "nuvem", "Âmbar cinzento": "nuvem",
 };
 
-const FOTO: Record<string, string> = {
-  Abacaxi: "/notas/abacaxi.jpg", Maçã: "/notas/maca.jpg", Pera: "/notas/pera.jpg",
-  Laranja: "/notas/laranja.jpg", Gengibre: "/notas/gengibre.jpg", Tâmara: "/notas/tamara.jpg",
+/**
+ * Foto real de cada nota: a imagem principal do artigo da Wikipédia (em inglês) sobre a planta ou a matéria-prima.
+ * Notas abstratas (almíscar, âmbar, notas marinhas…) ficam com o ícone.
+ */
+export const WIKI_NOTA: Record<string, string> = {
+  Abacaxi: "Pineapple", Maçã: "Apple", Pera: "Pear", Tâmara: "Date_palm", Pêssego: "Peach", Lichia: "Lychee",
+  "Groselha-preta": "Blackcurrant", "Frutas vermelhas": "Raspberry", Frutas: "Fruit",
+  Bergamota: "Bergamot_orange", Toranja: "Grapefruit", Laranja: "Orange_(fruit)", Limão: "Lemon", Mandarina: "Mandarin_orange", Tangerina: "Tangerine",
+  Neroli: "Neroli", Jasmim: "Jasminum_officinale", Rosa: "Rosa_×_damascena", "Flor de laranjeira": "Orange_blossom", Gerânio: "Pelargonium_graveolens", Violeta: "Viola_odorata", Tuberosa: "Polianthes_tuberosa", Peônia: "Paeonia_lactiflora", Íris: "Iris_pallida",
+  Lavanda: "Lavandula_angustifolia", Patchouli: "Patchouli", "Musgo de carvalho": "Evernia_prunastri", Hortelã: "Mentha_×_piperita", Alecrim: "Rosemary", Cipreste: "Cupressus_sempervirens", Vetiver: "Chrysopogon_zizanioides",
+  Bétula: "Betula_pendula", Cedro: "Cedrus_atlantica", Oud: "Agarwood", Sândalo: "Santalum_album", Carvalho: "Quercus_robur", "Resina de abeto": "Abies_alba",
+  Mel: "Honey", Conhaque: "Cognac", Café: "Coffee_bean",
+  Canela: "Cinnamon", Cardamomo: "Cardamom", Gengibre: "Ginger", Açafrão: "Saffron", "Noz-moscada": "Nutmeg", Pimenta: "Black_pepper", "Pimenta-rosa": "Schinus_terebinthifolia", Alcaçuz: "Liquorice",
+  Incenso: "Frankincense", Benjoim: "Benzoin_resin", Mirra: "Myrrh", Couro: "Leather", Tabaco: "Tobacco",
+  Baunilha: "Vanilla", Tonka: "Tonka_bean", Praliné: "Praline_(nut_confection)",
 };
 
 export function nota(nome: string) {
-  return { nome, foto: FOTO[nome] ?? null, icone: ICONE_NOTA[TIPO[nome] ?? "nuvem"] };
+  const wiki = WIKI_NOTA[nome];
+  return { nome, foto: wiki ? `/api/nota-foto?n=${encodeURIComponent(nome)}` : null, icone: ICONE_NOTA[TIPO[nome] ?? "nuvem"] };
 }
 
 export const ENCICLOPEDIA: Record<string, { tipo: string; origem: string; como: string; conhecer: string[] }> = {

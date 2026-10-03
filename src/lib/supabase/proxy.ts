@@ -2,7 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { SESSAO_CURTA, semValidade } from "./sessao";
 
-const PUBLICAS = ["/entrar", "/auth", "/api/avisos", "/api/alexa"];
+const PUBLICAS = ["/entrar", "/auth", "/api/avisos", "/api/alexa", "/api/nota-foto"];
 
 export async function atualizarSessao(request: NextRequest) {
   let resposta = NextResponse.next({ request });
