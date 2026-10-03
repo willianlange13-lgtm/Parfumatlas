@@ -5,6 +5,7 @@ import { Frasco } from "@/components/Frasco";
 import type { Perfume } from "@/lib/tipos";
 import { Anel, Card, Circ, MONO, NotaChip, OURO, Rot } from "./kit";
 import { NIVEIS_FIXACAO, NIVEIS_PROJECAO } from "@/lib/normalizar";
+import { semFundo } from "@/lib/sem-fundo";
 
 type Modo = "foto" | "link" | "nome" | "voz";
 type Cand = { nome: string; casa: string; concentracao: string; por: string; pct: number; link?: string; imagem?: string | null };
@@ -115,7 +116,7 @@ export function CelCadastro({ c, modoInicial }: { c: CadCel; modoInicial?: strin
           <span style={{ width: 46, height: 52, borderRadius: 12, background: "var(--surface)", border: "1px solid var(--line)", display: "flex", alignItems: "flex-end", justifyContent: "center", paddingBottom: 4, overflow: "hidden" }}>
             {c.foto || f.imagem ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={c.foto ?? f.imagem ?? ""} alt="" style={{ width: "100%", height: "100%", objectFit: c.foto ? "cover" : "contain", background: c.foto ? "transparent" : "#FFFFFF" }} />
+              <img src={c.foto ?? semFundo(f.imagem) ?? ""} alt="" style={{ width: "100%", height: "100%", objectFit: c.foto ? "cover" : "contain", filter: c.foto ? "none" : "drop-shadow(0 10px 14px rgba(0,0,0,.45))" }} />
             ) : <Frasco nome={f.nome} casa={f.casa} acorde={f.acorde} forma={f.forma} tampa={f.tampa} escala={0.4} />}
           </span>
           <span style={{ display: "flex", flexDirection: "column", gap: 2 }}>
@@ -213,7 +214,7 @@ export function CelCadastro({ c, modoInicial }: { c: CadCel; modoInicial?: strin
         <div style={{ alignSelf: "center", width: 170, height: 190, borderRadius: 22, border: "1px solid var(--line)", background: "radial-gradient(ellipse at 50% 85%, rgba(216,185,112,.18) 0%, var(--surface) 75%)", display: "flex", alignItems: "flex-end", justifyContent: "center", paddingBottom: 18, overflow: "hidden", position: "relative" }}>
           {c.foto || f.imagem ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={c.foto ?? f.imagem ?? ""} alt="Seu frasco" style={{ position: "absolute", inset: c.foto ? 0 : 10, width: c.foto ? "100%" : "calc(100% - 20px)", height: c.foto ? "100%" : "calc(100% - 20px)", objectFit: c.foto ? "cover" : "contain", background: c.foto ? "transparent" : "#FFFFFF", borderRadius: 14 }} />
+            <img src={c.foto ?? semFundo(f.imagem) ?? ""} alt="Seu frasco" style={{ position: "absolute", inset: c.foto ? 0 : 10, width: c.foto ? "100%" : "calc(100% - 20px)", height: c.foto ? "100%" : "calc(100% - 20px)", objectFit: c.foto ? "cover" : "contain", filter: c.foto ? "none" : "drop-shadow(0 10px 14px rgba(0,0,0,.45))", borderRadius: 14 }} />
           ) : <Frasco nome={f.nome} casa={f.casa} acorde={f.acorde} forma={f.forma} tampa={f.tampa} escala={1} />}
         </div>
         <div style={{ textAlign: "center", display: "flex", flexDirection: "column", gap: 4 }}>
@@ -327,7 +328,7 @@ export function CelCadastro({ c, modoInicial }: { c: CadCel; modoInicial?: strin
                 <button key={i} type="button" onClick={() => c.escolher(x, i)} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 0", background: "none", border: "none", borderTop: i ? "1px solid var(--line)" : "none", color: "var(--ink)", textAlign: "left" }}>
                   {x.imagem
                     // eslint-disable-next-line @next/next/no-img-element
-                    ? <img src={x.imagem} alt="" style={{ width: 36, height: 42, borderRadius: 10, background: "#fff", objectFit: "contain", flexShrink: 0 }} />
+                    ? <img src={semFundo(x.imagem) ?? ""} alt="" style={{ width: 36, height: 42, objectFit: "contain", flexShrink: 0, filter: "drop-shadow(0 4px 6px rgba(0,0,0,.45))" }} />
                     : <span style={{ width: 36, height: 42, borderRadius: 10, background: "var(--surface)", display: "flex", alignItems: "flex-end", justifyContent: "center", paddingBottom: 3, overflow: "hidden" }}><Frasco nome={x.nome} casa={x.casa} forma="ret" tampa="#141417" escala={0.3} /></span>}
                   <span style={{ flexGrow: 1, display: "flex", flexDirection: "column", gap: 2 }}>
                     <span style={{ fontSize: 15, color: i === 0 ? OURO : "var(--ink)" }}>{x.nome}</span>

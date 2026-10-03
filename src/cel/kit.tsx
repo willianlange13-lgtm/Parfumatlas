@@ -133,7 +133,7 @@ export function PalcoC({ nome, casa, acorde, forma = "ret", tampa = "#141417", a
     <div style={{ position: "relative", height: altura, borderRadius: raio, overflow: "hidden", border: semBorda ? "none" : "1px solid var(--line)", background: `radial-gradient(ellipse at 50% 85%, ${hexA(cor, 0.22)} 0%, ${hexA(cor, 0.06)} 55%, ${transparente ? "rgba(0,0,0,0)" : "var(--surface)"} 100%)`, display: "flex", alignItems: "flex-end", justifyContent: "center", paddingBottom: Math.round(22 * esc), flexShrink: 0 }}>
       {foto ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={foto} alt={nome} style={oficial ? { position: "absolute", inset: 10, width: "calc(100% - 20px)", height: "calc(100% - 20px)", objectFit: "contain", background: "#FFFFFF", borderRadius: Math.max(8, raio - 8) } : { position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
+        <img src={foto} alt={nome} style={oficial ? { position: "absolute", inset: 10, width: "calc(100% - 20px)", height: "calc(100% - 20px)", objectFit: "contain", filter: "drop-shadow(0 10px 14px rgba(0,0,0,.45))", borderRadius: Math.max(8, raio - 8) } : { position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
       ) : (
         <Frasco nome={nome} casa={casa} acorde={acorde} forma={(forma as Forma) ?? "ret"} tampa={tampa} escala={esc} />
       )}
@@ -239,7 +239,7 @@ export function Rolar({ children, gap = 8 }: { children: ReactNode; gap?: number
 export function FrascoMedidas({ bw, bh, br, capW, tampa, vidro, rot, nome, k = 1, foto }: { bw: number; bh: number; br: string; capW: number; tampa: string; vidro: string; rot: string; nome?: string; k?: number; foto?: string | null }) {
   // com foto (sua ou a oficial do Fragrantica), mostra a foto; o desenho fica só para quem não tem
   // eslint-disable-next-line @next/next/no-img-element
-  if (foto) return <img src={foto} alt={nome ?? ""} style={{ width: "100%", height: "100%", objectFit: "contain", background: "#FFFFFF", borderRadius: 10 }} />;
+  if (foto) return <img src={foto} alt={nome ?? ""} style={{ width: "100%", height: "100%", objectFit: "contain", filter: "drop-shadow(0 6px 10px rgba(0,0,0,.45))" }} />;
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }} aria-hidden="true">
       <span style={{ width: capW * k, height: 22 * k, borderRadius: 3, background: tampa, boxShadow: "inset 0 0 0 1px rgba(255,255,255,.14)" }} />

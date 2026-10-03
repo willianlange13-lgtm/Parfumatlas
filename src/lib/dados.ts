@@ -1,4 +1,5 @@
 import "server-only";
+import { semFundo } from "@/lib/sem-fundo";
 import { cache } from "react";
 import { createClient, supabaseConfigurado } from "@/lib/supabase/server";
 import { COLECAO, LANCAMENTOS, PERFUMES } from "@/data/catalogo";
@@ -33,7 +34,8 @@ export function perfumeDaLinha(r: Linha): Perfume {
     mesmaCasa: ((r.votos as Linha)?.mesmaCasa as Perfume["mesmaCasa"]) ?? undefined,
     buscaParecidos: ((r.votos as Linha)?.buscaParecidos as Perfume["buscaParecidos"]) ?? null,
     dnaOriginal: ((r.votos as Linha)?.dnaOriginal as string) ?? null,
-    imagem: (r.imagem_url as string) ?? null,
+    // foto oficial do Fragrantica vira a versão sem fundo branco (/api/frasco)
+    imagem: semFundo(r.imagem_url as string | null),
     fontes: (r.fontes as Perfume["fontes"]) ?? [],
     revisar: (r.campos_revisar as string[]) ?? [],
   };

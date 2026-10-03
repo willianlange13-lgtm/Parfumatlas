@@ -235,3 +235,11 @@ Tabela `acervo` (SQL em `supabase/migrations/0002_acervo.sql`), global e não po
 - na foto, o rótulo lido pela IA é conferido no acervo para ganhar link e foto sem pesquisa;
 - ficha a partir do acervo sem IA (`fichaDoAcervo`): pirâmide, acordes, família, foto; fixação/projeção vêm só do nível mais votado (`votos.origem = "acervo"`), sem distribuição inventada. Ano, concentração e país ficam para revisar;
 - a tabela `perfumes` continua sendo o cache das fichas completas (`fichaSalva`).
+
+## 17. Foto oficial do frasco sem fundo
+
+A foto oficial do Fragrantica (frasco em fundo branco) é tratada pelo próprio Atlas em `/api/frasco?id=<número da página>`: baixa do fimgs.net, apaga o branco ligado à borda (flood fill, `src/lib/recortar.ts`), recorta no frasco e devolve PNG transparente. Branco dentro do frasco (rótulo) fica. Sem IA; a CDN da Vercel guarda por 1 ano. Se o download falhar, redireciona para a foto original (sem cache da falha).
+
+- `semFundo()` (`src/lib/sem-fundo.ts`) troca o endereço do fimgs.net pelo tratado; aplicado ao ler do banco (`perfumeDaLinha`) e nas prévias do cadastro. No banco continua o endereço original;
+- foto oficial aparece sem fundo, com sombra; foto do próprio Willian preenche o quadro (cover);
+- no destaque grande do Início vale só a foto oficial (decisão do Willian); sem ela, o frasco desenhado.
