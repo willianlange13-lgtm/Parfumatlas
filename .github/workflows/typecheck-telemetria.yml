@@ -2,6 +2,7 @@ name: Typecheck telemetria
 on:
   push:
     branches: [chatgpt/limpeza-telemetria-v2]
+  workflow_dispatch:
 jobs:
   build:
     runs-on: ubuntu-latest
