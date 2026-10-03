@@ -4,6 +4,7 @@ import { carregarAcervo, perfumeDaLinha } from "@/lib/dados";
 import { createClient, supabaseConfigurado } from "@/lib/supabase/server";
 import { lerPagina, linkDePerfume, type Pagina } from "@/lib/pagina";
 import { verificarParecidos } from "@/lib/verificar";
+import { fotoConferida } from "@/lib/fotos";
 import type { Perfume, Votos } from "@/lib/tipos";
 import { acordePT, acordePrincipal, horasDosVotos, metrosDosVotos, notasPT, votosDe, temVotos } from "@/lib/normalizar";
 
@@ -306,9 +307,11 @@ Se o Fragrantica não mostrar os números, use o Parfumo, resenhas e lojas, tran
 /** Outros perfumes da mesma marca (seção "Designer" do Fragrantica), com foto. Pesquisa leve. */
 async function buscarMesmaCasa(nome: string, casa: string, link?: string): Promise<NonNullable<FichaIA["mesmaCasa"]>> {
   const SCHEMA_M = { type: "OBJECT", properties: { mesmaCasa: SCHEMA_FICHA.properties.mesmaCasa }, required: ["mesmaCasa"] };
-  const r = await geminiJSON<{ mesmaCasa: FichaIA["mesmaCasa"] }>([{ text: `Abra a página do perfume "${nome}"${casa ? ` da casa "${casa}"` : ""} no Fragrantica${link ? ` (${link})` : ""} e devolva "mesmaCasa": até 8 outros perfumes da mesma marca, da seção "Designer ${casa || "da marca"}" da página, cada um com o nome (sem a marca) e "link", o endereço da página dele no Fragrantica.` }], { schema: SCHEMA_M, pesquisar: true, leve: true, tempo: 80000 });
+  const r = await geminiJSON<{ mesmaCasa: FichaIA["mesmaCasa"] }>([{ text: `Abra a página do perfume "${nome}"${casa ? ` da casa "${casa}"` : ""} no Fragrantica${link ? ` (${link})` : ""} e devolva "mesmaCasa": até 8 outros perfumes da mesma marca, da seção "Designer ${casa || "da marca"}" da página, cada um com o nome (sem a marca) e "link", o endereço da página dele no Fragrantica copiado exatamente como apareceu na busca (o número no fim identifica a foto). Se não viu a página, deixe "link" vazio; nunca monte um endereço.` }], { schema: SCHEMA_M, pesquisar: true, tempo: 80000 });
   return (r.mesmaCasa ?? []).filter((x, i, l) => x?.nome && normal(x.nome) !== normal(nome) && l.findIndex((y) => normal(y.nome) === normal(x.nome)) === i).slice(0, 8)
-    .map((x) => ({ nome: x.nome, link: x.link && /fragrantica\./i.test(x.link) ? x.link : null, imagem: linkBate(x.link, x.nome) ? fotoDoFragrantica(x.link) : null }));
+    .map((x) => ({ nome: x.nome, link: x.link && /fragrantica\./i.test(x.link) ? x.link : null }))
+    .map(async (x) => ({ ...x, imagem: await fotoConferida(x.link, x.nome) }))
+    .reduce(async (acc, x) => [...(await acc), await x], Promise.resolve([] as NonNullable<FichaIA["mesmaCasa"]>));
 }
 
 /** Refaz a busca de parecidos (e da mesma casa) de um perfume já salvo (botão na ficha). */
