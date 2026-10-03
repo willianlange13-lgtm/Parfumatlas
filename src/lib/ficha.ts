@@ -118,13 +118,13 @@ const SCHEMA_FICHA = {
   required: ["nome", "casa", "familia", "acorde", "notas", "acordes", "votos", "forma", "tampa", "fontes", "revisar"],
 };
 
-const REGRA_PARECIDOS = `REGRAS DOS PARECIDOS:
-1) A fonte principal é a lista "Este Perfume me Lembra do" (em inglês "This perfume reminds me of") da página deste perfume no Fragrantica. Copie TODOS os perfumes dessa lista, na ordem em que aparecem, com nome e casa exatamente como no Fragrantica (costumam ser de 6 a 15).
-2) NUNCA use a lista "Quem gosta deste, também gosta de" ("People who like this also like"): ela não fala de semelhança.
-3) Só se a lista tiver menos de 5, complete com perfumes que o Parfumo, resenhas ou vídeos comparam DIRETAMENTE com este. Nunca inclua um perfume só por ser da mesma família ou também ser cítrico/fresco.
-4) "tipo": "inspirou" só para o original famoso que ele imita (ex.: o perfume de grife da lista); os outros da lista são "parecido".
-5) "pct": pela ordem da lista, o primeiro 95 e cada seguinte 3 a menos (mínimo 60).
-6) "fonte": o endereço da página do Fragrantica deste perfume (ou da página onde está a comparação); "trecho": "Este perfume me lembra do: <nome>" ou a frase copiada da página.`
+const REGRA_PARECIDOS = `COMO MONTAR OS PARECIDOS (faça as duas buscas):
+A) Descubra se este perfume é inspirado num original famoso (ex.: Pacific Aura → Louis Vuitton Pacific Chill). Se for, o original entra com tipo "inspirou".
+B) Pesquise os CLONES e alternativas desse original: busque "<original> clone", "<original> dupe", "<original> alternative", "contratipo <original>" no Fragrantica, Parfumo, Reddit, YouTube, blogs e lojas de contratipos árabes. Cada perfume apontado como clone/alternativa do original entra com tipo "clone" (ex.: para o Pacific Chill, perfumes como Rare Reef da Afnan, Elliur da Bidaya Parfums, Jean Lowe Vibe da Maison Alhambra).
+C) Copie também a lista "Este Perfume me Lembra do" ("This perfume reminds me of") da página deste perfume no Fragrantica; os que ainda não estiverem na lista entram com tipo "parecido".
+D) NUNCA use a lista "Quem gosta deste, também gosta de" ("People who like this also like"), e nunca inclua um perfume só por ser da mesma família ou também ser cítrico/fresco.
+E) Junte tudo sem repetir, de 8 a 15 perfumes, do mais parecido ao menos. "pct": semelhança de 60 a 99 segundo as fontes (o original e os clones mais citados no topo).
+F) "fonte": o endereço da página onde a relação aparece (lista de clones, resenha, vídeo, a página do Fragrantica); "trecho": a frase dessa página que cita o perfume (ex.: "Elliur is a great Pacific Chill clone"). Será conferido abrindo a página.`;
 
 const fotoDoFragrantica = (url?: string | null) => {
   const id = url?.match(/fragrantica\.com(?:\.br)?\/perfume\/[^?#]*-(\d+)\.html/i)?.[1];
@@ -301,7 +301,7 @@ export async function buscarParecidos(nome: string, casa: string): Promise<{ par
   const r = await geminiJSON<{ parecidos: FichaIA["parecidos"]; mesmaCasa: FichaIA["mesmaCasa"] }>([{ text: `Abra a página do perfume "${nome}"${casa ? ` da casa "${casa}"` : ""} no Fragrantica e devolva:
 - "parecidos": a lista completa, cada um com nome, casa, tipo, pct, fonte e trecho, seguindo as regras abaixo.
 - "mesmaCasa": até 8 outros perfumes da mesma marca, da seção "Designer ${casa || "da marca"}" da página, cada um com o nome (sem a marca) e "link", o endereço da página dele no Fragrantica.
-${REGRA_PARECIDOS}` }], { schema: SCHEMA_P, pesquisar: true, tempo: 90000 });
+${REGRA_PARECIDOS}` }], { schema: SCHEMA_P, pesquisar: true, esforco: "medium", tempo: 100000 });
   const { ok, descartados } = await conferirParecidos(nome, r.parecidos);
   const parecidos = ok.filter((x) => x?.nome && x?.casa && x.nome.toLowerCase() !== nome.toLowerCase() && (Number(x.pct) || 70) >= 60).slice(0, 15).map((x) => ({ ...x, pct: Math.min(99, Math.round(Number(x.pct) || 70)) }));
   const mesmaCasa = (r.mesmaCasa ?? []).filter((x, i, l) => x?.nome && normal(x.nome) !== normal(nome) && l.findIndex((y) => normal(y.nome) === normal(x.nome)) === i).slice(0, 8)

@@ -46,11 +46,11 @@ export async function conferirParecidos<T extends Parecido>(nome: string, lista:
       // só confia na página baixada se ela trouxe de fato a lista (às vezes o site entrega outra coisa ou carrega a lista depois)
       const temLista = pagina && cita(pagina, nome) && /me lembra|reminds me/.test(pagina);
       if (paginaDele) return (temLista ? cita(pagina!, x.nome) : cita(normal(x.trecho ?? ""), x.nome) && CONFIAVEIS.test(x.fonte!)) ? x : null;
-      const outros = [nome, ...(x.tipo === "clone" && original ? [original] : [])];
-      if (pagina) return cita(pagina, x.nome) && outros.some((o) => cita(pagina, o)) ? x : null;
-      // página não abriu: aceita só de site conhecido e com trecho citando os dois
-      const t = normal(x.trecho ?? "");
-      return CONFIAVEIS.test(x.fonte!) && cita(t, x.nome) && outros.some((o) => cita(t, o)) ? x : null;
+      const outros = [nome, ...(original ? [original] : [])];
+      // página abriu: precisa citar o parecido e este perfume (ou o original)
+      if (pagina && pagina.length > 3000) return cita(pagina, x.nome) && outros.some((o) => cita(pagina, o)) ? x : null;
+      // página não abriu (ou veio vazia): vale o trecho, que precisa citar o parecido
+      return cita(normal(x.trecho ?? ""), x.nome) ? x : null;
     }),
   );
   const semFonte = (lista ?? []).filter((x) => x?.nome && !(x.fonte && /^https?:\/\//.test(x.fonte))).map((x) => x.nome);
