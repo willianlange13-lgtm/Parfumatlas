@@ -7,12 +7,12 @@ import { Anel, Card, Circ, MONO, NotaChip, OURO, Rot } from "./kit";
 
 type Modo = "foto" | "link" | "nome" | "voz";
 type Cand = { nome: string; casa: string; concentracao: string; por: string; pct: number; link?: string; imagem?: string | null };
-type Ficha = Omit<Perfume, "id" | "clima"> & { revisar: string[] };
+type Ficha = Omit<Perfume, "id" | "clima"> & { revisar: string[]; completar?: boolean; fragrantica?: string };
 type Campo = { l: string; v: string; st: string; mudar: (e: React.ChangeEvent<HTMLInputElement>) => void };
 export type CadCel = {
   modo: Modo; setModo: (m: Modo) => void; foto: string | null; lido: string[]; cands: Cand[]; sel: number; ficha: Ficha | null; setFicha: (f: Ficha) => void;
   situacao: string; setSituacao: (s: string) => void; anotacao: string; setAnotacao: (s: string) => void; ocupado: string; ouvindo: boolean; fala: string; erro: string;
-  identificar: (m: "foto" | "link" | "nome", texto?: string, f?: undefined, rapido?: boolean) => void; pesquisou: boolean; escolher: (c: Cand, i: number) => void; ouvir: () => void; salvar: () => void;
+  identificar: (m: "foto" | "link" | "nome", texto?: string, f?: undefined, rapido?: boolean) => void; pesquisou: boolean; completando: boolean; escolher: (c: Cand, i: number) => void; ouvir: () => void; salvar: () => void;
   fotoEscolhida: (e: React.ChangeEvent<HTMLInputElement>) => void; campos: Campo[]; prog: { pct: number; ok: number; tot: number; rev: number }; fontes: { nome: string; info: string }[]; desemp: { l: string; seg: string[]; v: string }[]; quando: [string, number][];
 };
 
@@ -96,6 +96,7 @@ export function CelCadastro({ c, modoInicial }: { c: CadCel; modoInicial?: strin
         <input id="foto-frasco-cel" type="file" accept="image/*" capture="environment" hidden onChange={c.fotoEscolhida} />
         <div className="c-topo"><Circ icone="voltar" tamanho={36} rotulo="Voltar" onClick={() => setPasso("id")} /><span className="c-topo-tit">Revisar ficha</span><span style={{ width: 36 }} /></div>
         <Passos n={3} txt="Revisar ficha" />
+        {c.completando && <span style={{ fontSize: 13, color: "var(--ink-3)", flexShrink: 0 }}>Buscando os votos e os parecidos no Fragrantica… pode revisar enquanto isso.</span>}
         <div style={{ display: "flex", gap: 12, alignItems: "center", flexShrink: 0 }}>
           <span style={{ width: 46, height: 52, borderRadius: 12, background: "var(--surface)", border: "1px solid var(--line)", display: "flex", alignItems: "flex-end", justifyContent: "center", paddingBottom: 4, overflow: "hidden" }}>
             {c.foto || f.imagem ? (

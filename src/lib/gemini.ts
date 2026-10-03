@@ -15,12 +15,15 @@ type Parte = { text: string } | { inlineData: { mimeType: string; data: string }
  * Chama o Gemini e devolve JSON. Com `pesquisar`, liga a busca do Google e a leitura de links
  * (nesse modo a API não aceita schema, então o JSON vem pedido no próprio texto).
  */
-export async function geminiJSON<T>(partes: Parte[], opcoes: { schema?: object; pesquisar?: boolean; sistema?: string; temperatura?: number; leve?: boolean; esforco?: "low" | "medium" } = {}): Promise<T> {
+export async function geminiJSON<T>(partes: Parte[], opcoes: { schema?: object; pesquisar?: boolean; sistema?: string; temperatura?: number; leve?: boolean; esforco?: "low" | "medium"; tempo?: number } = {}): Promise<T> {
+  const inicio = Date.now();
   const texto = await chamar(partes, opcoes, true);
   const lido = lerJSON<T>(texto);
   if (lido !== null) return lido;
+  // só tenta de novo se ainda houver tempo antes do limite da Vercel
+  if (Date.now() - inicio > 45000) throw new Error(`a IA não devolveu a ficha no formato certo (respondeu: "${texto.slice(0, 80)}…")`);
   // às vezes a IA responde com uma pergunta ("Posso fazer…?") em vez do JSON: pede de novo, sem conversa
-  const denovo = await chamar([...partes, { text: `Sua resposta anterior foi: "${texto.slice(0, 300)}". Isso não serve. Ninguém vai responder perguntas. Faça a pesquisa agora e devolva SOMENTE o objeto JSON, começando com { e terminando com }.` }], opcoes, true);
+  const denovo = await chamar([...partes, { text: `Sua resposta anterior foi: "${texto.slice(0, 300)}". Isso não serve. Ninguém vai responder perguntas. Faça a pesquisa agora e devolva SOMENTE o objeto JSON, começando com { e terminando com }.` }], { ...opcoes, tempo: Math.max(20000, 100000 - (Date.now() - inicio)) }, true);
   const lido2 = lerJSON<T>(denovo);
   if (lido2 !== null) return lido2;
   throw new Error(`a IA não devolveu a ficha no formato certo (respondeu: "${denovo.slice(0, 80)}…")`);
@@ -45,7 +48,7 @@ export async function geminiTexto(partes: Parte[], opcoes: { pesquisar?: boolean
   return chamar(partes, opcoes, false);
 }
 
-async function chamar(partes: Parte[], opcoes: { schema?: object; pesquisar?: boolean; sistema?: string; temperatura?: number; leve?: boolean; esforco?: "low" | "medium" }, json: boolean): Promise<string> {
+async function chamar(partes: Parte[], opcoes: { schema?: object; pesquisar?: boolean; sistema?: string; temperatura?: number; leve?: boolean; esforco?: "low" | "medium"; tempo?: number }, json: boolean): Promise<string> {
   if (usaOpenAI()) return chamarOpenAI(partes, opcoes, json);
   const chave = process.env.GEMINI_API_KEY;
   if (!chave) throw new Error("GEMINI_API_KEY não configurada");
@@ -97,7 +100,7 @@ function schemaComum(o: unknown): unknown {
   return o;
 }
 
-async function chamarOpenAI(partes: Parte[], opcoes: { schema?: object; pesquisar?: boolean; sistema?: string; temperatura?: number; leve?: boolean; esforco?: "low" | "medium" }, json: boolean): Promise<string> {
+async function chamarOpenAI(partes: Parte[], opcoes: { schema?: object; pesquisar?: boolean; sistema?: string; temperatura?: number; leve?: boolean; esforco?: "low" | "medium"; tempo?: number }, json: boolean): Promise<string> {
   const chave = process.env.OPENAI_API_KEY!;
   const conteudo = partes.map((p) => ("text" in p ? { type: "input_text", text: p.text } : { type: "input_image", image_url: `data:${p.inlineData.mimeType};base64,${p.inlineData.data}` }));
   if (json) conteudo.push({ type: "input_text", text: `Responda só com um JSON válido${opcoes.schema ? ` neste formato (JSON Schema): ${JSON.stringify(schemaComum(opcoes.schema))}` : ""}.` });
@@ -114,7 +117,7 @@ async function chamarOpenAI(partes: Parte[], opcoes: { schema?: object; pesquisa
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${chave}` },
       // modelos gpt-5 "pensam" antes de responder: esforço baixo deixa bem mais rápido e barato
       body: JSON.stringify({ model: modelo, ...corpo, ...(modelo.startsWith("gpt-5") ? { reasoning: { effort: opcoes.esforco ?? "low" } } : {}) }),
-      signal: AbortSignal.timeout(100000),
+      signal: AbortSignal.timeout(opcoes.tempo ?? 90000),
     });
     if (!r.ok) {
       ultimo = `ChatGPT ${r.status} (${modelo}): ${(await r.text()).slice(0, 200)}`;

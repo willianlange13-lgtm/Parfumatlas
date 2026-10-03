@@ -9,7 +9,7 @@ import type { Perfume } from "@/lib/tipos";
 
 type Modo = "foto" | "link" | "nome" | "voz";
 type Cand = { nome: string; casa: string; concentracao: string; por: string; pct: number; link?: string; imagem?: string | null };
-type Ficha = Omit<Perfume, "id" | "clima"> & { revisar: string[] };
+type Ficha = Omit<Perfume, "id" | "clima"> & { revisar: string[]; completar?: boolean; fragrantica?: string };
 type SR = { lang: string; onresult: (e: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void; onend: () => void; onerror: () => void; start: () => void };
 
 const OURO = "#D8B970";
@@ -48,6 +48,7 @@ export function CadastroCliente({ base, modoInicial }: { base: Record<string, un
   const [fala, setFala] = useState("");
   const [erro, setErro] = useState("");
   const [pesquisou, setPesquisou] = useState(false);
+  const [completando, setCompletando] = useState(false);
   const link = useRef<string | undefined>(undefined);
 
   async function identificar(m: "foto" | "link" | "nome", texto?: string, f?: { mime: string; base64: string }, rapido = false) {
@@ -73,14 +74,27 @@ export function CadastroCliente({ base, modoInicial }: { base: Record<string, un
   async function escolher(c: Cand, i: number) {
     setSel(i); setOcupado("ficha"); setErro("");
     try {
-      const r = await fetch("/api/ficha", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ nome: c.nome, casa: c.casa, concentracao: c.concentracao, link: c.link ?? link.current }) });
-      const j = await r.json();
+      const r = await fetch("/api/ficha", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ nome: c.nome, casa: c.casa, concentracao: c.concentracao, link: c.link ?? link.current }), signal: AbortSignal.timeout(130000) });
+      const j = await r.json().catch(() => ({ erro: "A pesquisa passou do tempo limite. Tente de novo." }));
       if (!r.ok) setErro(j.erro ?? "Não consegui montar a ficha.");
-      else setFicha(j);
-    } catch {
-      setErro("Não consegui montar a ficha agora.");
+      else { setFicha(j); if (j.completar) completar(j); }
+    } catch (e) {
+      setErro(e instanceof Error && e.name === "TimeoutError" ? "A pesquisa demorou demais. Tente de novo ou cole o link do Fragrantica." : "Não consegui montar a ficha agora.");
     } finally {
       setOcupado("");
+    }
+  }
+
+  /** Votos e parecidos em segundo plano: a ficha já aparece enquanto isso. */
+  async function completar(base: Ficha) {
+    setCompletando(true);
+    try {
+      const r = await fetch("/api/ficha/completar", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(base), signal: AbortSignal.timeout(130000) });
+      const j = (await r.json()) as Ficha;
+      // junta só o que a segunda busca traz, sem desfazer o que a pessoa já editou
+      setFicha((f) => (f ? { ...f, votos: j.votos ?? f.votos, fixacaoH: j.fixacaoH ?? f.fixacaoH, projecaoM: j.projecaoM ?? f.projecaoM, parecidos: j.parecidos ?? f.parecidos, revisar: f.revisar.filter((x) => x !== "votos" || (j.revisar ?? []).includes("votos")) } : f));
+    } catch { /* fica com o que já tem */ } finally {
+      setCompletando(false);
     }
   }
 
@@ -185,7 +199,7 @@ export function CadastroCliente({ base, modoInicial }: { base: Record<string, un
   };
   const cel = {
     modo, setModo: (m: Modo) => { setModo(m); setErro(""); }, foto: foto?.url ?? null, lido, cands, sel, ficha, setFicha, situacao, setSituacao, anotacao, setAnotacao, ocupado, ouvindo, fala, erro,
-    identificar, pesquisou, escolher, ouvir, salvar, fotoEscolhida: v.fotoEscolhida, campos, prog: v.prog, fontes: v.fontes, desemp: v.desemp,
+    identificar, pesquisou, completando, escolher, ouvir, salvar, fotoEscolhida: v.fotoEscolhida, campos, prog: v.prog, fontes: v.fontes, desemp: v.desemp,
     quando: ficha?.votos ? [["Inverno", ficha.votos.estacoes.inverno], ["Primavera", ficha.votos.estacoes.primavera], ["Verão", ficha.votos.estacoes.verao], ["Outono", ficha.votos.estacoes.outono], ["Dia", ficha.votos.dia], ["Noite", ficha.votos.noite]] as [string, number][] : [],
   };
   return (

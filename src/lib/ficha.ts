@@ -8,7 +8,7 @@ import { acordePT, acordePrincipal, horasDosVotos, metrosDosVotos, notasPT, voto
 
 export type Candidato = { nome: string; casa: string; concentracao: string; por: string; pct: number; link?: string; imagem?: string | null };
 export type Identificacao = { lido: string[]; candidatos: Candidato[] };
-export type FichaIA = Omit<Perfume, "id" | "clima"> & { revisar: string[] };
+export type FichaIA = Omit<Perfume, "id" | "clima"> & { revisar: string[]; completar?: boolean; fragrantica?: string };
 
 const ACORDES_OK = "Frutado, Cítrico, Fresco, Aromático, Lavanda, Aquático, Mineral, Floral, Verde, Amadeirado, Oud, Esfumaçado, Couro, Patchouli, Incenso, Âmbar, Especiado, Almíscar, Tabaco, Baunilha, Doce, Gourmand, Mel, Café";
 const ACORDE_PRINCIPAL = "Frutado, Cítrico, Aromático, Aquático, Floral, Verde, Amadeirado, Couro, Âmbar, Especiado, Baunilha";
@@ -246,33 +246,36 @@ async function fichaSalva(nome: string, casa: string): Promise<FichaIA | null> {
   }
 }
 
-const somaVotos = (l: unknown) => (Array.isArray(l) ? l : l && typeof l === "object" ? Object.values(l) : []).reduce((a: number, x) => a + (parseFloat(String(x).replace(/\D/g, "")) || 0), 0);
-
 /**
- * Segunda pesquisa, só quando a primeira não trouxe os votos ou trouxe poucos parecidos.
- * Pede para abrir a página do Fragrantica e copiar os números.
+ * Segunda pesquisa, pedida pela tela depois que a ficha já apareceu:
+ * abre a página do Fragrantica para copiar os votos e completar os parecidos.
  */
-async function completar(f: FichaIA & { fragrantica?: string }, alvo: string, link?: string) {
-  const v = (f.votos ?? {}) as Record<string, unknown>;
-  const semVotos = !somaVotos(v.fixacao ?? v.longevidade) || !somaVotos(v.projecao ?? v.rastro);
+export async function completarFicha(f: FichaIA): Promise<FichaIA> {
+  const semVotos = !temVotos(f.votos?.fixacao) || !temVotos(f.votos?.projecao);
   const poucos = (f.parecidos ?? []).length < 5;
-  if (!semVotos && !poucos) return;
+  if (!geminiConfigurado() || (!semVotos && !poucos)) return { ...f, completar: false };
+  const alvo = `"${f.nome}"${f.casa ? ` da casa "${f.casa}"` : ""}`;
   type Extra = { fixacao?: number[]; projecao?: number[]; total?: number; parecidos?: FichaIA["parecidos"] };
-  try {
-    const x = await geminiJSON<Extra>([{ text: `Abra a página do perfume ${alvo} no Fragrantica${link ? ` (${link})` : ""} e copie:
+  const x = await geminiJSON<Extra>([{ text: `Abra a página do perfume ${alvo} no Fragrantica${f.fragrantica ? ` (${f.fragrantica})` : ""} e copie:
 ${semVotos ? `- "fixacao": as 5 contagens de votos de "Longevidade"/"Longevity" na ordem [muito fraco, fraco, moderado, longo, eterno];
 - "projecao": as 4 contagens de "Rastro"/"Sillage" na ordem [íntimo, moderado, forte, enorme];
 - "total": o número de votos da avaliação.
 Exemplo do formato: {"fixacao": [42, 194, 855, 179, 23], "projecao": [120, 610, 240, 35], "total": 1971}. Números inteiros, como aparecem na página.` : ""}
-${poucos ? `- "parecidos": de 5 a 10 perfumes parecidos (seção "Este perfume me lembra"/"This perfume reminds me of" e comparações em resenhas e lojas de contratipos), cada um com nome, casa, tipo ("inspirou" para o original que ele imita, "clone" para releituras dele, "parecido" nos outros casos) e pct de 0 a 100.` : ""}` }], { pesquisar: true, esforco: "medium" });
-    if (semVotos && somaVotos(x.fixacao)) f.votos = { ...(f.votos ?? {}), fixacao: x.fixacao, projecao: somaVotos(x.projecao) ? x.projecao : (v.projecao as number[]), total: x.total || (v.total as number) } as FichaIA["votos"];
-    if (poucos && x.parecidos?.length) {
-      const ja = new Set((f.parecidos ?? []).map((p) => p.nome.toLowerCase()));
-      f.parecidos = [...(f.parecidos ?? []), ...x.parecidos.filter((p) => p?.nome && !ja.has(p.nome.toLowerCase()))];
-    }
-  } catch (e) {
-    console.error("completar ficha", e);
+${poucos ? `- "parecidos": de 5 a 10 perfumes parecidos (seção "Este perfume me lembra"/"This perfume reminds me of" e comparações em resenhas e lojas de contratipos), cada um com nome, casa, tipo ("inspirou" para o original que ele imita, "clone" para releituras dele, "parecido" nos outros casos) e pct de 0 a 100.` : ""}` }], { pesquisar: true, tempo: 75000 });
+  const out: FichaIA = { ...f, completar: false };
+  const novos = votosDe({ ...(f.votos ?? {}), fixacao: x.fixacao, projecao: x.projecao, total: x.total || f.votos?.total } as Partial<Votos>, f.votos?.ocasioes?.length ? f.votos.ocasioes : OCASIOES);
+  if (semVotos && novos && temVotos(novos.fixacao)) {
+    out.votos = { ...novos, projecao: temVotos(novos.projecao) ? novos.projecao : (f.votos?.projecao ?? novos.projecao), estacoes: f.votos?.estacoes ?? novos.estacoes, dia: f.votos?.dia ?? novos.dia, noite: f.votos?.noite ?? novos.noite };
+    out.fixacaoH = horasDosVotos(out.votos.fixacao);
+    if (temVotos(out.votos.projecao)) out.projecaoM = metrosDosVotos(out.votos.projecao);
+    out.revisar = (f.revisar ?? []).filter((r) => r !== "votos");
   }
+  if (poucos && x.parecidos?.length) {
+    const ja = new Set((f.parecidos ?? []).map((p) => p.nome.toLowerCase()));
+    out.parecidos = [...(f.parecidos ?? []), ...x.parecidos.filter((p) => p?.nome && p?.casa && !ja.has(p.nome.toLowerCase()) && p.nome.toLowerCase() !== f.nome.toLowerCase())]
+      .slice(0, 10).map((p) => ({ ...p, pct: Math.max(40, Math.min(99, Math.round(Number(p.pct) || 70))) }));
+  }
+  return out;
 }
 
 /** ChatGPT: uma única chamada com pesquisa na internet monta a ficha inteira (como no chat). */
@@ -305,10 +308,12 @@ Copie do Fragrantica, sem inventar e sem misturar outras fontes:
 - "fragrantica": endereço completo da página do perfume no Fragrantica.
 - fontes: sites usados e o que veio de cada um. O que não encontrar fica vazio e entra em "revisar".` }], { schema: { ...SCHEMA_FICHA, properties: { ...SCHEMA_FICHA.properties, fragrantica: { type: "STRING" } } }, pesquisar: !paginaCompleta });
     const imagem = pagina?.imagem ?? fotoDoFragrantica(c.link) ?? fotoDoFragrantica(f.fragrantica);
-    await completar(f, alvo, c.link ?? f.fragrantica);
     const { fragrantica: _fr, ...resto } = f;
     void _fr;
-    return finalizar({ ...resto, perfumistas: f.perfumistas ?? [], revisar: f.revisar ?? [], fontes: f.fontes ?? [], forma: f.forma ?? "ret", tampa: /^#[0-9a-f]{6}$/i.test(f.tampa ?? "") ? f.tampa : "#141417", imagem });
+    const pronta = finalizar({ ...resto, perfumistas: f.perfumistas ?? [], revisar: f.revisar ?? [], fontes: f.fontes ?? [], forma: f.forma ?? "ret", tampa: /^#[0-9a-f]{6}$/i.test(f.tampa ?? "") ? f.tampa : "#141417", imagem });
+    // votos ou parecidos faltando: a tela pede o complemento em segundo plano (outra chamada, sem travar o cadastro)
+    const link = c.link ?? (f.fragrantica && /fragrantica\./i.test(f.fragrantica) ? f.fragrantica : undefined);
+    return { ...pronta, completar: !temVotos(pronta.votos?.fixacao) || (pronta.parecidos ?? []).length < 5, fragrantica: link };
   } catch (e) {
     ultimoErroFicha = `ficha: ${e instanceof Error ? e.message.slice(0, 200) : e}`;
     console.error("fichaChatGPT", e);
