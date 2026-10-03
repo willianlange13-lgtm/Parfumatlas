@@ -270,7 +270,7 @@ async function fichaSalva(nome: string, casa: string): Promise<FichaIA | null> {
 
 /**
  * Segunda etapa, pedida pela tela depois que a ficha já apareceu (o cadastro não espera por ela):
- * parecidos e mesma casa sempre; votos só se faltaram. As duas pesquisas rodam ao mesmo tempo.
+ * perfumes da mesma casa sempre; votos só se faltaram. As duas pesquisas rodam ao mesmo tempo.
  */
 export async function completarFicha(f: FichaIA): Promise<FichaIA> {
   if (!geminiConfigurado()) return { ...f, completar: false };
@@ -287,7 +287,7 @@ export async function completarFicha(f: FichaIA): Promise<FichaIA> {
 Exemplo: {"fixacao": [42, 194, 855, 179, 23], "projecao": [120, 610, 240, 35], "total": 1971, "origem": "fragrantica"}.
 Se o Fragrantica não mostrar os números, use o Parfumo, resenhas e lojas, transforme em porcentagens que somam 100 e use "origem": "estimativa". Nunca devolva zerado.` }], { schema: SCHEMA_EXTRA, pesquisar: true, leve: true, tempo: 80000 }).catch(() => ({}) as Extra)
       : Promise.resolve({} as Extra),
-    buscarParecidos(f.nome, f.casa).catch(() => null),
+    buscarMesmaCasa(f.nome, f.casa, f.fragrantica).catch(() => []),
   ]);
   const out: FichaIA = { ...f, completar: false };
   if (semVotos) {
@@ -299,9 +299,16 @@ Se o Fragrantica não mostrar os números, use o Parfumo, resenhas e lojas, tran
       out.revisar = (f.revisar ?? []).filter((r) => r !== "votos");
     }
   }
-  if (viz?.parecidos.length) out.parecidos = viz.parecidos;
-  if (viz?.mesmaCasa.length) out.mesmaCasa = viz.mesmaCasa;
+  if (viz.length) out.mesmaCasa = viz;
   return out;
+}
+
+/** Outros perfumes da mesma marca (seção "Designer" do Fragrantica), com foto. Pesquisa leve. */
+async function buscarMesmaCasa(nome: string, casa: string, link?: string): Promise<NonNullable<FichaIA["mesmaCasa"]>> {
+  const SCHEMA_M = { type: "OBJECT", properties: { mesmaCasa: SCHEMA_FICHA.properties.mesmaCasa }, required: ["mesmaCasa"] };
+  const r = await geminiJSON<{ mesmaCasa: FichaIA["mesmaCasa"] }>([{ text: `Abra a página do perfume "${nome}"${casa ? ` da casa "${casa}"` : ""} no Fragrantica${link ? ` (${link})` : ""} e devolva "mesmaCasa": até 8 outros perfumes da mesma marca, da seção "Designer ${casa || "da marca"}" da página, cada um com o nome (sem a marca) e "link", o endereço da página dele no Fragrantica.` }], { schema: SCHEMA_M, pesquisar: true, leve: true, tempo: 80000 });
+  return (r.mesmaCasa ?? []).filter((x, i, l) => x?.nome && normal(x.nome) !== normal(nome) && l.findIndex((y) => normal(y.nome) === normal(x.nome)) === i).slice(0, 8)
+    .map((x) => ({ nome: x.nome, link: x.link && /fragrantica\./i.test(x.link) ? x.link : null, imagem: linkBate(x.link, x.nome) ? fotoDoFragrantica(x.link) : null }));
 }
 
 /** Refaz a busca de parecidos (e da mesma casa) de um perfume já salvo (botão na ficha). */
