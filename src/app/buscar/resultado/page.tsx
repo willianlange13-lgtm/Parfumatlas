@@ -13,6 +13,7 @@ export default async function Resultado({ searchParams }: PageProps<"/buscar/res
   const s = (k: string) => (typeof sp[k] === "string" ? (sp[k] as string) : undefined);
   // pré-carregamento de link (o Next busca a página antes do toque): nunca gasta IA
   const h = await headers();
+  // Proteção de custo (docs/DECISOES.md §5): o pré-carregamento do Next montava fichas pagas só de rolar a tela.
   const preCarga = Boolean(h.get("next-router-prefetch") || h.get("next-router-segment-prefetch") || h.get("purpose") === "prefetch" || h.get("sec-purpose")?.includes("prefetch"));
   if (preCarga && !s("id")) return <div className="c-tela sem-barra" />;
   const { p, novo } = await acharPerfume({ id: s("id"), nome: s("nome"), casa: s("casa"), conc: s("conc"), link: s("link") });

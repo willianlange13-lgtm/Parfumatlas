@@ -92,7 +92,11 @@ export async function buscarSemelhantesGratis(p: Perfume): Promise<Resultado> {
   return lerJson<Resultado>(resposta);
 }
 
-/** Pesquisa premium opcional em segundo plano na OpenAI. */
+/**
+ * Pesquisa premium opcional em segundo plano na OpenAI.
+ * Histórico (docs/DECISOES.md §7): modelos mini erraram a lista nos testes; se o premium voltar,
+ * revalidar o modelo antes de assumir que o mini substitui o modelo completo que passou.
+ */
 export const iniciarBuscaSemelhantes = (p: Perfume) =>
   iniciarPesquisaFundo(pedido(p), SCHEMA, "low", 6, "gpt-5-mini");
 
@@ -106,12 +110,14 @@ const foto = (url: string | null | undefined, nome: string) => {
 };
 
 export function ordenar(lista: Parecido[]): Parecido[] {
+  // Parentesco manda; casa (até +5) e reconhecimento na comunidade (-5 a +5) só desempatam.
   const nota = (x: Parecido) => x.pct + bonusCasa(x.casa) + ((x.relevancia ?? 3) - 3) * 4;
   const ord = [...lista].filter((x) => x.tipo !== "inspirou").sort((a, b) => nota(b) - nota(a));
   const original = lista.filter((x) => x.tipo === "inspirou");
   const manuais = ord.filter((x) => x.trecho === "adicionado por você");
   const auto = ord.filter((x) => x.trecho !== "adicionado por você");
   const top = auto.slice(0, 7);
+  // no máximo 2 referências "fora do radar" na lista principal de 7
   const estrelasFora = auto.slice(7).filter((x) => x.radar);
   for (const e of estrelasFora) {
     if (top.filter((x) => x.radar).length >= 2) break;

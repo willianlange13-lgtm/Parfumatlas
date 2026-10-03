@@ -1,0 +1,225 @@
+# Decisões técnicas do PARFUM ATLAS
+
+Este arquivo registra decisões que não devem ser inferidas apenas pelo estado atual do código. Antes de alterar provedores de IA, ficha, identificação, pesquisa web, famílias olfativas ou semelhantes, leia este documento.
+
+## 1. Princípio de arquitetura de IA
+
+A direção aprovada é:
+
+1. reaproveitar/cachear o que já é conhecido;
+2. usar lógica local quando possível;
+3. usar IA econômica em tarefas em que ela tenha qualidade comprovada;
+4. recorrer a IA premium quando precisão, pesquisa ou complexidade exigirem.
+
+Gemini não deve ser tratado como motor universal do Atlas. Ele deve ser aprovado tarefa por tarefa. OpenAI também não deve ser chamada por padrão quando cache ou lógica local resolvem o problema.
+
+## 2. Histórico do Gemini
+
+O Atlas começou usando Gemini. Em testes reais de produção foram observados:
+
+- modelo `gemini-2.5-flash` indisponível/fora de linha em determinado momento, exigindo migração para aliases atuais;
+- respostas 429 e 503 por limite/cota;
+- dificuldade para encontrar perfumes recentes quando a identificação não tinha pesquisa web;
+- invenção de notas e votos quando a pesquisa falhava.
+
+Por isso o cadastro principal migrou para OpenAI e recebeu várias correções específicas ao longo do desenvolvimento.
+
+Consequência: não trocar o provedor global do cadastro sem teste funcional lado a lado.
+
+## 3. Ficha principal aprovada
+
+O caminho que ficou aprovado no uso real incorporou estas regras:
+
+- pirâmide e acordes precisam seguir a fonte correta e não misturar dados de resenhas;
+- notas devem ser normalizadas para português;
+- votos devem usar contagens quando disponíveis e ser convertidos corretamente;
+- quando votos exatos não aparecem, usar estimativa explicitamente marcada como estimativa;
+- concentração não pode ser inferida como Colônia sem evidência do frasco, marca ou loja;
+- respostas precisam sair em JSON completo, sem perguntas ao usuário;
+- a ficha principal deve responder dentro do limite operacional da Vercel;
+- votos faltantes podem ser completados em segunda etapa;
+- família do Atlas deve ser uma das 8 categorias aprovadas: Floral, Cítrica, Amadeirada, Oriental, Aromática, Frutal, Gourmand ou Chipre;
+- descrição: UMA frase de até 15 palavras sobre o cheiro.
+
+### Campos que o Willian retirou da ficha (não religar sem ele pedir)
+
+Perfumistas, fontes, ocasiões, fixação × temperatura, descrição longa, "Da mesma casa", semelhantes e anotações. "Quando usar" ficou.
+
+### Nunca usar números de perfume real como exemplo de prompt
+
+Os exemplos com os votos reais do Pacific Aura e um vetor fixo de estimativa foram copiados pela IA para outros perfumes (votos repetidos). Exemplos de prompt devem descrever o formato, nunca trazer números reais. O detector `votosSuspeitos()` em `src/lib/ficha.ts` barra os vetores antigos conhecidos.
+
+Não regredir essas regras ao trocar de fornecedor.
+
+### Votos: média da comunidade + ajuste pessoal (decisão de 03/10/2026)
+
+A contagem exata de votos do Fragrantica não é lida de forma confiável pela pesquisa (nem pelo modelo mais forte). Decisão do Willian: a ficha traz a média da comunidade (estimativa marcada como estimativa) e ele ajusta pelo que o perfume rende nele.
+
+- o ajuste pessoal fica em `colecao.minha_fixacao` (1–5) e `colecao.minha_projecao` (1–4), por nível com faixa de horas/metros (`NIVEIS_FIXACAO` / `NIVEIS_PROJECAO` em `src/lib/normalizar.ts`, mesma régua de `horasDosVotos`);
+- pode ser marcado no cadastro (passo Salvar, celular) e em Editar;
+- na ficha, o medidor mostra o valor pessoal e a média da comunidade junto;
+- contagem real conferida à mão pode ser gravada sem custo em `/api/diagnostico?votos=gravar` (ex.: Pacific Aura);
+- limpeza histórica: `/api/diagnostico?votos=1` lista votos suspeitos (só leitura).
+
+## 4. Fragrantica e pesquisa web
+
+O Fragrantica bloqueia leitura direta do servidor da Vercel em vários cenários. Portanto, não assumir que `fetch` direto da página será suficiente.
+
+Quando o dado necessário não estiver disponível localmente, a ficha pode depender de pesquisa web via provedor de IA ou de outra fonte pública compatível.
+
+`url_context` não deve ser tratado como garantia de leitura do Fragrantica.
+
+## 5. Custo real observado
+
+O maior componente de custo observado não foi token puro, mas chamadas de ferramenta de pesquisa web.
+
+Isso significa que a principal estratégia de economia deve ser reduzir pesquisas repetidas, não apenas trocar o modelo por outro mais barato.
+
+### Vazamento já corrigido
+
+Links de resultado estavam sendo pré-carregados pelo Next.js. A página de resultado montava ficha com IA, então apenas rolar a interface podia disparar várias fichas pagas.
+
+Correção aplicada:
+
+- `prefetch={false}` nos links relevantes;
+- página de resultado (`src/app/buscar/resultado/page.tsx`) ignora pedidos de pré-carregamento pelos cabeçalhos `next-router-prefetch`, `next-router-segment-prefetch`, `purpose` e `sec-purpose`.
+
+Não remover essa proteção sem entender o impacto de custo.
+
+## 6. Limites de pesquisa
+
+Limites atuais (`max_tool_calls` na OpenAI):
+
+- busca por nome: 2 buscas;
+- ficha principal: 4 buscas;
+- complemento de votos: 3 buscas.
+
+### Busca por nome
+
+- enquanto a pessoa digita, a busca é só no catálogo local, sem IA;
+- a IA só entra quando a pessoa confirma a busca, e devolve opções;
+- o usuário sempre escolhe o perfume; a ficha só é montada depois da escolha.
+
+A pesquisa web deve ter teto quando o provedor permitir.
+
+## 7. Semelhantes
+
+A seção de semelhantes foi retirada da ficha pelo Willian e atualmente não deve ser tratada como fluxo principal do produto.
+
+Histórico importante dos testes:
+
+- modelos nano e mini produziram relações erradas em testes;
+- o modelo completo teve melhor desempenho para a lista especializada;
+- o parentesco olfativo manda na ordenação; casa e reconhecimento na comunidade entram apenas como desempate;
+- pesquisa pela ótica da comunidade brasileira (Fragrantica Brasil, YouTube/Instagram e lojas brasileiras);
+- só entram casas brasileiras, americanas ou árabes (`casaPermitida` em `src/data/casas.ts`); o original pode ser de qualquer país;
+- reconhecimento na comunidade de 1 a 5;
+- lista deve ter 7 referências principais, com no máximo 2 itens `fora do radar`;
+- o perfume original nunca deve desaparecer da estrutura quando a relação de inspiração já é conhecida;
+- fotos derivadas de URLs inventadas podem mostrar o frasco errado; quando essa seção voltar, a conferência da foto deve ser preservada ou substituída por mecanismo equivalente.
+
+Se a pesquisa premium de semelhantes voltar a ser ativada, não assumir que `gpt-5-mini` substitui o modelo que passou nos testes. Revalidar qualidade.
+
+## 7b. Fotos das notas
+
+Fotos das notas vêm da Wikipédia, servidas pelo próprio Atlas em `/api/nota-foto` (proxy dos bytes, miniatura padrão de 330 px). Só resposta com sucesso entra em cache: um redirecionamento ou erro guardado no aparelho deixava a foto quebrada para sempre. O `&v=3` na URL força a troca do cache antigo.
+
+## 8. Sommelier
+
+O Sommelier já possui lógica local útil, considerando dados como clima, ocasião, adequação, DNA e histórico de uso.
+
+Direção aprovada:
+
+- lógica local primeiro;
+- IA apenas quando agregar redação, nuance ou análise que a lógica local não cobre;
+- não transformar toda interação do Sommelier em chamada obrigatória de LLM.
+
+## 9. Regra para provedores
+
+A decisão de provedor deve evoluir para ser por chamada/tarefa, não uma chave global que muda o comportamento do app inteiro.
+
+Exemplo de intenção futura:
+
+- `FAST`: transformação, tradução, classificação;
+- `RESEARCH`: tarefa que exige web e maior precisão;
+- `PREMIUM`: investigação em que os modelos baratos falharam;
+- `LOCAL_FIRST`: tenta resolver sem IA antes de qualquer chamada.
+
+Quando Gemini retornar 429/503 e houver OpenAI configurada, a direção aprovada é permitir fallback daquela chamada para OpenAI, em vez de derrubar todo o fluxo.
+
+## 10. Modelos Gemini
+
+Separar o conceito de modelo rápido/econômico do modelo de pesquisa:
+
+- `GEMINI_MODEL_FAST`: tarefas simples e sem necessidade forte de pesquisa;
+- `GEMINI_MODEL_RESEARCH`: tarefas com pesquisa, ficha e precisão maior.
+
+Não usar automaticamente o modelo Lite na ficha principal apenas por ser mais barato.
+
+## 11. Cache global de fichas
+
+Próxima direção arquitetural aprovada:
+
+- chave lógica por `nome normalizado + casa normalizada`;
+- uma ficha confiável já pesquisada deve ser reaproveitada;
+- só refazer pesquisa quando a ficha estiver incompleta, inválida ou explicitamente marcada para atualização.
+
+Isso tende a economizar mais do que apenas trocar de fornecedor.
+
+## 12. Telemetria de custo e uso
+
+Antes de novas otimizações grandes, registrar por chamada pelo menos:
+
+- função/tarefa;
+- provedor;
+- modelo;
+- duração;
+- uso de pesquisa web;
+- sucesso/falha;
+- buscas reais (OpenAI: itens `web_search_call` em `output`; Gemini: `groundingMetadata.webSearchQueries`);
+- tokens de entrada e saída.
+
+Estado: ligada em `src/lib/telemetria-ia.ts` / `src/lib/gemini.ts`. Cada chamada gera uma linha `[atlas:ia]` nos logs da Vercel, inclusive falhas e pesquisas em segundo plano. Nunca registrar prompt, resposta, chave de API ou e-mail. Os logs da Vercel têm retenção curta no plano gratuito: para medir por semanas, copiar os números antes que expirem ou gravar um resumo no banco.
+
+Objetivo: medir o ganho real de cada mudança sem depender apenas do painel externo do provedor.
+
+## 13. Teste de aceitação para Gemini
+
+Gemini só deve virar padrão de uma tarefa depois de comparação lado a lado com o caminho aprovado.
+
+Perfumes mínimos de teste:
+
+- Pacific Aura — Rayhaan;
+- Nava Sol;
+- pelo menos mais dois perfumes recentes conhecidos pelo Willian.
+
+Critérios:
+
+- busca por nome encontra o perfume correto;
+- pirâmide correta;
+- acordes corretos;
+- nenhuma nota em inglês após normalização;
+- concentração correta;
+- país correto;
+- votos não zerados ou claramente marcados como estimativa;
+- tempo dentro do limite da Vercel;
+- cinco cadastros seguidos sem falha por 429;
+- comparação OpenAI × Gemini campo por campo.
+
+"Funcionou" não é critério suficiente: a qualidade deve ser equivalente para a tarefa proposta e o custo precisa justificar a troca.
+
+## 14. Mudanças na main
+
+Regra operacional:
+
+- apenas uma pessoa/IA implementa por vez; a outra revisa;
+- desde 03/10/2026 (noite) o Claude conduz a implementação, com envio direto na `main` por escolha do Willian, sempre com build verde antes;
+- não fazer nova troca de provedor diretamente na `main` sem teste funcional.
+
+## 15. Estado de contingência
+
+Enquanto a nova arquitetura por tarefa não estiver validada, a configuração segura para manter o cadastro no caminho já aprovado é:
+
+`AI_PROVIDER=openai`
+
+Isso é uma medida de estabilidade, não a arquitetura final desejada.

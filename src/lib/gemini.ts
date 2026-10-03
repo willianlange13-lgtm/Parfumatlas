@@ -55,8 +55,30 @@ export async function geminiTexto(partes: Parte[], opcoes: { pesquisar?: boolean
   return chamar(partes, opcoes, false);
 }
 
-async function chamar(partes: Parte[], opcoes: { schema?: object; pesquisar?: boolean; sistema?: string; temperatura?: number; leve?: boolean; esforco?: "low" | "medium"; tempo?: number; maxBuscas?: number; tarefa?: string }, json: boolean): Promise<string> {
-  if (usaOpenAI()) return chamarOpenAI(partes, opcoes, json);
+type OpcoesChamada = { schema?: object; pesquisar?: boolean; sistema?: string; temperatura?: number; leve?: boolean; esforco?: "low" | "medium"; tempo?: number; maxBuscas?: number; tarefa?: string };
+
+/** Registra as falhas também (o sucesso é registrado dentro de cada provedor, com tokens e buscas). */
+async function chamar(partes: Parte[], opcoes: OpcoesChamada, json: boolean): Promise<string> {
+  const inicio = Date.now();
+  const openai = usaOpenAI();
+  try {
+    return await (openai ? chamarOpenAI(partes, opcoes, json) : chamarGemini(partes, opcoes, json));
+  } catch (e) {
+    registrarIA({
+      tarefa: opcoes.tarefa ?? (opcoes.pesquisar ? "pesquisa" : "geracao"),
+      provedor: openai ? "openai" : "gemini",
+      modelo: "",
+      pesquisaWeb: Boolean(opcoes.pesquisar),
+      duracaoMs: Date.now() - inicio,
+      sucesso: false,
+      // só o começo da mensagem do provedor: nunca prompt, resposta ou chave
+      erro: (e instanceof Error ? e.message : String(e)).replace(/sk-[\w-]+/g, "[chave]").slice(0, 120),
+    });
+    throw e;
+  }
+}
+
+async function chamarGemini(partes: Parte[], opcoes: OpcoesChamada, json: boolean): Promise<string> {
   const chave = process.env.GEMINI_API_KEY;
   if (!chave) throw new Error("Nenhum provedor de IA configurado");
   const inicioChamada = Date.now();
@@ -248,6 +270,18 @@ export async function lerPesquisaFundo<T>(id: string): Promise<{ estado: "penden
   if (!r.ok) return { estado: "falhou", erro: `ChatGPT ${r.status}` };
   const j = await r.json();
   if (j.status === "queued" || j.status === "in_progress") return { estado: "pendente" };
+  registrarIA({
+    tarefa: "pesquisa_fundo",
+    provedor: "openai",
+    modelo: String(j.model ?? ""),
+    pesquisaWeb: true,
+    duracaoMs: (Number(j.completed_at ?? 0) - Number(j.created_at ?? 0)) * 1000 || 0,
+    sucesso: j.status === "completed",
+    status: j.status,
+    buscasReais: (j.output ?? []).filter((o: { type?: string }) => o.type === "web_search_call").length,
+    inputTokens: Number(j.usage?.input_tokens ?? 0) || null,
+    outputTokens: Number(j.usage?.output_tokens ?? 0) || null,
+  });
   if (j.status !== "completed") return { estado: "falhou", erro: j.error?.message ?? j.incomplete_details?.reason ?? j.status };
   const texto: string = (j.output ?? []).filter((o: { type: string }) => o.type === "message").flatMap((o: { content?: { type: string; text?: string }[] }) => o.content ?? []).filter((c: { type: string }) => c.type === "output_text").map((c: { text?: string }) => c.text ?? "").join("");
   const dados = lerJSON<T>(texto);
