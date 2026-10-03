@@ -116,6 +116,8 @@ export async function montarFicha(id: string) {
     colunas[2].itens = [];
     colunas[1].itens = colunas[1].itens.filter((i) => i.sim >= 80);
   }
+  // quando há um original, os clones são "irmãos" dele, não cópias deste perfume
+  const origPesq = pesquisados.find((x) => x.tipo === "inspirou");
   const jaListado = new Set(colunas.flatMap((c) => c.itens.map((i) => norm(i.nome))));
   for (const pr of pesquisados) {
     if (jaListado.has(norm(pr.nome))) continue;
@@ -123,7 +125,7 @@ export async function montarFicha(id: string) {
     const achado = todos.find((x) => norm(x.nome) === norm(pr.nome) && (!pr.casa || norm(x.casa) === norm(pr.casa)));
     const tem = achado ? meus.some((m) => m.perfumeId === achado.id) : false;
     const base: Perfume = achado ?? { id: "", nome: pr.nome, casa: pr.casa, perfumistas: [], familia: "", acorde: p.acorde, notas: { saida: [], coracao: [], fundo: [] }, acordes: [], forma: "ret", tampa: "#141417" };
-    const item = { ...sem(base, pr.pct, pr.tipo === "inspirou" ? "o original" : pr.tipo === "clone" ? "inspirado nele" : "parecido", tem ? "Na sua coleção" : pr.tipo === "inspirou" ? "Original" : "", t.ink, t.sup[1]), href: achado ? `/colecao/${achado.id}` : `/buscar/resultado?nome=${encodeURIComponent(pr.nome)}&casa=${encodeURIComponent(pr.casa)}` };
+    const item = { ...sem(base, pr.pct, pr.tipo === "inspirou" ? "o original" : pr.tipo === "clone" ? (origPesq ? `clone do ${origPesq.nome}` : "inspirado nele") : "parecido", tem ? "Na sua coleção" : pr.tipo === "inspirou" ? "Original" : "", t.ink, t.sup[1]), href: achado ? `/colecao/${achado.id}` : `/buscar/resultado?nome=${encodeURIComponent(pr.nome)}&casa=${encodeURIComponent(pr.casa)}` };
     if (pr.tipo !== "parecido") colunas[0].itens.push(item);
     else if (tem) colunas[1].itens.push(item);
     else colunas[2].itens.push(item);
