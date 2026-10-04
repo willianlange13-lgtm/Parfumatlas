@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Icone } from "@/components/Icone";
 import { Frasco } from "@/components/Frasco";
 import type { Perfume } from "@/lib/tipos";
-import { FAMILIAS, NIVEIS_FIXACAO, NIVEIS_PROJECAO } from "@/lib/normalizar";
+import { CONCENTRACOES, FAMILIAS, GENEROS, NIVEIS_FIXACAO, NIVEIS_PROJECAO } from "@/lib/normalizar";
 import { Card, MONO, NotaChip, OURO, Rot } from "./kit";
 import { reduzirFoto } from "./voz";
 
@@ -24,6 +24,17 @@ export function Editar({ p: p0, e: e0, podeSalvar }: { p: Perfume; e: E; podeSal
     <label style={{ borderRadius: 14, border: "1px solid var(--line)", background: "var(--surface)", padding: "8px 11px", display: "flex", flexDirection: "column", gap: 3, minWidth: 0 }}>
       <span style={{ fontFamily: MONO, fontSize: 8.5, letterSpacing: ".1em", color: "var(--ink-3)" }}>{l}</span>
       <input value={v} onChange={(x) => set(x.target.value)} style={{ background: "transparent", border: "none", outline: "none", color: "var(--ink)", fontSize: 14, padding: 0, minWidth: 0 }} />
+    </label>
+  );
+  // caixa de seleção (concentração e gênero); valor antigo fora da lista continua aparecendo
+  const escolha = (l: string, v: string, opcoes: readonly string[], set: (x: string) => void) => (
+    <label style={{ borderRadius: 14, border: "1px solid var(--line)", background: "var(--surface)", padding: "8px 11px", display: "flex", flexDirection: "column", gap: 3, minWidth: 0 }}>
+      <span style={{ fontFamily: MONO, fontSize: 8.5, letterSpacing: ".1em", color: "var(--ink-3)" }}>{l}</span>
+      <select value={v} onChange={(x) => set(x.target.value)} style={{ background: "transparent", border: "none", outline: "none", color: "var(--ink)", fontSize: 14, padding: 0, minWidth: 0, fontFamily: "inherit" }}>
+        <option value="" style={{ color: "#000" }}>escolher</option>
+        {v && !opcoes.includes(v) && <option value={v} style={{ color: "#000" }}>{v}</option>}
+        {opcoes.map((o) => <option key={o} value={o} style={{ color: "#000" }}>{o}</option>)}
+      </select>
     </label>
   );
   const tira = (k: "saida" | "coracao" | "fundo", n: string) => setP({ ...p, notas: { ...p.notas, [k]: p.notas[k].filter((x) => x !== n) } });
@@ -83,7 +94,7 @@ export function Editar({ p: p0, e: e0, podeSalvar }: { p: Perfume; e: E; podeSal
       <div className="c-grade2" style={{ gap: 8 }}>
         {campo("NOME", p.nome, (v) => setP({ ...p, nome: v }))}
         {campo("CASA", p.casa, (v) => setP({ ...p, casa: v }))}
-        {campo("CONCENTRAÇÃO", p.concentracao ?? "", (v) => setP({ ...p, concentracao: v }))}
+        {escolha("CONCENTRAÇÃO", p.concentracao ?? "", CONCENTRACOES, (v) => setP({ ...p, concentracao: v }))}
         {campo("ANO", p.ano ? String(p.ano) : "", (v) => setP({ ...p, ano: Number(v) || undefined }))}
         {campo("PERFUMISTA", p.perfumistas.join(", "), (v) => setP({ ...p, perfumistas: v.split(",").map((x) => x.trim()).filter(Boolean) }))}
         <label style={{ borderRadius: 14, border: "1px solid var(--line)", background: "var(--surface)", padding: "8px 11px", display: "flex", flexDirection: "column", gap: 3, minWidth: 0 }}>
@@ -92,7 +103,7 @@ export function Editar({ p: p0, e: e0, podeSalvar }: { p: Perfume; e: E; podeSal
             {FAMILIAS.map((f) => <option key={f} value={f} style={{ color: "#000" }}>{f}</option>)}
           </select>
         </label>
-        {campo("GÊNERO", p.genero ?? "", (v) => setP({ ...p, genero: v }))}
+        {escolha("GÊNERO", p.genero ?? "", GENEROS, (v) => setP({ ...p, genero: v }))}
         {campo("PAÍS", p.pais ?? "", (v) => setP({ ...p, pais: v }))}
       </div>
       <Rot>Situação</Rot>

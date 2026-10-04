@@ -150,8 +150,10 @@ export function fichaDoAcervo(r: LinhaAcervo): FichaIA | null {
     },
     imagem: fotoDoLink(r.fragrantica), forma: "ret", tampa: "#141417",
     fragrantica: r.fragrantica ?? undefined,
+    // o que falta vai para a IA completar em segundo plano (completarDoAcervo, só os campos vazios).
+    // Sempre há o que completar: descrição e "quando usar" não vêm no lote.
+    completar: true,
     revisar: [...(r.ano ? [] : ["ano"]), ...(r.concentracao ? [] : ["concentracao"]), ...(r.genero ? [] : ["genero"]), ...(paisDaCasa(r.casa) ? [] : ["pais"]), "votos"],
-    completar: false,
   };
 }
 

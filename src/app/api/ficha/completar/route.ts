@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
   try {
     const pronta = await completarFicha(f);
     // os votos da segunda etapa dão o nível mais votado ao perfume no acervo
-    if (pronta.votos?.fixacao?.some((x) => x > 0)) await guardarNoAcervo(pronta);
+    if (pronta.fonteFicha === "acervo" || pronta.votos?.fixacao?.some((x) => x > 0)) await guardarNoAcervo(pronta);
     return NextResponse.json(pronta);
   } catch (e) {
     console.error("completar", e);

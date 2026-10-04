@@ -11,7 +11,7 @@ import type { Selo } from "@/lib/selo-fonte";
 type Modo = "foto" | "link" | "nome" | "voz";
 type Cand = { nome: string; casa: string; concentracao: string; por: string; pct: number; link?: string; imagem?: string | null };
 type Ficha = Omit<Perfume, "id" | "clima"> & { revisar: string[]; completar?: boolean; fragrantica?: string };
-type Campo = { l: string; v: string; st: string; mudar: (e: React.ChangeEvent<HTMLInputElement>) => void };
+type Campo = { l: string; v: string; st: string; mudar: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void; opcoes?: string[] };
 export type CadCel = {
   modo: Modo; setModo: (m: Modo) => void; foto: string | null; lido: string[]; cands: Cand[]; sel: number; ficha: Ficha | null; setFicha: (f: Ficha) => void;
   situacao: string; setSituacao: (s: string) => void; anotacao: string; setAnotacao: (s: string) => void; minhaFixacao: number | null; setMinhaFixacao: (n: number | null) => void; minhaProjecao: number | null; setMinhaProjecao: (n: number | null) => void; ocupado: string; ouvindo: boolean; fala: string; erro: string;
@@ -145,7 +145,14 @@ export function CelCadastro({ c, modoInicial }: { c: CadCel; modoInicial?: strin
             return (
               <label key={x.l} style={{ borderRadius: 14, border: `1px solid ${rev ? OURO : "var(--line)"}`, background: "var(--surface)", padding: "8px 11px", display: "flex", flexDirection: "column", gap: 3, minWidth: 0 }}>
                 <span style={{ display: "flex", justifyContent: "space-between", fontFamily: MONO, fontSize: 8.5, letterSpacing: ".1em", color: "var(--ink-3)" }}><span>{x.l}</span><span style={{ color: rev ? OURO : "var(--ink-3)" }}>{rev ? "REVISAR" : "✓"}</span></span>
-                <input defaultValue={x.v === "a confirmar" ? "" : x.v} placeholder="a confirmar" onChange={x.mudar} style={{ background: "transparent", border: "none", outline: "none", color: "var(--ink)", fontSize: 14, padding: 0, minWidth: 0 }} />
+                {x.opcoes ? (
+                  <select value={x.opcoes.includes(x.v) ? x.v : ""} onChange={x.mudar} style={{ background: "transparent", border: "none", outline: "none", color: x.opcoes.includes(x.v) ? "var(--ink)" : "var(--ink-3)", fontSize: 14, padding: 0, minWidth: 0 }}>
+                    <option value="" style={{ color: "#000" }}>{x.v !== "a confirmar" && !x.opcoes.includes(x.v) ? x.v : "escolher"}</option>
+                    {x.opcoes.map((o) => <option key={o} value={o} style={{ color: "#000" }}>{o}</option>)}
+                  </select>
+                ) : (
+                  <input value={x.v === "a confirmar" ? "" : x.v} placeholder="a confirmar" onChange={x.mudar} style={{ background: "transparent", border: "none", outline: "none", color: "var(--ink)", fontSize: 14, padding: 0, minWidth: 0 }} />
+                )}
               </label>
             );
           })}

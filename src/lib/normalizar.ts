@@ -228,3 +228,7 @@ export function generoPT(g?: string | null) {
   if (/\bmen\b|masculin|homem/.test(t)) return "Masculino";
   return "";
 }
+
+/** Opções das caixas de seleção do cadastro. */
+export const CONCENTRACOES = ["Eau de Cologne", "Eau de Toilette", "Eau de Parfum", "Eau de Parfum Intense", "Extrait de Parfum", "Parfum", "Óleo / Attar"] as const;
+export const GENEROS = ["Masculino", "Feminino", "Unissex"] as const;

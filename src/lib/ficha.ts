@@ -6,7 +6,7 @@ import { lerPagina, linkDePerfume, type Pagina } from "@/lib/pagina";
 import { verificarParecidos } from "@/lib/verificar";
 import { fotoConferida } from "@/lib/fotos";
 import type { Perfume, Votos } from "@/lib/tipos";
-import { concentracaoPT, acordeConhecido, familiaAtlas, acordePT, acordePrincipal, horasDosVotos, metrosDosVotos, notaConhecida, notasPT, votosDe, temVotos } from "@/lib/normalizar";
+import { concentracaoPT, generoPT, acordeConhecido, familiaAtlas, acordePT, acordePrincipal, horasDosVotos, metrosDosVotos, notaConhecida, notasPT, votosDe, temVotos } from "@/lib/normalizar";
 
 export type Candidato = { nome: string; casa: string; concentracao: string; por: string; pct: number; link?: string; imagem?: string | null };
 export type Identificacao = { lido: string[]; candidatos: Candidato[]; /** a busca usou IA (paga)? */ buscaIA?: boolean };
@@ -334,7 +334,51 @@ async function fichaSalva(nome: string, casa: string): Promise<FichaIA | null> {
  * `forte`: usa o modelo da ficha em vez do leve. `soReal`: só aceita contagem real do Fragrantica
  * (nada de estimativa). Os dois são usados na limpeza histórica dos votos.
  */
+/**
+ * Ficha que veio do acervo: a IA completa SÓ o que ficou vazio (ano, concentração, gênero, descrição,
+ * "quando usar" e, se o lote não trouxe, a contagem de votos). Uma chamada, modelo leve, no máximo 2 buscas.
+ * Nunca troca pirâmide, acordes nem o que o Willian já escolheu.
+ */
+async function completarDoAcervo(f: FichaIA): Promise<FichaIA> {
+  const vazioQuando = !f.votos?.estacoes || Object.values(f.votos.estacoes).every((x) => !x);
+  const semContagem = !f.votos?.fixacao?.some((x) => x > 0);
+  const falta = [
+    !f.ano && "ano (ano de lançamento)",
+    !f.concentracao && "concentracao (como aparece na página)",
+    !f.genero && "genero (para homens, para mulheres ou compartilhável)",
+    !f.descricao && "descricao (UMA frase de até 15 palavras sobre o cheiro, em português)",
+    vazioQuando && "estacoes (votos de primavera, verao, outono, inverno), dia e noite",
+    semContagem && "fixacao (as 5 contagens de Longevidade) e projecao (as 4 contagens de Rastro), com total",
+  ].filter(Boolean) as string[];
+  if (!falta.length || !geminiConfigurado()) return { ...f, completar: false };
+  type Falta = { ano?: number | null; concentracao?: string | null; genero?: string | null; descricao?: string | null; estacoes?: { primavera?: number; verao?: number; outono?: number; inverno?: number } | null; dia?: number | null; noite?: number | null; fixacao?: number[] | null; projecao?: number[] | null; total?: number | null };
+  const NUM = { type: "NUMBER" };
+  const SCHEMA_FALTA = { type: "OBJECT", properties: { ano: { type: "INTEGER" }, concentracao: { type: "STRING" }, genero: { type: "STRING" }, descricao: { type: "STRING" }, estacoes: { type: "OBJECT", properties: { primavera: NUM, verao: NUM, outono: NUM, inverno: NUM }, required: [] }, dia: NUM, noite: NUM, fixacao: { type: "ARRAY", items: NUM }, projecao: { type: "ARRAY", items: NUM }, total: { type: "INTEGER" } }, required: [] };
+  const alvo = `"${f.nome}" da casa "${f.casa}"`;
+  const x = await geminiJSON<Falta>([{ text: `Abra a página do perfume ${alvo} no Fragrantica${f.fragrantica ? ` (${f.fragrantica})` : ""} e copie só estes campos:\n- ${falta.join("\n- ")}\nCopie da página; o que não aparecer fica null. Não estime e não copie números desta instrução.` }], { schema: SCHEMA_FALTA, pesquisar: true, leve: true, tempo: 60000, maxBuscas: 2, tarefa: "completar_acervo" }).catch(() => ({}) as Falta);
+  const out: FichaIA = { ...f, completar: false };
+  const tira = (k: string) => { out.revisar = (out.revisar ?? []).filter((r) => r !== k); };
+  const ano = Number(x.ano);
+  if (!out.ano && ano >= 1700 && ano <= new Date().getFullYear() + 1) { out.ano = ano; tira("ano"); }
+  if (!out.concentracao && x.concentracao) { out.concentracao = concentracaoPT(x.concentracao); tira("concentracao"); }
+  if (!out.genero && generoPT(x.genero)) { out.genero = generoPT(x.genero); tira("genero"); }
+  if (!out.descricao && x.descricao) out.descricao = x.descricao.split(/\s+/).slice(0, 15).join(" ");
+  const lidos = votosDe({ total: x.total ?? 0, fixacao: x.fixacao ?? undefined, projecao: x.projecao ?? undefined, estacoes: x.estacoes ?? undefined, dia: x.dia ?? undefined, noite: x.noite ?? undefined, origem: "fragrantica" } as unknown as Partial<Votos>, OCASIOES);
+  if (lidos && out.votos) {
+    const v = { ...out.votos };
+    if (vazioQuando && Object.values(lidos.estacoes).some((n) => n > 0)) { v.estacoes = lidos.estacoes; v.dia = lidos.dia; v.noite = lidos.noite; }
+    const contagemBoa = semContagem && temVotos(lidos.fixacao) && temVotos(lidos.projecao) && !votosSuspeitos(lidos, f.nome, f.casa);
+    if (contagemBoa) {
+      Object.assign(v, { fixacao: lidos.fixacao, projecao: lidos.projecao, total: lidos.total, origem: "fragrantica" });
+      out.fixacaoH = horasDosVotos(lidos.fixacao); out.projecaoM = metrosDosVotos(lidos.projecao); tira("votos");
+    }
+    out.votos = v;
+  }
+  return out;
+}
+
 export async function completarFicha(f: FichaIA, opcoes: { forte?: boolean; soReal?: boolean } = {}): Promise<FichaIA> {
+  if (f.fonteFicha === "acervo") return completarDoAcervo(f);
   const repetidos = await votosDuplicadosNoAcervo(f.nome, f.casa, f.votos);
   const semVotos = !temVotos(f.votos?.fixacao) || !temVotos(f.votos?.projecao) || votosSuspeitos(f.votos, f.nome, f.casa) || repetidos;
   if (!geminiConfigurado() || !semVotos) return { ...f, completar: false }; // só falta algo se faltaram os votos

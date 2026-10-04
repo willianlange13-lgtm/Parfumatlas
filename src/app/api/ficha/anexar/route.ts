@@ -3,7 +3,7 @@ import { createClient, supabaseConfigurado } from "@/lib/supabase/server";
 import { buscarEntrada, garantirPerfume, linhaDoPerfume } from "@/lib/dados";
 import type { Perfume } from "@/lib/tipos";
 
-type Corpo = { id: string } & Pick<Perfume, "parecidos" | "mesmaCasa" | "votos" | "fixacaoH" | "projecaoM">;
+type Corpo = { id: string } & Pick<Perfume, "parecidos" | "mesmaCasa" | "votos" | "fixacaoH" | "projecaoM" | "ano" | "concentracao" | "genero" | "descricao">;
 
 /** Junta à ficha já salva o que chegou da segunda etapa (parecidos, mesma casa, votos). */
 export async function POST(request: NextRequest) {
@@ -21,6 +21,11 @@ export async function POST(request: NextRequest) {
     votos: b.votos ?? perfume.votos,
     fixacaoH: b.fixacaoH ?? perfume.fixacaoH,
     projecaoM: b.projecaoM ?? perfume.projecaoM,
+    // o que a IA completou só entra onde a ficha salva ainda está vazia
+    ano: perfume.ano ?? b.ano,
+    concentracao: perfume.concentracao || b.concentracao,
+    genero: perfume.genero || b.genero,
+    descricao: perfume.descricao || b.descricao,
   };
   const { error } = await supabase.from("perfumes").update(linhaDoPerfume(novo)).eq("id", id);
   if (error) return NextResponse.json({ erro: error.message }, { status: 500 });

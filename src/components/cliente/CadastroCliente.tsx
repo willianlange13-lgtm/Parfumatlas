@@ -6,7 +6,7 @@ import { CelCadastro } from "@/cel/CelCadastro";
 import { nota as refNota } from "@/data/referencia";
 import { hexA } from "@/lib/cores";
 import type { Perfume } from "@/lib/tipos";
-import { NIVEIS_FIXACAO, NIVEIS_PROJECAO } from "@/lib/normalizar";
+import { CONCENTRACOES, GENEROS, NIVEIS_FIXACAO, NIVEIS_PROJECAO } from "@/lib/normalizar";
 import { semFundo } from "@/lib/sem-fundo";
 import { seloBusca, seloFicha } from "@/lib/selo-fonte";
 
@@ -100,9 +100,9 @@ export function CadastroCliente({ base, modoInicial }: { base: Record<string, un
       const r = await fetch("/api/ficha/completar", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(base), signal: AbortSignal.timeout(130000) });
       const j = (await r.json()) as Ficha;
       // junta só o que a segunda busca traz, sem desfazer o que a pessoa já editou
-      setFicha((f) => (f ? { ...f, votos: j.votos ?? f.votos, fixacaoH: j.fixacaoH ?? f.fixacaoH, projecaoM: j.projecaoM ?? f.projecaoM, parecidos: j.parecidos ?? f.parecidos, mesmaCasa: j.mesmaCasa ?? f.mesmaCasa, revisar: f.revisar.filter((x) => x !== "votos" || (j.revisar ?? []).includes("votos")) } : f));
+      setFicha((f) => (f ? { ...f, ano: f.ano ?? j.ano, concentracao: f.concentracao || j.concentracao, genero: f.genero || j.genero, descricao: f.descricao || j.descricao, votos: j.votos ?? f.votos, fixacaoH: j.fixacaoH ?? f.fixacaoH, projecaoM: j.projecaoM ?? f.projecaoM, parecidos: j.parecidos ?? f.parecidos, mesmaCasa: j.mesmaCasa ?? f.mesmaCasa, revisar: f.revisar.filter((x) => !["votos", "ano", "concentracao", "genero"].includes(x) || (j.revisar ?? []).includes(x)) } : f));
       // se a pessoa já salvou, leva o que chegou para a ficha salva
-      if (salvoId.current) await fetch("/api/ficha/anexar", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: salvoId.current, parecidos: j.parecidos, mesmaCasa: j.mesmaCasa, votos: j.votos, fixacaoH: j.fixacaoH, projecaoM: j.projecaoM }) }).then(() => router.refresh()).catch(() => {});
+      if (salvoId.current) await fetch("/api/ficha/anexar", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: salvoId.current, parecidos: j.parecidos, mesmaCasa: j.mesmaCasa, votos: j.votos, fixacaoH: j.fixacaoH, projecaoM: j.projecaoM, ano: j.ano, concentracao: j.concentracao, genero: j.genero, descricao: j.descricao }) }).then(() => router.refresh()).catch(() => {});
     } catch { /* fica com o que já tem */ } finally {
       setCompletando(false);
     }
@@ -132,7 +132,7 @@ export function CadastroCliente({ base, modoInicial }: { base: Record<string, un
     else { salvoId.current = j.id; router.push(`/colecao/${j.id}`); }
   }
 
-  const muda = (k: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
+  const muda = (k: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const v = e.target.value;
     setFicha((f) => {
       if (!f) return f;
@@ -150,8 +150,8 @@ export function CadastroCliente({ base, modoInicial }: { base: Record<string, un
     return { n: feito ? "✓" : String(n), nome, bg: feito ? t.amber : atual ? OURO : "transparent", cor: feito ? t.onBtn : atual ? "#1A1407" : t.ink3, borda: feito ? t.amber : atual ? OURO : t.line2, txt: atual ? t.ink : feito ? t.ink2 : t.ink3, linha: n < 4 ? "block" : "none" };
   };
   const rev = (l: string) => Boolean(ficha?.revisar.some((r) => r.toLowerCase().slice(0, 4) === l.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").slice(0, 4) || r.toLowerCase().slice(0, 4) === l.toLowerCase().slice(0, 4)));
-  const campo = (l: string, v: string | undefined) => { const r = rev(l) || !v; return { l, v: v || "a confirmar", st: r ? "REVISAR" : "✓", stCor: r ? OURO : t.ink3, borda: r ? OURO : t.line, mudar: muda(l) }; };
-  const campos = ficha ? [campo("NOME", ficha.nome), campo("CASA", ficha.casa), campo("CONCENTRAÇÃO", ficha.concentracao), campo("ANO", ficha.ano ? String(ficha.ano) : ""), campo("FAMÍLIA", ficha.familia), campo("GÊNERO", ficha.genero), campo("PAÍS", ficha.pais)] : [];
+  const campo = (l: string, v: string | undefined, opcoes?: readonly string[]) => { const r = rev(l) || !v; return { l, v: v || "a confirmar", st: r ? "REVISAR" : "✓", stCor: r ? OURO : t.ink3, borda: r ? OURO : t.line, mudar: muda(l), opcoes: opcoes ? [...opcoes] : undefined }; };
+  const campos = ficha ? [campo("NOME", ficha.nome), campo("CASA", ficha.casa), campo("CONCENTRAÇÃO", ficha.concentracao, CONCENTRACOES), campo("ANO", ficha.ano ? String(ficha.ano) : ""), campo("FAMÍLIA", ficha.familia), campo("GÊNERO", ficha.genero, GENEROS), campo("PAÍS", ficha.pais)] : [];
   const checks = ficha ? [ficha.nome, ficha.casa, ficha.concentracao, ficha.ano, ficha.familia, ficha.genero, ficha.pais, ficha.descricao, ficha.notas.saida.length, ficha.notas.coracao.length, ficha.notas.fundo.length, ficha.acordes.length, ficha.fixacaoH, ficha.projecaoM, ficha.votos?.estacoes, ficha.votos?.dia, ficha.acorde] : [];
   const pend = campos.filter((c) => c.st === "REVISAR").length;
   const ok = checks.filter(Boolean).length - pend;
