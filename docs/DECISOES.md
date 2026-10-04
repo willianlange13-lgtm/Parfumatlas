@@ -253,7 +253,7 @@ A foto oficial do Fragrantica (frasco em fundo branco) é tratada pelo próprio 
 
 Briefing do Willian: o desktop estava linear demais (preto + prata + cinza + dourado em tudo). Lapidar, não reconstruir.
 
-- **Vozes (escolha do Willian, comparando as fontes reais):** `--serif` Playfair Display nos nomes de perfume e títulos grandes; `--sub` Montserrat nos títulos médios; `--sans` Instrument Sans no texto, na interface e nas etiquetas. A JetBrains Mono saiu ("parece código de barras"): `--mono` aponta para a Instrument Sans, com espaçamento menor. A Cormorant foi testada e recusada.
+- **Três vozes:** `--serif` Cormorant Garamond (nomes de perfume, grandes títulos, frases editoriais; substituiu a Montserrat), `--sans` Instrument Sans (interface e texto), `--mono` JetBrains Mono só para dados (entrada, ano, coordenadas, concentração, indicadores).
 - **Três raios:** `--r-ed` 18px (contêiner editorial), `--r-ctl` 12px (controles), cápsula só com função (etiquetas pequenas, botões redondos). Os `Des*.tsx` usam os tokens (troca automática feita com regra: contêiner 20–32px → `--r-ed`; botão-cápsula de 30–60px de altura → `--r-ctl`).
 - **Botão metálico** só na ação principal da tela (Explorar coleção, Perguntar ao Sommelier, Adicionar perfume, Salvar, enviar no Sommelier). Secundários: contorno.
 - **Territórios olfativos** (`src/lib/territorio.ts`): a família/acordes do perfume definem `--terr-a`, `--terr-b`, `--terr-glow`. Aparecem só como atmosfera: luz ambiente, brilho, barras, bordas especiais, DNA. Nunca card pintado.

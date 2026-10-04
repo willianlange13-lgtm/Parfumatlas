@@ -118,7 +118,7 @@ export function CelSommelier({ v }: { v: VSom }) {
         <Card pad={16} gap={14}>
           {v.filtros.map((f) => (
             <div key={f.nome} style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              <span style={{ fontFamily: MONO, fontSize: 9.5, letterSpacing: ".08em", color: "var(--ink-3)", textTransform: "uppercase" }}>{f.nome}</span>
+              <span style={{ fontFamily: MONO, fontSize: 9.5, letterSpacing: ".12em", color: "var(--ink-3)", textTransform: "uppercase" }}>{f.nome}</span>
               <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                 {f.opcoes.map((o) => <button key={o.nome} type="button" onClick={o.pick} className={`c-pill ${o.bg === v.t.btn ? "on" : ""}`} style={{ height: 30, borderRadius: 15, fontSize: 13, background: o.bg === v.t.btn ? undefined : "var(--chip)" }}>{o.nome}</button>)}
               </div>
@@ -153,7 +153,7 @@ export function CelSommelier({ v }: { v: VSom }) {
             ) : m.semFoto ? (
               <div style={{ width: 170, height: 150, borderRadius: 18, border: "1px solid var(--line-2)", background: "var(--surface)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 10 }}>
                 <svg viewBox="0 0 24 24" style={{ width: 34, height: 34, fill: "none", stroke: "currentColor", strokeWidth: 1.3 }}><path d="M8 3l-5 3 2 4 2-1v12h10V9l2 1 2-4-5-3c-.5 1.5-2 2.5-4 2.5S8.5 4.5 8 3z" /></svg>
-                <span style={{ fontFamily: MONO, fontSize: 8.5, letterSpacing: ".08em", color: "var(--ink-3)" }}>FOTO DO SEU LOOK</span>
+                <span style={{ fontFamily: MONO, fontSize: 8.5, letterSpacing: ".14em", color: "var(--ink-3)" }}>FOTO DO SEU LOOK</span>
               </div>
             ) : null}
             <div style={{ padding: "11px 15px", borderRadius: "20px 20px 6px 20px", background: "var(--chip-2)", fontSize: 14.5, lineHeight: 1.45 }}>{m.texto}</div>
@@ -175,7 +175,7 @@ export function CelSommelier({ v }: { v: VSom }) {
                         <FrascoMedidas bw={s.bw} bh={s.bh} br={s.br} capW={s.capW} tampa={s.tampa} vidro={s.vidro} rot="" k={0.85} foto={s.foto} />
                       </span>
                       <span style={{ display: "flex", flexDirection: "column", gap: 2, minWidth: 0 }}>
-                        <span style={{ fontFamily: MONO, fontSize: 8.5, letterSpacing: ".08em", color: s.rotCor }}>{s.rotulo}</span>
+                        <span style={{ fontFamily: MONO, fontSize: 8.5, letterSpacing: ".12em", color: s.rotCor }}>{s.rotulo}</span>
                         <span style={{ fontSize: 15, fontWeight: 500, lineHeight: 1.15 }}>{s.nome}</span>
                         <span style={{ fontSize: 11.5, color: "var(--ink-3)" }}>{s.marca}</span>
                       </span>

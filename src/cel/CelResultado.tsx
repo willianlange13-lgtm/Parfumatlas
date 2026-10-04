@@ -52,7 +52,7 @@ export function CelResultado({ p, v, novo, podeSalvar }: { p: Perfume; v: V; nov
       <div style={{ display: "flex", gap: 14, alignItems: "stretch", flexShrink: 0 }}>
         <div style={{ width: 118, flexShrink: 0 }}><PalcoC nome={p.nome} casa={p.casa} acorde={p.acorde} forma={p.forma} tampa={p.tampa} foto={p.imagem} altura={150} k={0.8} raio={18} /></div>
         <div style={{ display: "flex", flexDirection: "column", gap: 7, minWidth: 0, paddingTop: 6 }}>
-          <span style={{ fontFamily: MONO, fontSize: 10, letterSpacing: ".08em", color: "var(--ink-3)" }}>{p.casa.toUpperCase()}{p.ano ? ` · ${p.ano}` : ""}</span>
+          <span style={{ fontFamily: MONO, fontSize: 10, letterSpacing: ".12em", color: "var(--ink-3)" }}>{p.casa.toUpperCase()}{p.ano ? ` · ${p.ano}` : ""}</span>
           <span style={{ fontSize: 24, fontFamily: "var(--marca)", fontWeight: 500, lineHeight: 1.1 }}>{p.nome}</span>
           <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
             <span style={{ padding: "2px 8px", borderRadius: 8, background: "var(--chip-2)", fontSize: 11.5 }}>{v.tem ? "Você tem" : "Você não tem"}</span>

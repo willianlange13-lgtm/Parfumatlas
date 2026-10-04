@@ -1,5 +1,5 @@
 /* Parfum Atlas · sistema visual (base preta, prata e ouro champanhe)
- * Vozes: --serif Playfair (nomes e títulos grandes), --sub Montserrat (títulos médios), --sans Instrument Sans (texto, interface e etiquetas; --mono aponta para ela).
+ * Três vozes: --serif (nomes e títulos editoriais), --sans (interface), --mono (dados, entrada, coordenadas).
  * Três raios: --r-ed (contêiner editorial), --r-ctl (controles), --r-pill (só quando a cápsula tem função).
  * Território olfativo: --terr-a / --terr-b / --terr-glow vêm da família do perfume (src/lib/territorio.ts)
  * e só aparecem como atmosfera (luz, brilho, barras, bordas especiais), nunca como card pintado. */
@@ -30,11 +30,9 @@
   --pico: linear-gradient(180deg, #f2e2b8 0%, #b8955a 100%);
   --glow: rgba(201, 209, 222, 0.13);
   --sans: "Instrument Sans", system-ui, sans-serif;
-  /* etiquetas e dados: a mesma Instrument Sans do texto (a mono "código de barras" saiu a pedido do Willian) */
-  --mono: "Instrument Sans", system-ui, sans-serif;
-  --sub: "Montserrat", "Instrument Sans", sans-serif; /* títulos médios */
+  --mono: "JetBrains Mono", ui-monospace, monospace;
   --script: "Pinyon Script", cursive;
-  --serif: "Playfair Display", Georgia, serif; /* nomes de perfume e títulos grandes */
+  --serif: "Cormorant Garamond", "Iowan Old Style", Georgia, serif;
   --marca: var(--serif); /* antes Montserrat: os títulos agora são editoriais */
   --r-ed: 18px;
   --r-ctl: 12px;
@@ -56,7 +54,7 @@ input, textarea { font-family: var(--sans); }
 img { display: block; max-width: 100%; }
 
 /* ---------- tipografia ---------- */
-.rotulo { font-family: var(--mono); font-size: 11.5px; letter-spacing: 0.08em; color: var(--ouro-txt); text-transform: uppercase; margin: 0; font-weight: 500; }
+.rotulo { font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em; color: var(--ouro-txt); text-transform: uppercase; margin: 0; font-weight: 400; }
 .mono { font-family: var(--mono); }
 .titulo-1 { font-size: clamp(28px, 4vw, 44px); font-weight: 500; letter-spacing: -0.02em; line-height: 1.05; margin: 0; }
 .titulo-2 { font-size: clamp(20px, 2.4vw, 26px); font-weight: 500; letter-spacing: -0.01em; line-height: 1.15; margin: 0; }
@@ -133,7 +131,7 @@ img { display: block; max-width: 100%; }
 .c-card { position: relative; border-radius: 24px; background: var(--surface); border: 1px solid var(--line); display: flex; flex-direction: column; flex-shrink: 0; min-width: 0; }
 .c-card.destaque { background: var(--tile); border-color: var(--ouro-linha); }
 .c-card.vinho { background: var(--tile-2); }
-.c-rot { font-family: var(--mono); font-size: 11.5px; font-weight: 500; letter-spacing: 0.08em; color: var(--ouro-txt); text-transform: uppercase; }
+.c-rot { font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em; color: var(--ouro-txt); text-transform: uppercase; }
 .c-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 0 20px; border: none; background: var(--btn); color: var(--on-btn); font-size: 15px; font-weight: 600; white-space: nowrap; flex-shrink: 0; }
 .c-btn.sec { background: transparent; color: var(--ink); border: 1px solid var(--line-2); font-weight: 400; padding: 0 18px; }
 .c-btn:disabled { opacity: .55; }
@@ -186,6 +184,6 @@ img { display: block; max-width: 100%; }
 /* ---------- vozes editoriais (desktop e celular) ---------- */
 .serif { font-family: var(--serif); font-weight: 500; letter-spacing: -0.005em; }
 .titulo-ed { font-family: var(--serif); font-weight: 500; line-height: 1.02; letter-spacing: -0.01em; }
-.coord { font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: 0.08em; color: var(--ink-3); text-transform: uppercase; }
+.coord { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.14em; color: var(--ink-3); text-transform: uppercase; }
 /* botão secundário: escuro com contorno (o metálico fica só para a ação principal) */
 .btn-sec { background: transparent !important; color: var(--ink) !important; border: 1px solid var(--line-2) !important; }
