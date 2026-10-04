@@ -18,7 +18,7 @@ export const EC = EIXOS.map((e) => e[1]);
 export const FAMCOR: Record<string, string> = Object.fromEntries(EIXOS);
 
 /** Glifo/radar: camadas de path com estilo. viewBox -12 -12 344 344, centro 160. */
-export function glifo(v: number[], cores: string[], fino = false) {
+export function glifo(v: number[], cores: string[], fino = false, cor: string = t.amber) {
   const c = 160, n = v.length, L: { d: string; st: string }[] = [], k = fino ? 2.2 : 1;
   const ang = (i: number) => (i * 2 * Math.PI) / n - Math.PI / 2;
   let g = "";
@@ -31,7 +31,7 @@ export function glifo(v: number[], cores: string[], fino = false) {
     L.push({ d: tk, st: st("none", 0, t.amberTxt, 0.75, 0.9) });
   }
   const pts = v.map((x, i) => { const a = ang(i), r = 18 + (x / 100) * 128; return [c + Math.cos(a) * r, c + Math.sin(a) * r]; });
-  L.push({ d: "M " + pts.map((p) => P(p[0]) + " " + P(p[1])).join(" L ") + " Z", st: st(t.amber, 0.16, t.amber, 1, 1.6 * k) });
+  L.push({ d: "M " + pts.map((p) => P(p[0]) + " " + P(p[1])).join(" L ") + " Z", st: st(cor, 0.2, cor, 1, 1.6 * k) });
   pts.forEach((p, i) => L.push({ d: circ(p[0], p[1], 6.5 * (fino ? 1.6 : 1)), st: st(cores[i], 1, t.bg, 1, 2 * k) }));
   return L;
 }

@@ -1,7 +1,8 @@
 import { buscarEntrada } from "@/lib/dados";
 import { semelhantes, naColecao } from "@/lib/analise";
 import { CASAS, nota as refNota } from "@/data/referencia";
-import { origemCasa } from "@/data/casas";
+import { coordenadas, origemCasa, paisDaCasa } from "@/data/casas";
+import { territorio } from "@/lib/territorio";
 import { NIVEIS_FIXACAO, NIVEIS_PROJECAO, SOBRE_FAMILIA, type Familia } from "@/lib/normalizar";
 import { corDoAcorde } from "@/lib/cores";
 import base from "@/data/desenho/FichaAzulPreto.json";
@@ -52,7 +53,9 @@ export async function montarFicha(id: string) {
   const acs = p.acordes.length && p.acordes.every((a) => !a.valor) ? p.acordes.map((a, i) => ({ ...a, valor: Math.max(30, 100 - i * 12) })) : p.acordes;
   const AC = [...acs].sort((a, b) => b.valor - a.valor).slice(0, 8);
   while (AC.length < 3) AC.push({ nome: "—", valor: 10 });
-  const cores = AC.map((a, i) => (i === 0 ? "#D8B970" : corDoAcorde(a.nome) === "#9099AC" ? PALETA[(i + 1) % PALETA.length] : corDoAcorde(a.nome)));
+  // território olfativo: a família do perfume tinge a ficha (luz, DNA, medidores), docs/DECISOES.md §18
+  const terr = territorio(p.familia, p.acordes);
+  const cores = AC.map((a, i) => (i === 0 ? terr.a : corDoAcorde(a.nome) === "#9099AC" ? PALETA[(i + 1) % PALETA.length] : corDoAcorde(a.nome)));
   const n = AC.length;
   const eixos = AC.map((a, i) => { const an = (i * 2 * Math.PI) / n - Math.PI / 2; return { x: P(250 + Math.cos(an) * 232), y: P(250 + Math.sin(an) * 226), nome: a.nome.toUpperCase(), v: a.valor, cor: cores[i] }; });
 
@@ -73,7 +76,7 @@ export async function montarFicha(id: string) {
   const doAcervo = p.votos?.origem === "acervo";
   const comunidadeF = doAcervo ? `comunidade: ${p.votos?.nivelFixacao ?? "—"}` : !temF ? "sem votos da comunidade" : `comunidade: ${hm(horas)}${p.votos?.origem === "estimativa" ? " (estimativa)" : ""}`;
   const comunidadeP = `comunidade: ${nivelP}, ${metros.toFixed(1).replace(".", ",")} m`;
-  const g1 = gauge((minhaF?.h ?? horas) / 12, hFam / 12, t.sup[0]), g2 = gauge((minhaP?.m ?? metros) / 3, mFam / 3, t.sup[1]);
+  const g1 = gauge((minhaF?.h ?? horas) / 12, hFam / 12, terr.a), g2 = gauge((minhaP?.m ?? metros) / 3, mFam / 3, terr.b);
 
   // quando funciona
   const e = p.votos?.estacoes ?? { primavera: 60, verao: 50, outono: 60, inverno: 50 };
@@ -158,15 +161,6 @@ export async function montarFicha(id: string) {
   const inspNaColecao = s.inspirados.filter((x) => x.tem).length;
   const relacao = s.inspirados.length ? `Original · ${inspNaColecao || s.inspirados.length} inspirado${(inspNaColecao || s.inspirados.length) > 1 ? "s" : ""} ${inspNaColecao ? "na sua coleção" : "conhecidos"}` : p.inspiradoEm ? `Inspirado em ${acervo.perfumes.get(p.inspiradoEm)?.nome ?? "outro perfume"}` : "";
   const original = (p.parecidos ?? []).find((x) => x.tipo === "inspirou");
-  const clones = (p.parecidos ?? []).filter((x) => x.tipo === "clone");
-  const nInsp = s.inspirados.length + clones.length;
-  const inspFato = original
-    ? { v: original.nome, c: "é o original em que ele se inspira" }
-    : nInsp
-      ? { v: `${nInsp} conhecido${nInsp > 1 ? "s" : ""}`, c: `${inspNaColecao} na sua coleção` }
-      : p.inspiradoEm
-        ? { v: "é um deles", c: `de ${acervo.perfumes.get(p.inspiradoEm)?.nome ?? ""}` }
-        : { v: "a confirmar", c: "sem informação" };
   const relacaoFinal = relacao || (original ? `Inspirado no ${original.nome}${original.casa ? ` (${original.casa})` : ""}` : "");
   const casaInfo = CASAS[p.casa];
   const sitAtual = entrada?.situacao ?? null;
@@ -182,7 +176,8 @@ export async function montarFicha(id: string) {
     demo: acervo.demo,
     clima,
     ocasioes: (p.votos?.ocasioes ?? base.ocasioes).map((o, i) => ({ nome: o.nome, v: o.v, cor: i < 2 ? t.sup[0] : i < 4 ? t.sup[1] : t.sup[2] })),
-    glifo: glifo(AC.map((a) => a.valor), cores),
+    glifo: glifo(AC.map((a) => a.valor), cores, false, terr.a),
+    terr: { ...terr, glowB: hexA(terr.b, 0.16), linha: hexA(terr.a, 0.35) },
     eixos,
     topFam: AC.slice(0, 3).map((a, i) => ({ nome: a.nome, cor: cores[i], bg: hexA(cores[i], 0.22) })),
     marcas: [["tenho", "Tenho"], ["tive", "Tive"], ["quero", "Quero"], ["assinatura", "★ Assinatura"]].map(([k, nm]) => ({ chave: k, nome: sitAtual === k ? (k === "assinatura" ? nm : "✓ " + nm) : nm, bg: sitAtual === k ? t.btn : "transparent", cor: sitAtual === k ? t.onBtn : t.ink2 })),
@@ -190,7 +185,8 @@ export async function montarFicha(id: string) {
       { l: "FAMÍLIA", v: p.familia, c: SOBRE_FAMILIA[p.familia as Familia] ?? "família olfativa" },
       { l: "CONCENTRAÇÃO", v: p.concentracao ?? "—", c: p.concentracao === "Eau de Parfum" ? "a versão mais comum" : "concentração da casa" },
       { l: "LANÇAMENTO", v: p.ano ? String(p.ano) : "—", c: p.ano ? idade(new Date().getFullYear() - p.ano) : "ano a confirmar" },
-      { l: "INSPIRADOS", ...inspFato },
+      // origem da casa no lugar de "inspirados" (semelhantes saíram da ficha)
+      { l: "ORIGEM", v: p.pais || paisDaCasa(p.casa) || "a confirmar", c: casaInfo?.cidade ? `${p.casa} · ${casaInfo.cidade}` : p.casa },
     ],
     piramide: [
       { nome: "Saída", tempo: "PRIMEIROS 30 MIN", notas: p.notas.saida.slice(0, 8).map((x, i) => notaCor(x, PALETA[i % PALETA.length])) },
@@ -223,6 +219,8 @@ export async function montarFicha(id: string) {
       vidro: `linear-gradient(160deg, rgba(255,255,255,.28) 0%, ${hexA(cor, 0.2)} 45%, ${hexA(cor, 0.4)} 100%)`,
       rot: p.casa.split(" ")[0].toUpperCase(), rotNome: p.nome.length > 14 ? p.nome.split(" ").slice(0, 2).join(" ") : p.nome,
       casaCidade: [p.casa.toUpperCase(), (casaInfo?.cidade ?? p.pais ?? "").toUpperCase()].filter(Boolean).join(" · "),
+      // linha cartográfica: entrada · ano · cidade · coordenadas
+      coord: [entrada?.numero ? `ENTRADA Nº ${String(entrada.numero).padStart(3, "0")}` : "", p.ano ? String(p.ano) : "", coordenadas(casaInfo?.cidade, p.pais || paisDaCasa(p.casa))].filter(Boolean).join(" · "),
       desc: p.descricao ?? `${p.familia}${p.ano ? ` de ${p.ano}` : ""}.`,
       relacao: relacaoFinal, som: `/sommelier?perfume=${p.id}`, comparar: `/comparar?a=${p.id}`, blind: `/blind?a=${p.id}`,
       frase: frase(p), dia, noite, pergunte: `pergunte sobre o ${p.nome}, por texto ou voz`, voz: `/sommelier?perfume=${p.id}&voz=1`,

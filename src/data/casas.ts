@@ -74,3 +74,19 @@ export const paisDaCasa = (casa: string) => PAIS_CASA.find(([l]) => tem(l, casa)
 
 /** A trava: só casas brasileiras, americanas e árabes. */
 export const casaPermitida = (casa: string, pais?: string | null) => ["arabe", "brasileira", "americana"].includes(origemCasa(casa, pais));
+
+/** Coordenadas da cidade da casa (ou da capital do país), para a linha cartográfica da ficha. */
+const COORD: Record<string, [string, number, number]> = {
+  paris: ["PARIS", 48.86, 2.35], "turim e milao": ["MILÃO", 45.46, 9.19], milao: ["MILÃO", 45.46, 9.19], "nova york": ["NOVA YORK", 40.71, -74.01],
+  londres: ["LONDRES", 51.51, -0.13], "dubai e sharjah": ["DUBAI", 25.2, 55.27], dubai: ["DUBAI", 25.2, 55.27],
+  "emirados arabes unidos": ["DUBAI", 25.2, 55.27], "arabia saudita": ["RIADE", 24.71, 46.68], franca: ["PARIS", 48.86, 2.35], italia: ["MILÃO", 45.46, 9.19],
+  "estados unidos": ["NOVA YORK", 40.71, -74.01], "reino unido": ["LONDRES", 51.51, -0.13], brasil: ["SÃO PAULO", -23.55, -46.63], espanha: ["MADRI", 40.42, -3.7],
+  alemanha: ["BERLIM", 52.52, 13.4], suica: ["GENEBRA", 46.2, 6.14], kuwait: ["KUWAIT", 29.38, 47.99], catar: ["DOHA", 25.29, 51.53], oma: ["MASCATE", 23.59, 58.41],
+};
+export function coordenadas(cidade?: string | null, pais?: string | null): string {
+  const k = (x?: string | null) => (x ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+  const c = COORD[k(cidade)] ?? COORD[k(pais)];
+  if (!c) return "";
+  const [nome, la, lo] = c;
+  return `${nome} · ${Math.abs(la).toFixed(2)}° ${la >= 0 ? "N" : "S"} ${Math.abs(lo).toFixed(2)}° ${lo >= 0 ? "E" : "W"}`;
+}
