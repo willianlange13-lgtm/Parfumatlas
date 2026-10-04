@@ -100,14 +100,14 @@ export function OpcoesPerfume({ id, nome, casa, entradaId, situacao, numero }: {
       {aberto === "remover" && (
         <>
           <div className="c-folha-fundo" onClick={() => setAberto("")} />
-          <div role="alertdialog" aria-label={`Remover o ${nome}?`} style={{ position: "fixed", left: 24, right: 24, top: "50%", transform: "translateY(-50%)", zIndex: 42, borderRadius: 26, background: "#141417", border: "1px solid var(--line-2)", padding: 22, display: "flex", flexDirection: "column", gap: 12, alignItems: "center", textAlign: "center" }}>
-            <span style={{ width: 44, height: 44, borderRadius: 22, background: "rgba(229,140,122,.14)", color: "var(--erro)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div role="alertdialog" aria-label={`Remover o ${nome}?`} style={{ position: "fixed", left: 24, right: 24, top: "50%", transform: "translateY(-50%)", zIndex: 42, borderRadius: "var(--r-ed)", background: "#141417", border: "1px solid var(--line-2)", padding: 22, display: "flex", flexDirection: "column", gap: 12, alignItems: "center", textAlign: "center" }}>
+            <span style={{ width: 44, height: 44, borderRadius: "var(--r-ctl)", background: "rgba(229,140,122,.14)", color: "var(--erro)", display: "flex", alignItems: "center", justifyContent: "center" }}>
               <svg viewBox="0 0 24 24" style={{ width: 20, height: 20, fill: "none", stroke: "currentColor", strokeWidth: 1.6 }}><path d={ICO.lixo} /></svg>
             </span>
             <span style={{ fontSize: 18, fontWeight: 500 }}>Remover o {nome}?</span>
             <span style={{ fontSize: 13, lineHeight: 1.5, color: "var(--ink-2)" }}>Se ele só acabou, mova para <b>Tive</b> e o DNA continua contando. Remover apaga a entrada, a foto e as anotações.</span>
-            <button type="button" className="c-btn" style={{ height: 46, borderRadius: 23, width: "100%" }} onClick={moverTive} disabled={ocupado}>Mover para Tive</button>
-            <button type="button" className="c-btn sec" style={{ height: 46, borderRadius: 23, width: "100%", color: "var(--erro)", borderColor: "rgba(229,140,122,.5)" }} onClick={remover} disabled={ocupado}>{ocupado ? "Removendo…" : "Remover"}</button>
+            <button type="button" className="c-btn" style={{ height: 46, borderRadius: "var(--r-ctl)", width: "100%" }} onClick={moverTive} disabled={ocupado}>Mover para Tive</button>
+            <button type="button" className="c-btn sec" style={{ height: 46, borderRadius: "var(--r-ctl)", width: "100%", color: "var(--erro)", borderColor: "rgba(229,140,122,.5)" }} onClick={remover} disabled={ocupado}>{ocupado ? "Removendo…" : "Remover"}</button>
             <button type="button" style={{ background: "none", border: "none", color: "var(--ink-2)", fontSize: 14, padding: 6 }} onClick={() => setAberto("")}>Cancelar</button>
           </div>
         </>

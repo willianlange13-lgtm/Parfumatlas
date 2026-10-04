@@ -7,7 +7,7 @@ import { NIVEIS_FIXACAO, NIVEIS_PROJECAO, SOBRE_FAMILIA, type Familia } from "@/
 import { corDoAcorde } from "@/lib/cores";
 import base from "@/data/desenho/FichaAzulPreto.json";
 import { arc, circ, glifo, hexA, P, t } from "@/desenho/h2";
-import type { Perfume } from "@/lib/tipos";
+import type { Entrada, Perfume } from "@/lib/tipos";
 
 const PALETA = ["#D8B970", "#DCECFD", "#9099AC", "#B4BDCC", "#7F8AA0", "#A3ADBE", "#6E7A90", "#C9D1DE"];
 const dominio = (u?: string | null) => { try { return u ? new URL(u).hostname.replace(/^www\./, "") : ""; } catch { return ""; } };
@@ -39,6 +39,31 @@ function sem(p: Perfume, sim: number, por: string, tag: string, tagCor: string, 
     sim, nome: p.nome, marca: p.casa, por, tag, tagCor, corN, bw: f[0], bh: f[1], br: f[2], lw: f[0] - 8, capW: Math.round(f[0] * 0.5), tampa: p.tampa, rot: p.casa.split(" ")[0].toUpperCase().slice(0, 7),
     fundo: `linear-gradient(160deg, ${hexA(cor, 0.22)} 0%, ${hexA(cor, 0.04)} 100%)`, vidro: `linear-gradient(160deg, rgba(255,255,255,.3) 0%, ${hexA(cor, 0.25)} 50%, ${hexA(cor, 0.45)} 100%)`,
     href: `/colecao/${p.id}`,
+  };
+}
+
+/** Histórico pessoal (bloco 7 da ficha): só existe para quem está na coleção. */
+function historico(e: Entrada | null | undefined, cor: string) {
+  if (!e) return null;
+  const hoje = Date.now(), dia = 864e5;
+  const usos = (e.usos ?? []).filter(Boolean);
+  const dias = (d?: string | null) => (d ? Math.max(0, Math.floor((hoje - new Date(d).getTime()) / dia)) : null);
+  const desdeEntrada = dias(e.adicionadoEm) ?? 0;
+  const ultimo = usos[0] ?? (e.ultimoUso && e.ultimoUso !== e.adicionadoEm ? e.ultimoUso : null);
+  const dUlt = dias(ultimo);
+  const meuF = e.minhaFixacao ? NIVEIS_FIXACAO[e.minhaFixacao - 1] : null, meuP = e.minhaProjecao ? NIVEIS_PROJECAO[Math.min(4, e.minhaProjecao) - 1] : null;
+  return {
+    cor,
+    vezes: String(Math.max(usos.length, ultimo ? 1 : 0)),
+    vezesTxt: Math.max(usos.length, ultimo ? 1 : 0) === 1 ? "vez usado" : "vezes usado",
+    ultimo: dUlt == null ? "ainda não usado" : dUlt === 0 ? "usado hoje" : dUlt === 1 ? "usado ontem" : `último uso há ${dUlt} dias`,
+    entrada: `ENTRADA Nº ${String(e.numero).padStart(3, "0")}`,
+    chegou: `na coleção há ${desdeEntrada >= 365 ? `${Math.floor(desdeEntrada / 365)} ano${desdeEntrada >= 730 ? "s" : ""}` : `${desdeEntrada} dia${desdeEntrada === 1 ? "" : "s"}`}`,
+    situacao: { tenho: "Tenho", tive: "Tive", quero: "Quero", assinatura: "★ Assinatura" }[e.situacao] ?? e.situacao,
+    nota: e.minhaNota ? "★".repeat(e.minhaNota) + "☆".repeat(5 - e.minhaNota) : "",
+    emVoce: [meuF ? `fixação ${meuF.nome.toLowerCase()}` : "", meuP ? `projeção ${meuP.nome.toLowerCase()}` : ""].filter(Boolean).join(" · "),
+    // usos dos últimos 90 dias numa régua (0% = hoje à direita)
+    marcas: usos.map((d) => dias(d) ?? 999).filter((n) => n <= 90).map((n) => ({ x: `${(100 - (n / 90) * 100).toFixed(1)}%` })),
   };
 }
 
@@ -214,6 +239,7 @@ export async function montarFicha(id: string) {
       ...todos.filter((x) => x.casa === p.casa && x.id !== p.id).slice(0, 4).map((x) => ({ nome: x.nome, fam: x.familia, href: `/colecao/${x.id}`, imagem: x.imagem ?? null })),
       ...(p.mesmaCasa ?? []).filter((m) => !todos.some((x) => x.casa === p.casa && norm(x.nome) === norm(m.nome))).map((m) => ({ nome: m.nome, fam: "", href: `/buscar/resultado?nome=${encodeURIComponent(m.nome)}&casa=${encodeURIComponent(p.casa)}`, imagem: m.imagem ?? null })),
     ].slice(0, 0), // "da mesma casa" saiu da ficha
+    historico: historico(entrada, terr.a),
     cab: {
       id: p.id, nome: p.nome, nomeUp: p.nome.toUpperCase(), acordeUp: p.acorde.toUpperCase(), tampa: p.tampa,
       vidro: `linear-gradient(160deg, rgba(255,255,255,.28) 0%, ${hexA(cor, 0.2)} 45%, ${hexA(cor, 0.4)} 100%)`,

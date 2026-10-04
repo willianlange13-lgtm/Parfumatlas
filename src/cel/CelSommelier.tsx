@@ -25,10 +25,10 @@ function Entrada({ v }: { v: VSom }) {
     <div className="c-rodape" style={{ flexDirection: "column", gap: 10, paddingTop: 26 }}>
       {!v.vazio && (
         <div className="c-rolar" style={{ gap: 6, margin: "0 -20px", padding: "0 20px" }}>
-          {v.rapidas.map((r) => <button key={r.t} type="button" onClick={r.pick} className="c-pill" style={{ height: 34, borderRadius: 17, fontSize: 12.5, border: "1px solid var(--line-2)", background: "rgba(5,5,6,.8)" }}>{r.t}</button>)}
+          {v.rapidas.map((r) => <button key={r.t} type="button" onClick={r.pick} className="c-pill" style={{ height: 34, borderRadius: "var(--r-ctl)", fontSize: 12.5, border: "1px solid var(--line-2)", background: "rgba(5,5,6,.8)" }}>{r.t}</button>)}
         </div>
       )}
-      <form onSubmit={v.enviar} className="c-campo" style={{ height: 52, borderRadius: 26, background: "#141417", border: "1px solid var(--line-2)" }}>
+      <form onSubmit={v.enviar} className="c-campo" style={{ height: 52, borderRadius: "var(--r-ctl)", background: "#141417", border: "1px solid var(--line-2)" }}>
         <input name="q" placeholder={v.vozRotulo === "Parar de ouvir" ? "Ouvindo…" : "Pergunte ou toque no microfone"} aria-label="Mensagem para o sommelier" autoComplete="off" enterKeyHint="send" />
         <button type="button" className="c-circ" style={{ width: 36, height: 36, background: "var(--chip-2)" }} onClick={v.escolherFoto} aria-label="Foto do look"><Icone nome="camera" tamanho={16} /></button>
         <button type="button" className="c-circ" style={{ width: 40, height: 40, background: v.vozRotulo === "Parar de ouvir" ? OURO : "var(--btn)", color: "var(--on-btn)" }} onClick={v.falar} aria-label={v.vozRotulo}><Icone nome="mic" tamanho={17} /></button>
@@ -91,7 +91,7 @@ export function CelSommelier({ v }: { v: VSom }) {
           <Circ icone="voltar" href="/" tamanho={36} rotulo="Voltar" />
           <span style={{ fontSize: 26, fontFamily: "var(--marca)", fontWeight: 500, letterSpacing: "-.01em", flexGrow: 1 }}>Sommelier</span>
           <Circ icone="chat" tamanho={40} rotulo="Conversas" onClick={() => setHistorico(true)} />
-          <button type="button" className="c-pill on" style={{ height: 40, borderRadius: 20, fontSize: 14 }} onClick={v.nova}>+ Nova</button>
+          <button type="button" className="c-pill on" style={{ height: 40, borderRadius: "var(--r-ctl)", fontSize: 14 }} onClick={v.nova}>+ Nova</button>
         </div>
         <Card fundo="destaque" pad="14px 16px">
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
@@ -107,7 +107,7 @@ export function CelSommelier({ v }: { v: VSom }) {
         <div style={{ display: "flex", flexDirection: "column", flexShrink: 0 }}>
           {v.atalhos.map((a) => (
             <button key={a.nome} type="button" onClick={(e) => a.pick(e)} style={{ display: "flex", alignItems: "center", gap: 12, padding: "11px 0", borderTop: "1px solid var(--line)", background: "none", borderLeft: "none", borderRight: "none", borderBottom: "none", color: "var(--ink)", textAlign: "left", fontSize: 15 }}>
-              <span style={{ width: 34, height: 34, borderRadius: 17, background: "var(--chip)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <span style={{ width: 34, height: 34, borderRadius: "var(--r-ctl)", background: "var(--chip)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                 <svg viewBox="0 0 24 24" style={{ width: 16, height: 16, fill: "none", stroke: "currentColor", strokeWidth: 1.6, strokeLinecap: "round", strokeLinejoin: "round" }}><path d={a.d} /></svg>
               </span>
               <span style={{ flexGrow: 1 }}>{a.nome}</span>
@@ -120,7 +120,7 @@ export function CelSommelier({ v }: { v: VSom }) {
             <div key={f.nome} style={{ display: "flex", flexDirection: "column", gap: 8 }}>
               <span style={{ fontFamily: MONO, fontSize: 9.5, letterSpacing: ".12em", color: "var(--ink-3)", textTransform: "uppercase" }}>{f.nome}</span>
               <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                {f.opcoes.map((o) => <button key={o.nome} type="button" onClick={o.pick} className={`c-pill ${o.bg === v.t.btn ? "on" : ""}`} style={{ height: 30, borderRadius: 15, fontSize: 13, background: o.bg === v.t.btn ? undefined : "var(--chip)" }}>{o.nome}</button>)}
+                {f.opcoes.map((o) => <button key={o.nome} type="button" onClick={o.pick} className={`c-pill ${o.bg === v.t.btn ? "on" : ""}`} style={{ height: 30, borderRadius: "var(--r-ctl)", fontSize: 13, background: o.bg === v.t.btn ? undefined : "var(--chip)" }}>{o.nome}</button>)}
               </div>
             </div>
           ))}
@@ -135,7 +135,7 @@ export function CelSommelier({ v }: { v: VSom }) {
     <div className="c-tela sem-barra" style={{ paddingBottom: 170 }}>
       <div className="c-topo" style={{ height: 60 }}>
         <Circ icone="voltar" tamanho={36} rotulo="Voltar" onClick={() => { setVerExemplo(false); v.nova(); }} />
-        <span style={{ width: 34, height: 34, borderRadius: 17, border: "1px solid var(--line-2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Logo tamanho={22} traco={1.6} /></span>
+        <span style={{ width: 34, height: 34, borderRadius: "var(--r-ctl)", border: "1px solid var(--line-2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Logo tamanho={22} traco={1.6} /></span>
         <span style={{ display: "flex", flexDirection: "column", flexGrow: 1, minWidth: 0 }}>
           <span style={{ fontSize: 15, fontWeight: 600 }}>Sommelier do Atlas</span>
           <span style={{ fontSize: 11.5, color: "var(--ink-3)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{v.subtitulo.replace("Conhece ", "").replace(" de agora", "")}</span>
@@ -169,7 +169,7 @@ export function CelSommelier({ v }: { v: VSom }) {
             {m.sugestoes ? (
               <div className="c-rolar" style={{ gap: 10 }}>
                 {m.sugestoes.map((s) => (
-                  <Link key={s.nome} href={s.href || "/colecao"} style={{ width: 216, flexShrink: 0, borderRadius: 20, border: `1px solid ${s.borda}`, background: s.borda === OURO ? "var(--tile)" : "var(--surface)", padding: 12, display: "flex", flexDirection: "column", gap: 10 }}>
+                  <Link key={s.nome} href={s.href || "/colecao"} style={{ width: 216, flexShrink: 0, borderRadius: "var(--r-ed)", border: `1px solid ${s.borda}`, background: s.borda === OURO ? "var(--tile)" : "var(--surface)", padding: 12, display: "flex", flexDirection: "column", gap: 10 }}>
                     <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
                       <span style={{ width: 46, height: 52, borderRadius: 12, background: s.palco, border: "1px solid var(--line)", display: "flex", alignItems: "flex-end", justifyContent: "center", paddingBottom: 4, flexShrink: 0 }}>
                         <FrascoMedidas bw={s.bw} bh={s.bh} br={s.br} capW={s.capW} tampa={s.tampa} vidro={s.vidro} rot="" k={0.85} foto={s.foto} />

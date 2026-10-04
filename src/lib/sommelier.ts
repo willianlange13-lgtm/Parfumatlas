@@ -1,4 +1,6 @@
 import "server-only";
+import { dnaMini } from "@/lib/dna-mini";
+import { territorio } from "@/lib/territorio";
 import { carregarAcervo } from "@/lib/dados";
 import { obterClima } from "@/lib/clima";
 import { adequacao, diasDesde, dna, naColecao, hm } from "@/lib/analise";
@@ -29,6 +31,7 @@ export function paraTela(r: Resposta, perfumes: Map<string, Perfume>, t: Record<
     const cor = top ? OURO : corDoAcorde(p.acorde);
     const F = FORM[p.forma] ?? FORM.ret;
     return {
+      dna: dnaMini(p.acordes), corTerr: territorio(p.familia, p.acordes).a,
       foto: p.imagem ?? null, rotulo: s.rotulo.toUpperCase(), nome: p.nome, marca: p.casa, porque: s.porque, dados: s.dados.slice(0, 2), href: `/colecao/${p.id}`,
       bw: F[0], bh: F[1], br: F[2], capW: Math.round(F[0] * 0.5), tampa: p.tampa,
       vidro: `linear-gradient(115deg, rgba(255,255,255,.35) 0%, ${hexA(cor, 0.32)} 45%, ${hexA(cor, 0.55)} 100%)`,

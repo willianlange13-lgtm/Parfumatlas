@@ -1,8 +1,12 @@
 /** Funções de desenho compartilhadas pelas pranchas (porte do h2.js do desenho). */
 import base from "@/data/desenho/InicioPreto.json";
 
-export const t = base.t as unknown as Record<string, string> & { sup: string[]; fam: string[]; saz: string[] };
 export const OURO = "#D8B970";
+/**
+ * Tokens das pranchas do computador. O acento (amber) e o texto de título (amberTxt) usam o mesmo dourado
+ * do app do celular (OURO e --ouro-txt), em vez do prata original do desenho: decisão do Willian (out/2026).
+ */
+export const t = { ...(base.t as unknown as Record<string, string>), amber: OURO, amberTxt: "#E0C78C" } as unknown as Record<string, string> & { sup: string[]; fam: string[]; saz: string[] };
 
 export const P = (x: number) => (+x).toFixed(1);
 export const hexA = (h: string, a: number) => `rgba(${parseInt(h.slice(1, 3), 16)},${parseInt(h.slice(3, 5), 16)},${parseInt(h.slice(5, 7), 16)},${a})`;

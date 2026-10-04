@@ -64,10 +64,10 @@ export function ImportarAcervo() {
         <textarea value={texto} onChange={(e) => setTexto(e.target.value)} rows={8} placeholder='{"n":"Nome","c":"Casa","u":"https://www.fragrantica.com.br/perfume/...","s":[...],"m":[...],"f":[...],"a":[...],"fx":"Moderada","pj":"Moderada"}'
           style={{ width: "100%", boxSizing: "border-box", borderRadius: 12, border: "1px solid var(--line)", background: "var(--bg)", color: "var(--ink)", padding: 10, fontFamily: MONO, fontSize: 11.5, resize: "vertical" }} />
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          <label className="c-btn sec" style={{ height: 42, borderRadius: 21, padding: "0 16px", display: "inline-flex", alignItems: "center", cursor: "pointer" }}>
+          <label className="c-btn sec" style={{ height: 42, borderRadius: "var(--r-ctl)", padding: "0 16px", display: "inline-flex", alignItems: "center", cursor: "pointer" }}>
             Enviar arquivo<input type="file" accept=".jsonl,.json,.txt,application/json,text/plain" hidden onChange={arquivo} />
           </label>
-          <button type="button" className="c-btn" style={{ height: 42, borderRadius: 21, padding: "0 20px", flexGrow: 1 }} disabled={ocupado || !texto.trim()} onClick={importar}>
+          <button type="button" className="c-btn" style={{ height: 42, borderRadius: "var(--r-ctl)", padding: "0 20px", flexGrow: 1 }} disabled={ocupado || !texto.trim()} onClick={importar}>
             {ocupado ? "Importando…" : texto.trim() ? `Importar ${texto.trim().split(/\n/).length} linha(s)` : "Importar"}
           </button>
         </div>

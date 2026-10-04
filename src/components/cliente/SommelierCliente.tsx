@@ -10,7 +10,8 @@ type SR = { lang: string; interimResults: boolean; onresult: (e: { results: Arra
 const CHAVE_FILTRO = ["ocasiao", "sentir", "origem"] as const;
 
 export function SommelierCliente({ base, iniciais, perfumeId, pergunta, voz, conversaId: c0, falarRespostas = true }: { base: Base; iniciais: Msg[]; perfumeId?: string; pergunta?: string; voz?: boolean; conversaId?: string; falarRespostas?: boolean }) {
-  const t = base.t;
+  // mesmo dourado do celular no acento e nos títulos (src/desenho/h2.ts)
+  const t: Record<string, string> = { ...(base.t as Record<string, string>), amber: "#D8B970", amberTxt: "#E0C78C" };
   const [msgs, setMsgs] = useState<Msg[]>(iniciais);
   const [pensando, setPensando] = useState(false);
   const [ouvindo, setOuvindo] = useState(false);
@@ -86,6 +87,7 @@ export function SommelierCliente({ base, iniciais, perfumeId, pergunta, voz, con
 
   const v = {
     ...base,
+    t,
     msgs,
     pensando,
     vazio: msgs.length === 0 && !pensando,

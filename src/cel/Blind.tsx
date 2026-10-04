@@ -33,7 +33,7 @@ export function Blind({ lista, inicial }: { lista: P[]; inicial: string[] }) {
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
             {lista.map((p) => {
               const on = sel.includes(p.id);
-              return <button key={p.id} type="button" className={`c-pill ${on ? "on" : ""}`} style={{ height: 34, borderRadius: 17, fontSize: 13 }} onClick={() => setSel(on ? sel.filter((x) => x !== p.id) : sel.length < 4 ? [...sel, p.id] : sel)}>{p.nome}</button>;
+              return <button key={p.id} type="button" className={`c-pill ${on ? "on" : ""}`} style={{ height: 34, borderRadius: "var(--r-ctl)", fontSize: 13 }} onClick={() => setSel(on ? sel.filter((x) => x !== p.id) : sel.length < 4 ? [...sel, p.id] : sel)}>{p.nome}</button>;
             })}
           </div>
           <Btn onClick={() => { setOrdem(embaralhar(escolhidos)); setPalpite({}); setMostrar(false); setEtapa("borrifar"); }} disabled={sel.length < 2}>Sortear a ordem</Btn>
@@ -59,7 +59,7 @@ export function Blind({ lista, inicial }: { lista: P[]; inicial: string[] }) {
             <Card key={i} pad={14} gap={10}>
               <Rot>Fita {i + 1}</Rot>
               <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                {escolhidos.map((p) => <button key={p.id} type="button" className={`c-pill ${palpite[i] === p.id ? "on" : ""}`} style={{ height: 34, borderRadius: 17, fontSize: 13 }} onClick={() => setPalpite({ ...palpite, [i]: p.id })}>{p.nome}</button>)}
+                {escolhidos.map((p) => <button key={p.id} type="button" className={`c-pill ${palpite[i] === p.id ? "on" : ""}`} style={{ height: 34, borderRadius: "var(--r-ctl)", fontSize: 13 }} onClick={() => setPalpite({ ...palpite, [i]: p.id })}>{p.nome}</button>)}
               </div>
             </Card>
           ))}

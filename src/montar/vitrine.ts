@@ -1,5 +1,6 @@
 import { corDoAcorde } from "@/lib/cores";
 import { territorio } from "@/lib/territorio";
+import { dnaMini } from "@/lib/dna-mini";
 import { hexA, t } from "@/desenho/h2";
 import type { Entrada, Perfume } from "@/lib/tipos";
 
@@ -13,7 +14,7 @@ export function itemVitrine(p: Perfume, extra: { rel?: string; assin?: boolean; 
   const notas = [p.notas.saida[0], p.notas.coracao[0], p.notas.fundo[0]].filter(Boolean);
   return {
     id: p.id, nome: p.nome, marca: p.casa, marcaUp: p.casa.toUpperCase(), acorde: p.acorde, fam: p.familia, genero: p.genero ?? "—", notas: notas.join(" · "),
-    corFam: cor, rel: extra.rel ?? "", assin: !!extra.assin, tampa: p.tampa,
+    corFam: cor, dna: dnaMini(p.acordes), corTerr: terr, rel: extra.rel ?? "", assin: !!extra.assin, tampa: p.tampa,
     bw: f[0], bh: f[1], br: f[2], capW: Math.round(f[0] * f[3]), capH: 24, neckW: Math.round(f[0] * 0.22), lw: f[0] - 14, lh: Math.min(40, Math.round(f[1] * 0.42)),
     rotMarca: p.casa.split(" ")[0].toUpperCase().slice(0, 8), rotNome: curto,
     sombra: f[0] + 30, sombraM: Math.round((f[0] + 30) / 2),

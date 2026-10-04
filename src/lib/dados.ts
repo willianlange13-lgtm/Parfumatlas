@@ -102,8 +102,12 @@ export async function lerAcervo(supabase: Cliente, userId?: string): Promise<Ace
   if (userId) qu = qu.eq("user_id", userId);
   const { data: usos } = await qu;
   const ultimo = new Map<string, string>();
-  (usos ?? []).forEach((u: Linha) => { if (!ultimo.has(u.colecao_id as string)) ultimo.set(u.colecao_id as string, u.dia as string); });
-  colecao.forEach((c) => (c.ultimoUso = ultimo.get(c.id) ?? c.adicionadoEm));
+  const dias = new Map<string, string[]>();
+  (usos ?? []).forEach((u: Linha) => {
+    if (!ultimo.has(u.colecao_id as string)) ultimo.set(u.colecao_id as string, u.dia as string);
+    dias.set(u.colecao_id as string, [...(dias.get(u.colecao_id as string) ?? []), u.dia as string]);
+  });
+  colecao.forEach((c) => { c.ultimoUso = ultimo.get(c.id) ?? c.adicionadoEm; c.usos = dias.get(c.id) ?? []; });
 
   const { data: lanc } = await supabase.from("lancamentos").select("*, perfume:perfumes(*)").order("lancado_em", { ascending: false });
   const lancamentos = (lanc ?? []).map((l: Linha) => {

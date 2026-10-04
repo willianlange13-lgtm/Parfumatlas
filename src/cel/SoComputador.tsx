@@ -11,7 +11,7 @@ export function SoComputador({ titulo, texto }: { titulo: string; texto: string 
         <div style={{ fontSize: 14, lineHeight: 1.55, color: "var(--ink-2)" }}>{texto}</div>
         <div style={{ display: "flex", gap: 8 }}>
           <Btn href="/" style={{ flexGrow: 1 }}>Voltar ao Início</Btn>
-          <Link href="/colecao" className="c-btn sec" style={{ height: 46, borderRadius: 23 }}>Coleção</Link>
+          <Link href="/colecao" className="c-btn sec" style={{ height: 46, borderRadius: "var(--r-ctl)" }}>Coleção</Link>
         </div>
       </Card>
     </div>

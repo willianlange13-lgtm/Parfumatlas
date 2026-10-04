@@ -67,6 +67,8 @@ export interface ItemColecao {
   situacao: Situacao;
   adicionadoEm: string;
   ultimoUso?: string | null;
+  /** dias em que foi usado ("Usar hoje"), do mais recente ao mais antigo */
+  usos?: string[];
   anotacao?: string | null;
   foto?: string | null;
   minhaFixacao?: number | null;

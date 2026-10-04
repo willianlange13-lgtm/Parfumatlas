@@ -97,8 +97,8 @@ export function CelResultado({ p, v, novo, podeSalvar }: { p: Perfume; v: V; nov
       {erro && <span style={{ color: "var(--erro)", fontSize: 13.5 }}>{erro}</span>}
       {!v.tem && (
         <div className="c-rodape">
-          <button type="button" className="c-btn sec" style={{ height: 52, borderRadius: 26 }} onClick={() => marcar("tenho")} disabled={Boolean(ocupado)}>{ocupado === "tenho" ? "Salvando…" : "Comprei"}</button>
-          <button type="button" className="c-btn" style={{ height: 52, borderRadius: 26, flexGrow: 1 }} onClick={() => marcar("quero")} disabled={Boolean(ocupado) || v.quero}>{v.quero ? "✓ No seu Quero" : ocupado === "quero" ? "Salvando…" : "Adicionar ao Quero"}</button>
+          <button type="button" className="c-btn sec" style={{ height: 52, borderRadius: "var(--r-ctl)" }} onClick={() => marcar("tenho")} disabled={Boolean(ocupado)}>{ocupado === "tenho" ? "Salvando…" : "Comprei"}</button>
+          <button type="button" className="c-btn" style={{ height: 52, borderRadius: "var(--r-ctl)", flexGrow: 1 }} onClick={() => marcar("quero")} disabled={Boolean(ocupado) || v.quero}>{v.quero ? "✓ No seu Quero" : ocupado === "quero" ? "Salvando…" : "Adicionar ao Quero"}</button>
         </div>
       )}
     </div>

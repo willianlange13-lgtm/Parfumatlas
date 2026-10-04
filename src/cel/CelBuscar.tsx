@@ -104,7 +104,7 @@ export function CelBuscar({ lista, modoInicial }: { lista: ItemBusca[]; modoInic
     <div className="c-tela">
       <TituloAba titulo="Buscar" />
       <input id="escanear" type="file" accept="image/*" capture="environment" hidden onChange={fotoEscolhida} />
-      <form className="c-campo" style={{ height: 52, borderRadius: 26, border: "1px solid var(--line-2)" }} onSubmit={(e) => { e.preventDefault(); if (q.trim()) identificar(/^https?:\/\//.test(q) ? "link" : "nome", q.trim()); }}>
+      <form className="c-campo" style={{ height: 52, borderRadius: "var(--r-ctl)", border: "1px solid var(--line-2)" }} onSubmit={(e) => { e.preventDefault(); if (q.trim()) identificar(/^https?:\/\//.test(q) ? "link" : "nome", q.trim()); }}>
         <Icone nome="busca" tamanho={18} />
         <input value={q} onChange={(e) => { setQ(e.target.value); if (aba !== "perfume") setAba("perfume"); }} placeholder="Nome, marca ou nota" aria-label="Buscar perfume" enterKeyHint="search" />
         <button type="button" className="c-circ" style={{ width: 36, height: 36, background: "var(--chip-2)" }} onClick={escanear} aria-label="Escanear frasco"><Icone nome="camera" tamanho={16} /></button>
@@ -141,7 +141,7 @@ export function CelBuscar({ lista, modoInicial }: { lista: ItemBusca[]; modoInic
               <Rot style={{ marginBottom: 6 }}>No catálogo do Atlas</Rot>
               {achados.map((p, i) => <LinhaP key={p.id} p={p} borda={i > 0} sub={p.tem ? "Você tem" : p.quero ? "No seu Quero" : p.inspiradoEm ? `Inspirado no ${p.inspiradoEm}` : undefined} />)}
               {!achados.length && <span style={{ fontSize: 13.5, color: "var(--ink-3)", padding: "6px 0" }}>Nada no catálogo com esse nome.</span>}
-              <button type="button" className="c-btn sec" style={{ height: 42, borderRadius: 21, marginTop: 12 }} onClick={() => identificar(/^https?:\/\//.test(q) ? "link" : "nome", q.trim())}>
+              <button type="button" className="c-btn sec" style={{ height: 42, borderRadius: "var(--r-ctl)", marginTop: 12 }} onClick={() => identificar(/^https?:\/\//.test(q) ? "link" : "nome", q.trim())}>
                 <Icone nome="busca" tamanho={16} />Procurar “{q.trim().slice(0, 24)}” na internet
               </button>
             </Card>
@@ -149,7 +149,7 @@ export function CelBuscar({ lista, modoInicial }: { lista: ItemBusca[]; modoInic
             <>
               <Card fundo="destaque" pad={16}>
                 <div style={{ display: "flex", gap: 14 }}>
-                  <span style={{ width: 46, height: 46, borderRadius: 23, background: "rgba(216,185,112,.16)", color: OURO, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Icone nome="camera" tamanho={20} /></span>
+                  <span style={{ width: 46, height: 46, borderRadius: "var(--r-ctl)", background: "rgba(216,185,112,.16)", color: OURO, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Icone nome="camera" tamanho={20} /></span>
                   <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                     <span style={{ fontSize: 17, fontWeight: 500 }}>Modo compra</span>
                     <span style={{ fontSize: 13, lineHeight: 1.45, color: "var(--ink-2)" }}>Aponte a câmera para o frasco na loja. Mostra se você já tem, o que tem de parecido e se combina com o seu gosto.</span>
@@ -190,12 +190,12 @@ export function CelBuscar({ lista, modoInicial }: { lista: ItemBusca[]; modoInic
         <>
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap", flexShrink: 0 }}>
             {notas.map((n) => (
-              <button key={n} type="button" onClick={() => setNotas(notas.filter((x) => x !== n))} style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "3px 10px 3px 3px", borderRadius: 20, background: "var(--chip)", border: "1px solid var(--line-2)", color: "var(--ink)", fontSize: 13 }}>
+              <button key={n} type="button" onClick={() => setNotas(notas.filter((x) => x !== n))} style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "3px 10px 3px 3px", borderRadius: "var(--r-ed)", background: "var(--chip)", border: "1px solid var(--line-2)", color: "var(--ink)", fontSize: 13 }}>
                 <NotaChip nome={n} tam={26} rotulo={false} />{n}<span style={{ color: "var(--ink-3)" }}>×</span>
               </button>
             ))}
             <form onSubmit={(e) => { e.preventDefault(); if (novaNota.trim()) addNota(novaNota); }} style={{ display: "inline-flex" }}>
-              <input list="lista-notas" value={novaNota} onChange={(e) => { setNovaNota(e.target.value); if (todasNotas.includes(e.target.value)) addNota(e.target.value); }} placeholder="+ nota" aria-label="Adicionar nota" style={{ width: 110, height: 32, borderRadius: 16, border: "1px dashed var(--line-2)", background: "transparent", color: "var(--ink)", padding: "0 12px", fontSize: 12.5 }} />
+              <input list="lista-notas" value={novaNota} onChange={(e) => { setNovaNota(e.target.value); if (todasNotas.includes(e.target.value)) addNota(e.target.value); }} placeholder="+ nota" aria-label="Adicionar nota" style={{ width: 110, height: 32, borderRadius: "var(--r-ctl)", border: "1px dashed var(--line-2)", background: "transparent", color: "var(--ink)", padding: "0 12px", fontSize: 12.5 }} />
               <datalist id="lista-notas">{todasNotas.map((n) => <option key={n} value={n} />)}</datalist>
             </form>
           </div>

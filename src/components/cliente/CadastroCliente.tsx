@@ -36,7 +36,8 @@ async function reduzir(f: File) {
 }
 
 export function CadastroCliente({ base, modoInicial }: { base: Record<string, unknown> & { t: Record<string, string> }; modoInicial?: string }) {
-  const t: Record<string, string> = { ...base.t, ouro: OURO };
+  // mesmo dourado do celular no acento e nos títulos (src/desenho/h2.ts)
+  const t: Record<string, string> = { ...base.t, ouro: OURO, amber: "#D8B970", amberTxt: "#E0C78C" };
   const router = useRouter();
   const [modo, setModo] = useState<Modo>((["foto", "link", "nome", "voz"].includes(modoInicial ?? "") ? modoInicial : "foto") as Modo);
   const [foto, setFoto] = useState<{ url: string; mime: string; base64: string } | null>(null);

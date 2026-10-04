@@ -96,7 +96,7 @@ img { display: block; max-width: 100%; }
 .marca span { white-space: nowrap; }
 .menu { display: flex; gap: 2px; padding: 4px; border-radius: 26px; background: var(--pill); }
 .menu a { height: 40px; padding: 0 18px; border-radius: 20px; display: flex; align-items: center; white-space: nowrap; font-size: 14px; color: var(--ink-2); }
-.menu a.ativo { background: var(--btn); color: var(--on-btn); font-weight: 500; }
+.menu a.ativo { background: var(--ouro-bg); color: var(--ouro); font-weight: 600; box-shadow: inset 0 0 0 1px var(--ouro-linha); }
 .topo .acoes { margin-left: auto; display: flex; gap: 10px; }
 
 /* ---------- barra do celular ---------- */
@@ -127,7 +127,7 @@ img { display: block; max-width: 100%; }
 .c-tela { position: relative; display: flex; flex-direction: column; gap: 18px; padding: 0 20px calc(var(--tab-h) + 36px); min-height: 100dvh; overflow-x: clip; }
 .c-tela.sem-barra { padding-bottom: 130px; }
 .c-tela::before { content: ""; position: fixed; left: 30%; top: -160px; width: 420px; height: 420px; border-radius: 50%; background: radial-gradient(circle, var(--glow) 0%, rgba(0,0,0,0) 65%); pointer-events: none; z-index: -1; }
-.c-card { position: relative; border-radius: 24px; background: var(--surface); border: 1px solid var(--line); display: flex; flex-direction: column; flex-shrink: 0; min-width: 0; }
+.c-card { position: relative; border-radius: var(--r-ed); background: var(--surface); border: 1px solid var(--line); display: flex; flex-direction: column; flex-shrink: 0; min-width: 0; }
 .c-card.destaque { background: var(--tile); border-color: var(--ouro-linha); }
 .c-card.vinho { background: var(--tile-2); }
 .c-rot { font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em; color: var(--ouro-txt); text-transform: uppercase; }
@@ -142,11 +142,11 @@ img { display: block; max-width: 100%; }
 .c-rolar { display: flex; flex-shrink: 0; overflow-x: auto; margin-right: -20px; padding-right: 20px; scrollbar-width: none; scroll-snap-type: x proximity; }
 .c-rolar::-webkit-scrollbar { display: none; }
 .c-rolar > * { scroll-snap-align: start; }
-.c-campo { display: flex; align-items: center; gap: 10px; height: 46px; padding: 0 7px 0 16px; border-radius: 23px; background: var(--pill); color: var(--ink-3); flex-shrink: 0; }
+.c-campo { display: flex; align-items: center; gap: 10px; height: 46px; padding: 0 7px 0 16px; border-radius: var(--r-ctl); background: var(--pill); color: var(--ink-3); flex-shrink: 0; }
 .c-campo input { flex: 1; min-width: 0; background: transparent; border: none; outline: none; color: var(--ink); font-size: 14.5px; }
 .c-campo input::placeholder { color: var(--ink-3); }
-.c-seg { display: flex; padding: 4px; border-radius: 26px; background: var(--pill); flex-shrink: 0; }
-.c-seg > * { flex: 1; height: 38px; border-radius: 19px; display: flex; align-items: center; justify-content: center; font-size: 14px; color: var(--ink-2); border: none; background: transparent; font-family: var(--sans); }
+.c-seg { display: flex; padding: 4px; border-radius: 14px; background: var(--pill); flex-shrink: 0; }
+.c-seg > * { flex: 1; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 14px; color: var(--ink-2); border: none; background: transparent; font-family: var(--sans); }
 .c-seg > .on { background: var(--btn); color: var(--on-btn); font-weight: 500; }
 .c-rodape { position: fixed; left: 0; right: 0; bottom: 0; z-index: 25; padding: 18px 20px calc(24px + env(safe-area-inset-bottom)); background: linear-gradient(180deg, rgba(5,5,6,0) 0%, rgba(5,5,6,.96) 30%); display: flex; gap: 10px; }
 .c-folha-fundo { position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 40; }
@@ -187,3 +187,8 @@ img { display: block; max-width: 100%; }
 
 /* Comparar: quadriculado técnico (mesma textura do DNA) */
 .tela-tecnica { background-image: linear-gradient(rgba(201,209,222,.03) 1px, transparent 1px), linear-gradient(90deg, rgba(201,209,222,.03) 1px, transparent 1px); background-size: 24px 24px; }
+
+/* DNA olfativo: respiração muito lenta na ficha (some para quem pede menos movimento) */
+@keyframes dna-respira { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.018); opacity: .92; } }
+.dna-respira { animation: dna-respira 7s ease-in-out infinite; transform-origin: 50% 50%; }
+@media (prefers-reduced-motion: reduce) { .dna-respira { animation: none; } }

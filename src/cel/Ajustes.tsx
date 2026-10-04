@@ -83,7 +83,7 @@ export function Ajustes({ cfg, classe, total, pcts, podeSalvar, sair }: Props) {
       <div className="c-topo"><Circ icone="voltar" href="/" tamanho={36} rotulo="Voltar" /><span className="c-topo-tit">Configurações</span><span style={{ width: 36 }} /></div>
       <Card fundo="destaque" pad={14}>
         <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-          <span style={{ width: 52, height: 52, borderRadius: 26, background: "var(--btn)", color: "var(--on-btn)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 600, fontSize: 17, flexShrink: 0 }}>{c.nome.split(" ").filter(Boolean).slice(0, 2).map((p) => p[0]).join("").toUpperCase()}</span>
+          <span style={{ width: 52, height: 52, borderRadius: "var(--r-ctl)", background: "var(--btn)", color: "var(--on-btn)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 600, fontSize: 17, flexShrink: 0 }}>{c.nome.split(" ").filter(Boolean).slice(0, 2).map((p) => p[0]).join("").toUpperCase()}</span>
           <span style={{ flexGrow: 1, display: "flex", flexDirection: "column", gap: 2 }}>
             <span style={{ fontSize: 17, fontWeight: 500 }}>{c.nome}</span>
             <span style={{ fontSize: 12.5, color: "var(--ink-3)" }}>{classe} · {total} frascos{c.email ? ` · ${c.email}` : ""}</span>
@@ -133,7 +133,7 @@ export function Ajustes({ cfg, classe, total, pcts, podeSalvar, sair }: Props) {
       <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
         {TIPOS.map(([k, nome]) => {
           const on = c.alertaTipos.includes(k);
-          return <button key={k} type="button" className={`c-pill ${on ? "on" : ""}`} style={{ height: 34, borderRadius: 17 }} onClick={() => salvar({ alertaTipos: on ? c.alertaTipos.filter((x) => x !== k) : [...c.alertaTipos, k] })}>{nome}</button>;
+          return <button key={k} type="button" className={`c-pill ${on ? "on" : ""}`} style={{ height: 34, borderRadius: "var(--r-ctl)" }} onClick={() => salvar({ alertaTipos: on ? c.alertaTipos.filter((x) => x !== k) : [...c.alertaTipos, k] })}>{nome}</button>;
         })}
       </div>
 

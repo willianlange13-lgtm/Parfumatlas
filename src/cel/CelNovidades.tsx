@@ -75,8 +75,8 @@ export function CelNovidades({ v, limite }: { v: V; limite: number }) {
               <span style={{ fontSize: 11, color: "var(--ink-3)" }}>{c.notas}</span>
               <form action="/api/situacao" method="post" style={{ display: "flex", gap: 6, marginTop: 4 }}>
                 <input type="hidden" name="perfume" value={c.id} />
-                <button type="submit" name="situacao" value="quero" className={`c-btn ${c.btn.startsWith("✓") ? "sec" : ""}`} style={{ height: 34, borderRadius: 17, padding: "0 12px", fontSize: 12.5 }}>{c.btn.startsWith("✓") ? "✓ No seu Quero" : "+ Quero"}</button>
-                <Link href={c.href} className="c-btn sec" style={{ height: 34, borderRadius: 17, padding: "0 12px", fontSize: 12.5 }}>Ver ficha</Link>
+                <button type="submit" name="situacao" value="quero" className={`c-btn ${c.btn.startsWith("✓") ? "sec" : ""}`} style={{ height: 34, borderRadius: "var(--r-ctl)", padding: "0 12px", fontSize: 12.5 }}>{c.btn.startsWith("✓") ? "✓ No seu Quero" : "+ Quero"}</button>
+                <Link href={c.href} className="c-btn sec" style={{ height: 34, borderRadius: "var(--r-ctl)", padding: "0 12px", fontSize: 12.5 }}>Ver ficha</Link>
               </form>
             </div>
           </div>

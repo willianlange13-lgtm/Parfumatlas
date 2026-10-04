@@ -86,8 +86,8 @@ export function Editar({ p: p0, e: e0, podeSalvar }: { p: Perfume; e: E; podeSal
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           <span style={{ fontSize: 13, color: "var(--ink-2)" }}>Foto do seu frasco</span>
           <div style={{ display: "flex", gap: 6 }}>
-            <button type="button" className="c-pill" style={{ height: 32, borderRadius: 16, fontSize: 12.5 }} onClick={() => document.getElementById("editar-foto")?.click()}><Icone nome="camera" tamanho={14} />Trocar</button>
-            {p.imagem && <button type="button" className="c-pill" style={{ height: 32, borderRadius: 16, fontSize: 12.5 }} onClick={() => setFoto(p.imagem ?? null)}>Usar a oficial</button>}
+            <button type="button" className="c-pill" style={{ height: 32, borderRadius: "var(--r-ctl)", fontSize: 12.5 }} onClick={() => document.getElementById("editar-foto")?.click()}><Icone nome="camera" tamanho={14} />Trocar</button>
+            {p.imagem && <button type="button" className="c-pill" style={{ height: 32, borderRadius: "var(--r-ctl)", fontSize: 12.5 }} onClick={() => setFoto(p.imagem ?? null)}>Usar a oficial</button>}
           </div>
         </div>
       </div>
@@ -109,7 +109,7 @@ export function Editar({ p: p0, e: e0, podeSalvar }: { p: Perfume; e: E; podeSal
       <Rot>Situação</Rot>
       <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
         {[["tenho", "Tenho"], ["tive", "Tive"], ["quero", "Quero"], ["assinatura", "★ Assinatura"]].map(([k, n]) => (
-          <button key={k} type="button" className={`c-pill ${e.situacao === k ? "on" : ""}`} style={{ height: 34, borderRadius: 17 }} onClick={() => setE({ ...e, situacao: k })}>{n}</button>
+          <button key={k} type="button" className={`c-pill ${e.situacao === k ? "on" : ""}`} style={{ height: 34, borderRadius: "var(--r-ctl)" }} onClick={() => setE({ ...e, situacao: k })}>{n}</button>
         ))}
       </div>
       <Card pad={14} gap={12}>

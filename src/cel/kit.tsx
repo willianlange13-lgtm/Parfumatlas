@@ -47,7 +47,7 @@ export function Bloco({ titulo, sub, children, fundo, gap = 12, pad = 16 }: { ti
 
 type BtnProps = { children: ReactNode; href?: string; sec?: boolean; altura?: number; style?: CSSProperties; onClick?: () => void; type?: "button" | "submit"; disabled?: boolean; form?: string };
 export function Btn({ children, href, sec, altura = 46, style, onClick, type = "button", disabled }: BtnProps) {
-  const st: CSSProperties = { height: altura, borderRadius: altura / 2, ...style };
+  const st: CSSProperties = { height: altura, borderRadius: "var(--r-ctl)", ...style }; // controle: raio de 12px (docs/DECISOES.md §18)
   const cl = `c-btn ${sec ? "sec" : ""}`;
   if (href) return <Link href={href} className={cl} style={st}>{children}</Link>;
   return <button type={type} className={cl} style={st} onClick={onClick} disabled={disabled}>{children}</button>;
@@ -126,7 +126,7 @@ export function NotaChip({ nome, tam = 28, rotulo = true, fs = 13 }: { nome: str
 }
 
 /** Palco com frasco desenhado ou foto. */
-export function PalcoC({ nome, casa, acorde, forma = "ret", tampa = "#141417", altura, k, raio = 20, foto, oficial, children, semBorda, transparente }: { nome: string; casa: string; acorde?: string | null; forma?: Forma | string; tampa?: string; altura: number; k?: number; raio?: number; foto?: string | null; oficial?: boolean; children?: ReactNode; semBorda?: boolean; transparente?: boolean }) {
+export function PalcoC({ nome, casa, acorde, forma = "ret", tampa = "#141417", altura, k, raio = 18, foto, oficial, children, semBorda, transparente }: { nome: string; casa: string; acorde?: string | null; forma?: Forma | string; tampa?: string; altura: number; k?: number; raio?: number; foto?: string | null; oficial?: boolean; children?: ReactNode; semBorda?: boolean; transparente?: boolean }) {
   const cor = corDoAcorde(acorde);
   const esc = k ?? Math.round((altura / 150) * 100) / 100;
   return (

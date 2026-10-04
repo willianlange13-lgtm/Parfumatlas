@@ -106,8 +106,8 @@ export function CelCadastro({ c, modoInicial }: { c: CadCel; modoInicial?: strin
   const rodape = (principal: React.ReactNode, secundario?: React.ReactNode) => (
     <div className="c-rodape">{secundario}{principal}</div>
   );
-  const btnP = (txt: string, fn: () => void, off?: boolean) => <button type="button" className="c-btn" style={{ height: 52, borderRadius: 26, flexGrow: 1 }} onClick={fn} disabled={off}>{txt}</button>;
-  const btnS = (txt: string, fn: () => void) => <button type="button" className="c-btn sec" style={{ height: 52, borderRadius: 26 }} onClick={fn}>{txt}</button>;
+  const btnP = (txt: string, fn: () => void, off?: boolean) => <button type="button" className="c-btn" style={{ height: 52, borderRadius: "var(--r-ctl)", flexGrow: 1 }} onClick={fn} disabled={off}>{txt}</button>;
+  const btnS = (txt: string, fn: () => void) => <button type="button" className="c-btn sec" style={{ height: 52, borderRadius: "var(--r-ctl)" }} onClick={fn}>{txt}</button>;
 
   // ---------- passo 3: revisar ficha ----------
   if (passo === "revisar" && f) {
@@ -226,7 +226,7 @@ export function CelCadastro({ c, modoInicial }: { c: CadCel; modoInicial?: strin
       <div className="c-tela sem-barra">
         <div className="c-topo"><Circ icone="voltar" tamanho={36} rotulo="Voltar" onClick={() => setPasso("revisar")} /><span className="c-topo-tit">Salvar</span><span style={{ width: 36 }} /></div>
         <Passos n={4} txt="Salvar" />
-        <div style={{ alignSelf: "center", width: 170, height: 190, borderRadius: 22, border: "1px solid var(--line)", background: "radial-gradient(ellipse at 50% 85%, rgba(216,185,112,.18) 0%, var(--surface) 75%)", display: "flex", alignItems: "flex-end", justifyContent: "center", paddingBottom: 18, overflow: "hidden", position: "relative" }}>
+        <div style={{ alignSelf: "center", width: 170, height: 190, borderRadius: "var(--r-ed)", border: "1px solid var(--line)", background: "radial-gradient(ellipse at 50% 85%, rgba(216,185,112,.18) 0%, var(--surface) 75%)", display: "flex", alignItems: "flex-end", justifyContent: "center", paddingBottom: 18, overflow: "hidden", position: "relative" }}>
           {c.foto || f.imagem ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={c.foto ?? semFundo(f.imagem) ?? ""} alt="Seu frasco" style={{ position: "absolute", inset: c.foto ? 0 : 10, width: c.foto ? "100%" : "calc(100% - 20px)", height: c.foto ? "100%" : "calc(100% - 20px)", objectFit: c.foto ? "cover" : "contain", filter: c.foto ? "none" : "drop-shadow(0 12px 14px rgba(0,0,0,.5)) drop-shadow(0 2px 3px rgba(0,0,0,.35))", borderRadius: 14 }} />
@@ -239,7 +239,7 @@ export function CelCadastro({ c, modoInicial }: { c: CadCel; modoInicial?: strin
         <Rot>Adicionar como</Rot>
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
           {[["tenho", "Tenho"], ["quero", "Quero"], ["tive", "Tive"], ["assinatura", "★ Assinatura"]].map(([k, nome]) => (
-            <button key={k} type="button" className={`c-pill ${c.situacao === k ? "on" : ""}`} style={{ height: 36, borderRadius: 18 }} onClick={() => c.setSituacao(k)}>{nome}</button>
+            <button key={k} type="button" className={`c-pill ${c.situacao === k ? "on" : ""}`} style={{ height: 36, borderRadius: "var(--r-ctl)" }} onClick={() => c.setSituacao(k)}>{nome}</button>
           ))}
         </div>
         <Rot>Como fica em você (opcional)</Rot>
@@ -273,7 +273,7 @@ export function CelCadastro({ c, modoInicial }: { c: CadCel; modoInicial?: strin
 
       {c.modo === "foto" && (
         <>
-          <button type="button" onClick={fotografar} style={{ position: "relative", height: 240, borderRadius: 22, border: "1px solid var(--line)", background: "radial-gradient(ellipse at 50% 70%, rgba(216,185,112,.14) 0%, var(--surface) 75%)", overflow: "hidden", flexShrink: 0, color: "var(--ink)", padding: 0 }}>
+          <button type="button" onClick={fotografar} style={{ position: "relative", height: 240, borderRadius: "var(--r-ed)", border: "1px solid var(--line)", background: "radial-gradient(ellipse at 50% 70%, rgba(216,185,112,.14) 0%, var(--surface) 75%)", overflow: "hidden", flexShrink: 0, color: "var(--ink)", padding: 0 }}>
             {c.foto ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={c.foto} alt="Foto do frasco" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
@@ -304,7 +304,7 @@ export function CelCadastro({ c, modoInicial }: { c: CadCel; modoInicial?: strin
           <form className="c-campo" style={{ height: 50, border: "1px solid var(--line-2)" }} onSubmit={(e) => { e.preventDefault(); if (q.trim()) c.identificar("link", q.trim()); }}>
             <Icone nome="link" tamanho={17} />
             <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="fragrantica.com/perfume/…" inputMode="url" aria-label="Link do perfume" />
-            <button type="button" className="c-pill" style={{ height: 32, borderRadius: 16, fontSize: 12.5, background: "var(--chip-2)", color: "var(--ink)" }} onClick={async () => { try { const t = await navigator.clipboard.readText(); setQ(t); if (/^https?:\/\//.test(t)) c.identificar("link", t); } catch { /* sem permissão */ } }}>Colar</button>
+            <button type="button" className="c-pill" style={{ height: 32, borderRadius: "var(--r-ctl)", fontSize: 12.5, background: "var(--chip-2)", color: "var(--ink)" }} onClick={async () => { try { const t = await navigator.clipboard.readText(); setQ(t); if (/^https?:\/\//.test(t)) c.identificar("link", t); } catch { /* sem permissão */ } }}>Colar</button>
           </form>
           <span style={{ fontSize: 12, color: "var(--ink-3)" }}>Vale link de qualquer site de perfume:</span>
           <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>{["Fragrantica", "Parfumo", "Site da marca", "Loja"].map((x) => <span key={x} style={{ padding: "4px 10px", borderRadius: 10, background: "var(--chip)", fontSize: 12 }}>{x}</span>)}</div>
@@ -356,7 +356,7 @@ export function CelCadastro({ c, modoInicial }: { c: CadCel; modoInicial?: strin
             </div>
           )}
           {!c.pesquisou && q.trim().length >= 3 && c.ocupado !== "lendo" && c.ocupado !== "ficha" && (
-            <button type="button" className="c-btn sec" style={{ height: 44, borderRadius: 22, flexShrink: 0 }} onClick={() => c.identificar("nome", q.trim())}>
+            <button type="button" className="c-btn sec" style={{ height: 44, borderRadius: "var(--r-ctl)", flexShrink: 0 }} onClick={() => c.identificar("nome", q.trim())}>
               {c.cands.length ? "Não está aqui? Procurar no Fragrantica" : "Procurar no Fragrantica"}
             </button>
           )}
