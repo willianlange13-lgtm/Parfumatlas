@@ -67,8 +67,8 @@ export async function montarInicio(outra = 0) {
     anel: glifo(d.vetor.map((x) => Math.max(18, x)), EC),
     dia: fd ? { ...fd, fundo: fd.fundo, vidro: fd.vidro, id: escolhido!.id, porque, href: `/colecao/${escolhido!.perfumeId}`, outra: `/?outra=${outra + 1}`, clima: [clima.cidade, `${temp} °C`, descricaoAr(umid)].filter(Boolean).join(" · ") } : { ...base.dia, nome: "—", id: "", href: "/adicionar", outra: "/", clima: "" },
     hero: destaque
-      ? { foto: destaque.perfume.imagem ?? null, casaUp: destaque.perfume.casa.toUpperCase(), l1: nomeH.slice(0, meio).join(" "), l2: nomeH.slice(meio).join(" "), conc: (destaque.perfume.concentracao ?? "").toUpperCase(), entrada: `ENTRADA Nº ${n3(destaque.numero)} · ADICIONADO EM ${mesAno(destaque.adicionadoEm)}` }
-      : { foto: null, casaUp: "", l1: "PARFUM", l2: "ATLAS", conc: "", entrada: "" },
+      ? { foto: destaque.perfume.imagem ?? null, nome: destaque.perfume.nome, casaUp: destaque.perfume.casa.toUpperCase(), l1: nomeH.slice(0, meio).join(" "), l2: nomeH.slice(meio).join(" "), conc: (destaque.perfume.concentracao ?? "").toUpperCase(), entrada: `ENTRADA Nº ${n3(destaque.numero)} · ADICIONADO EM ${mesAno(destaque.adicionadoEm)}` }
+      : { foto: null, nome: "Parfum Atlas", casaUp: "", l1: "PARFUM", l2: "ATLAS", conc: "", entrada: "" },
     cur: { nota: c.nota, foto: nota(c.nota).foto ?? "", titulo: c.titulo, texto: curTexto, link: `Ver a nota ${c.nota.toLowerCase()}`, href: `/descobrir?nota=${encodeURIComponent(c.nota)}` },
     previsao: `previsão para ${clima.cidade}, um perfume da sua coleção para cada dia`,
     resgata: resgatados ? `Resgata ${resgatados} esquecido${resgatados > 1 ? "s" : ""}` : "",
