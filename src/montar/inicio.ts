@@ -7,6 +7,9 @@ import base from "@/data/desenho/InicioPreto.json";
 import { EC, glifo, frascoMini, ICONE_CLIMA, t, dataBR, mesAno, n3 } from "@/desenho/h2";
 import type { Entrada } from "@/lib/tipos";
 import { NIVEIS_FIXACAO } from "@/lib/normalizar";
+import { territorio } from "@/lib/territorio";
+import { coordenadas, paisDaCasa } from "@/data/casas";
+import { hexA } from "@/desenho/h2";
 
 // foto do seu frasco (preenche o quadro) ou a oficial do Fragrantica (fundo branco); sem nenhuma, o desenho.
 // No destaque grande do topo vale só a oficial (decisão do Willian).
@@ -20,6 +23,12 @@ function duracao(e: Entrada) {
   const hh = Math.floor(h), mm = Math.round((h - hh) * 60);
   const txt = `${hh}h${mm ? String(mm).padStart(2, "0") : ""}`;
   return { longo: `a comunidade dá cerca de ${txt} de fixação`, curto: `Comunidade: cerca de ${txt}.`, chip: `Fixação ~${txt}` };
+}
+
+/** Luz da vitrine com a cor do território do perfume em destaque (docs/DECISOES.md §18). */
+function luzDe(e: Entrada | null) {
+  const a = e ? territorio(e.perfume.familia, e.perfume.acordes).a : "#ffecc8";
+  return { luz: hexA(a, 0.22), luz2: hexA(a, 0.07), chao: hexA(a, 0.13), chao2: hexA(a, 0.04), terrA: a };
 }
 
 export async function montarInicio(outra = 0) {
@@ -65,10 +74,10 @@ export async function montarInicio(outra = 0) {
     ...base,
     t,
     anel: glifo(d.vetor.map((x) => Math.max(18, x)), EC),
-    dia: fd ? { ...fd, fundo: fd.fundo, vidro: fd.vidro, id: escolhido!.id, porque, href: `/colecao/${escolhido!.perfumeId}`, outra: `/?outra=${outra + 1}`, clima: [clima.cidade, `${temp} °C`, descricaoAr(umid)].filter(Boolean).join(" · ") } : { ...base.dia, nome: "—", id: "", href: "/adicionar", outra: "/", clima: "" },
+    dia: fd ? { glow: hexA(territorio(escolhido!.perfume.familia, escolhido!.perfume.acordes).a, 0.14), ...fd, fundo: fd.fundo, vidro: fd.vidro, id: escolhido!.id, porque, href: `/colecao/${escolhido!.perfumeId}`, outra: `/?outra=${outra + 1}`, clima: [clima.cidade, `${temp} °C`, descricaoAr(umid)].filter(Boolean).join(" · ") } : { ...base.dia, nome: "—", id: "", href: "/adicionar", outra: "/", clima: "" },
     hero: destaque
-      ? { foto: destaque.perfume.imagem ?? null, nome: destaque.perfume.nome, familia: destaque.perfume.familia, notas: [destaque.perfume.notas.saida[0], destaque.perfume.notas.coracao[0], destaque.perfume.notas.fundo[0]].filter(Boolean).join(" · "), dura: duracao(destaque)?.chip ?? "", href: `/colecao/${destaque.perfumeId}`, casaUp: destaque.perfume.casa.toUpperCase(), l1: nomeH.slice(0, meio).join(" "), l2: nomeH.slice(meio).join(" "), conc: (destaque.perfume.concentracao ?? "").toUpperCase(), entrada: `ENTRADA Nº ${n3(destaque.numero)} · ADICIONADO EM ${mesAno(destaque.adicionadoEm)}` }
-      : { foto: null, nome: "Parfum Atlas", familia: "", notas: "", dura: "", href: "", casaUp: "", l1: "PARFUM", l2: "ATLAS", conc: "", entrada: "" },
+      ? { ...luzDe(destaque), coord: coordenadas(CASAS[destaque.perfume.casa]?.cidade, destaque.perfume.pais || paisDaCasa(destaque.perfume.casa)), foto: destaque.perfume.imagem ?? null, nome: destaque.perfume.nome, familia: destaque.perfume.familia, notas: [destaque.perfume.notas.saida[0], destaque.perfume.notas.coracao[0], destaque.perfume.notas.fundo[0]].filter(Boolean).join(" · "), dura: duracao(destaque)?.chip ?? "", href: `/colecao/${destaque.perfumeId}`, casaUp: destaque.perfume.casa.toUpperCase(), l1: nomeH.slice(0, meio).join(" "), l2: nomeH.slice(meio).join(" "), conc: (destaque.perfume.concentracao ?? "").toUpperCase(), entrada: `ENTRADA Nº ${n3(destaque.numero)} · ADICIONADO EM ${mesAno(destaque.adicionadoEm)}` }
+      : { ...luzDe(null), coord: "", foto: null, nome: "Parfum Atlas", familia: "", notas: "", dura: "", href: "", casaUp: "", l1: "PARFUM", l2: "ATLAS", conc: "", entrada: "" },
     cur: { nota: c.nota, foto: nota(c.nota).foto ?? "", titulo: c.titulo, texto: curTexto, link: `Ver a nota ${c.nota.toLowerCase()}`, href: `/descobrir?nota=${encodeURIComponent(c.nota)}` },
     previsao: `previsão para ${clima.cidade}, um perfume da sua coleção para cada dia`,
     resgata: resgatados ? `Resgata ${resgatados} esquecido${resgatados > 1 ? "s" : ""}` : "",
