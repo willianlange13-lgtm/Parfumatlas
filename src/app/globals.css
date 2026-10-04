@@ -1,5 +1,5 @@
 /* Parfum Atlas · sistema visual (base preta, prata e ouro champanhe)
- * Três vozes: --serif (nomes e títulos editoriais), --sans (interface), --mono (dados, entrada, coordenadas).
+ * Letras: ficam como estavam (Montserrat nos títulos, Instrument Sans no texto, JetBrains Mono nas etiquetas).
  * Três raios: --r-ed (contêiner editorial), --r-ctl (controles), --r-pill (só quando a cápsula tem função).
  * Território olfativo: --terr-a / --terr-b / --terr-glow vêm da família do perfume (src/lib/territorio.ts)
  * e só aparecem como atmosfera (luz, brilho, barras, bordas especiais), nunca como card pintado. */
@@ -32,8 +32,7 @@
   --sans: "Instrument Sans", system-ui, sans-serif;
   --mono: "JetBrains Mono", ui-monospace, monospace;
   --script: "Pinyon Script", cursive;
-  --serif: "Cormorant Garamond", "Iowan Old Style", Georgia, serif;
-  --marca: var(--serif); /* antes Montserrat: os títulos agora são editoriais */
+  --marca: "Montserrat", "Instrument Sans", sans-serif; /* títulos (as letras ficam como estavam, decisão do Willian) */
   --r-ed: 18px;
   --r-ctl: 12px;
   --r-pill: 999px;
@@ -182,8 +181,6 @@ img { display: block; max-width: 100%; }
 }
 
 /* ---------- vozes editoriais (desktop e celular) ---------- */
-.serif { font-family: var(--serif); font-weight: 500; letter-spacing: -0.005em; }
-.titulo-ed { font-family: var(--serif); font-weight: 500; line-height: 1.02; letter-spacing: -0.01em; }
 .coord { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.14em; color: var(--ink-3); text-transform: uppercase; }
 /* botão secundário: escuro com contorno (o metálico fica só para a ação principal) */
 .btn-sec { background: transparent !important; color: var(--ink) !important; border: 1px solid var(--line-2) !important; }
