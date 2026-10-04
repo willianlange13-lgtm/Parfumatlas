@@ -1,4 +1,5 @@
 import { corDoAcorde } from "@/lib/cores";
+import { territorio } from "@/lib/territorio";
 import { hexA, t } from "@/desenho/h2";
 import type { Entrada, Perfume } from "@/lib/tipos";
 
@@ -6,7 +7,8 @@ const FORM: Record<string, [number, number, string, number]> = { alto: [54, 104,
 
 /** Card da vitrine (frasco grande). */
 export function itemVitrine(p: Perfume, extra: { rel?: string; assin?: boolean; href?: string; situacao?: string; foto?: string | null; numero?: number; adicionado?: string; dias?: number } = {}) {
-  const cor = corDoAcorde(p.acorde), f = FORM[p.forma] ?? FORM.ret;
+  // palco com a cor do território (a mesma da ficha); o desenho do frasco segue o acorde
+  const cor = corDoAcorde(p.acorde), terr = territorio(p.familia, p.acordes).a, f = FORM[p.forma] ?? FORM.ret;
   const curto = p.nome.length > 13 ? p.nome.split(" ").slice(0, 2).join(" ") : p.nome;
   const notas = [p.notas.saida[0], p.notas.coracao[0], p.notas.fundo[0]].filter(Boolean);
   return {
@@ -15,7 +17,7 @@ export function itemVitrine(p: Perfume, extra: { rel?: string; assin?: boolean; 
     bw: f[0], bh: f[1], br: f[2], capW: Math.round(f[0] * f[3]), capH: 24, neckW: Math.round(f[0] * 0.22), lw: f[0] - 14, lh: Math.min(40, Math.round(f[1] * 0.42)),
     rotMarca: p.casa.split(" ")[0].toUpperCase().slice(0, 8), rotNome: curto,
     sombra: f[0] + 30, sombraM: Math.round((f[0] + 30) / 2),
-    palco: `radial-gradient(ellipse at 50% 85%, ${hexA(cor, 0.22)} 0%, ${hexA(cor, 0.06)} 55%, ${t.surface} 100%)`,
+    palco: `radial-gradient(ellipse at 50% 85%, ${hexA(terr, 0.24)} 0%, ${hexA(terr, 0.06)} 55%, ${t.surface} 100%)`,
     vidro: `linear-gradient(115deg, rgba(255,255,255,.38) 0%, ${hexA(cor, 0.3)} 38%, ${hexA(cor, 0.55)} 100%)`,
     href: extra.href ?? `/colecao/${p.id}`,
     situacao: extra.situacao ?? "",

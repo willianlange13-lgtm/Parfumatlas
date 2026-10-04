@@ -39,6 +39,12 @@ export function Navegacao({ iniciais = "WL" }: { iniciais?: string }) {
   return (
     <>
       <header className="topo">
+        {/* voltar em todas as páginas menos o Início (computador; no celular cada tela tem o seu) */}
+        {caminho !== "/" && (
+          <button type="button" className="btn-redondo" aria-label="Voltar" title="Voltar" onClick={() => (history.length > 1 ? router.back() : router.push("/"))}>
+            <Icone nome="voltar" />
+          </button>
+        )}
         <Marca />
         <nav className="menu" aria-label="Menu principal">
           {MENU.map((m) => (

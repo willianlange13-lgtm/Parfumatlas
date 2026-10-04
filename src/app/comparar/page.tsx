@@ -35,7 +35,7 @@ export default async function Comparar({ searchParams }: PageProps<"/comparar">)
   ];
   const ga = glifo(vetor(a), EC, true), gb = glifo(vetor(b), EC, true);
   return (
-    <div className="c-tela sem-barra" style={{ maxWidth: 620, margin: "0 auto" }}>
+    <div className="c-tela sem-barra tela-tecnica" style={{ maxWidth: 620, margin: "0 auto" }}>
       <Topo titulo="Comparar" voltar />
       <div className="c-grade2">
         {[a, b].map((p) => (

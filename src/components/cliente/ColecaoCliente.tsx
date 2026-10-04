@@ -3,9 +3,9 @@ import { useMemo, useState } from "react";
 import DesColecao from "@/desenho/DesColecao";
 import { CelColecao } from "@/cel/CelColecao";
 import type { DadosColecao } from "@/montar/colecao";
+import { territorio } from "@/lib/territorio";
 
 const ACOR: Record<string, string> = { Frutado: "#D8B970", Amadeirado: "#7F8AA0", Baunilha: "#A3ADBE", Especiado: "#6E7A90", Âmbar: "#9099AC", Aquático: "#C9D1DE", Cítrico: "#DCECFD" };
-const FCOR: Record<string, string> = { Chipre: "#D8B970", Âmbar: "#9099AC", Amadeirado: "#7F8AA0", Oriental: "#A3ADBE", Aromático: "#B4BDCC", Aquático: "#C9D1DE", Cítrico: "#DCECFD" };
 const GN: [string, string][] = [["acorde", "Acorde"], ["familia", "Família"], ["marca", "Marca"], ["genero", "Gênero"], ["az", "A–Z"]];
 const SIT: [string, string][] = [["tenho", "Tenho"], ["tive", "Tive"], ["quero", "Quero"], ["assinatura", "Assinatura"]];
 type Item = DadosColecao["itens"][number];
@@ -16,7 +16,7 @@ export function agrupar(itens: Item[], modo: string) {
   itens.forEach((p) => { const k = chave[modo](p); mapa.set(k, [...(mapa.get(k) ?? []), p]); });
   const ks = [...mapa.keys()];
   if (modo === "az" || modo === "marca") ks.sort(); else ks.sort((a, b) => mapa.get(b)!.length - mapa.get(a)!.length || a.localeCompare(b));
-  return ks.map((k) => ({ nome: k, n: `${mapa.get(k)!.length} ${mapa.get(k)!.length === 1 ? "perfume" : "perfumes"}`, cor: modo === "acorde" ? ACOR[k] ?? "#9099AC" : modo === "familia" ? FCOR[k] ?? "#C9D1DE" : "#C9D1DE", itens: mapa.get(k)! }));
+  return ks.map((k) => ({ nome: k, n: `${mapa.get(k)!.length} ${mapa.get(k)!.length === 1 ? "perfume" : "perfumes"}`, cor: modo === "acorde" ? ACOR[k] ?? "#9099AC" : modo === "familia" ? territorio(k).a : "#C9D1DE", itens: mapa.get(k)! }));
 }
 
 export function ColecaoCliente({ d }: { d: DadosColecao }) {
@@ -33,8 +33,8 @@ export function ColecaoCliente({ d }: { d: DadosColecao }) {
   const v = {
     ...d,
     secoes: agrupar(visiveis, modo),
-    grupos: GN.map(([k, nome]) => ({ nome, bg: k === modo ? t.btn : "transparent", cor: k === modo ? t.onBtn : t.ink2, pick: () => setModo(k) })),
-    marcas: SIT.map(([k, nome]) => ({ nome, n: d.contagem[k as keyof typeof d.contagem], bg: k === sit ? t.btn : "transparent", cor: k === sit ? t.onBtn : t.ink2, pick: () => setSit(k) })),
+    grupos: GN.map(([k, nome]) => ({ nome, bg: k === modo ? t.chip2 : "transparent", cor: k === modo ? t.ink : t.ink2, pick: () => setModo(k) })),
+    marcas: SIT.map(([k, nome]) => ({ nome, n: d.contagem[k as keyof typeof d.contagem], bg: k === sit ? t.chip2 : "transparent", cor: k === sit ? t.ink : t.ink2, pick: () => setSit(k) })),
     buscar: (e: React.ChangeEvent<HTMLInputElement>) => setBusca(e.target.value),
   };
   return (
