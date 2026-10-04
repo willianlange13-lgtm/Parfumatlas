@@ -65,5 +65,12 @@ export function origemCasa(casa: string, pais?: string | null): Origem {
   return "outra";
 }
 
+/** País da casa, só das que temos certeza (o resto fica para revisar). */
+const PAIS_CASA: [string[], string][] = [
+  [["lattafa", "maison alhambra", "alhambra", "rayhaan", "afnan", "armaf", "rasasi", "al haramain", "swiss arabian", "ajmal", "khadlaj", "paris corner", "ahmed al maghribi", "french avenue", "fragrance world"], "Emirados Árabes Unidos"],
+  [["arabian oud", "abdul samad al qurashi", "ibrahim al qurashi"], "Arábia Saudita"],
+];
+export const paisDaCasa = (casa: string) => PAIS_CASA.find(([l]) => tem(l, casa))?.[1] ?? null;
+
 /** A trava: só casas brasileiras, americanas e árabes. */
 export const casaPermitida = (casa: string, pais?: string | null) => ["arabe", "brasileira", "americana"].includes(origemCasa(casa, pais));

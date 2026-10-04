@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
     const velha = existentes.get(r.chave);
     if (!velha) { novos++; gravar.push(r); continue; }
     const junta = mesclar(velha, r);
-    const mudou = (["fragrantica", "notas_saida", "notas_coracao", "notas_fundo", "acordes", "fixacao_nivel", "projecao_nivel"] as const).some((k) => JSON.stringify(junta[k]) !== JSON.stringify(velha[k]));
+    const mudou = (["fragrantica", "notas_saida", "notas_coracao", "notas_fundo", "acordes", "fixacao_nivel", "projecao_nivel", "concentracao", "ano", "genero"] as const).some((k) => JSON.stringify(junta[k]) !== JSON.stringify(velha[k]));
     if (!mudou) { iguais++; continue; }
     atualizados++;
     gravar.push(junta);
@@ -59,10 +59,10 @@ export async function POST(request: NextRequest) {
     const parte = gravar.slice(i, i + 500).map((r) => ({
       chave: r.chave, nome: r.nome, casa: r.casa, fragrantica: r.fragrantica,
       notas_saida: r.notas_saida, notas_coracao: r.notas_coracao, notas_fundo: r.notas_fundo, acordes: r.acordes,
-      fixacao_nivel: r.fixacao_nivel, projecao_nivel: r.projecao_nivel, atualizado_em: new Date().toISOString(),
+      fixacao_nivel: r.fixacao_nivel, projecao_nivel: r.projecao_nivel, concentracao: r.concentracao, ano: r.ano, genero: r.genero, atualizado_em: new Date().toISOString(),
     }));
     const { error } = await sb.from("acervo").upsert(parte, { onConflict: "chave" });
-    if (error) return json({ erro: error.message, novos, atualizados }, 500);
+    if (error) return json({ erro: /column|coluna/i.test(error.message) ? "Faltam as colunas novas do acervo: rode o SQL supabase/migrations/0003_acervo_campos.sql no Supabase." : error.message, novos, atualizados }, 500);
   }
 
   const semTraducao = [...new Set([...lote.values()].flatMap(notasSemTraducao))].sort();

@@ -1,6 +1,7 @@
 import "server-only";
 import { createClient, supabaseConfigurado } from "@/lib/supabase/server";
-import { acordePT, acordePrincipal, familiaAtlas, NIVEIS_FIXACAO, NIVEIS_PROJECAO, notaConhecida, notasPT } from "@/lib/normalizar";
+import { paisDaCasa } from "@/data/casas";
+import { concentracaoPT, generoPT, acordePT, acordePrincipal, familiaAtlas, NIVEIS_FIXACAO, NIVEIS_PROJECAO, notaConhecida, notasPT } from "@/lib/normalizar";
 import type { FichaIA } from "@/lib/ficha";
 
 /**
@@ -13,6 +14,7 @@ export type LinhaAcervo = {
   chave: string; nome: string; casa: string; fragrantica: string | null;
   notas_saida: string[]; notas_coracao: string[]; notas_fundo: string[]; acordes: string[];
   fixacao_nivel: string | null; projecao_nivel: string | null;
+  concentracao: string | null; ano: number | null; genero: string | null;
 };
 
 export const chaveAcervo = (nome: string, casa: string) => `${nome} ${casa}`.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
@@ -31,6 +33,7 @@ function linkValido(url: unknown, nome: string) {
   return alvo.includes(tira(nome)) ? u : null;
 }
 
+const anoValido = (x: unknown) => { const n = parseInt(String(x ?? ""), 10); return n >= 1700 && n <= new Date().getFullYear() + 1 ? n : null; };
 const lista = (x: unknown) => (Array.isArray(x) ? x.map((y) => String(y ?? "").trim()).filter(Boolean) : typeof x === "string" && x.trim() ? x.split(/\s*,\s*/).filter(Boolean) : []);
 
 /** Converte uma linha do ChatGPT (chaves curtas ou por extenso). Devolve o motivo quando não dá. */
@@ -47,6 +50,9 @@ export function linhaDoImport(o: Record<string, unknown>): LinhaAcervo | { erro:
     // o nível pode vir com outros nomes de campo (com acento, em inglês ou como os rótulos do Fragrantica)
     fixacao_nivel: nivel(o.fx ?? o.fixacao ?? o["fixação"] ?? o.longevidade ?? o.longevity ?? o.duracao ?? o["duração"] ?? o.fixacao_nivel, FIX),
     projecao_nivel: nivel(o.pj ?? o.projecao ?? o["projeção"] ?? o.rastro ?? o.sillage ?? o.projection ?? o.projecao_nivel, PROJ),
+    concentracao: concentracaoPT(String(o.k ?? o.concentracao ?? o["concentração"] ?? "")) || null,
+    ano: anoValido(o.y ?? o.ano ?? o.lancamento),
+    genero: generoPT(String(o.g ?? o.genero ?? o["gênero"] ?? "")) || null,
   };
 }
 
@@ -63,6 +69,7 @@ export function mesclar(velha: LinhaAcervo, nova: LinhaAcervo, soVazios = false)
     notas_saida: mais(velha.notas_saida, nova.notas_saida), notas_coracao: mais(velha.notas_coracao, nova.notas_coracao), notas_fundo: mais(velha.notas_fundo, nova.notas_fundo),
     acordes: mais(velha.acordes, nova.acordes),
     fixacao_nivel: velha.fixacao_nivel ?? nova.fixacao_nivel, projecao_nivel: velha.projecao_nivel ?? nova.projecao_nivel,
+    concentracao: velha.concentracao ?? nova.concentracao, ano: velha.ano ?? nova.ano, genero: velha.genero ?? nova.genero,
   };
 }
 
@@ -130,7 +137,7 @@ export function fichaDoAcervo(r: LinhaAcervo): FichaIA | null {
   const acordes = r.acordes.map((nome, i) => ({ nome, valor: Math.max(30, 100 - i * 12) }));
   const f = NIVEIS_FIXACAO.find((n) => n.nome === r.fixacao_nivel), p = NIVEIS_PROJECAO.find((n) => n.nome === r.projecao_nivel);
   return {
-    nome: r.nome, casa: r.casa, concentracao: "", perfumistas: [], genero: "", pais: "", descricao: "",
+    nome: r.nome, casa: r.casa, concentracao: r.concentracao ?? "", ano: r.ano ?? undefined, perfumistas: [], genero: r.genero ?? "", pais: paisDaCasa(r.casa) ?? "", descricao: "",
     familia: familiaAtlas(r.acordes.join(" "), acordes[0]?.nome),
     acorde: acordes[0] ? acordePrincipal(acordes[0].nome) : "Amadeirado",
     notas: { saida: notasPT(r.notas_saida), coracao: notasPT(r.notas_coracao), fundo: notasPT(r.notas_fundo) },
@@ -143,7 +150,7 @@ export function fichaDoAcervo(r: LinhaAcervo): FichaIA | null {
     },
     imagem: fotoDoLink(r.fragrantica), forma: "ret", tampa: "#141417",
     fragrantica: r.fragrantica ?? undefined,
-    revisar: ["ano", "concentracao", "pais", "votos"],
+    revisar: [...(r.ano ? [] : ["ano"]), ...(r.concentracao ? [] : ["concentracao"]), ...(r.genero ? [] : ["genero"]), ...(paisDaCasa(r.casa) ? [] : ["pais"]), "votos"],
     completar: false,
   };
 }
@@ -169,6 +176,7 @@ export async function guardarNoAcervo(f: FichaIA): Promise<void> {
       acordes: (f.acordes ?? []).map((a) => a.nome).filter(Boolean),
       fixacao_nivel: f.votos?.origem === "acervo" ? f.votos.nivelFixacao ?? null : NIVEIS_FIXACAO[maisVotado(fx)]?.nome ?? null,
       projecao_nivel: f.votos?.origem === "acervo" ? f.votos.nivelProjecao ?? null : NIVEIS_PROJECAO[maisVotado(pj)]?.nome ?? null,
+      concentracao: concentracaoPT(f.concentracao ?? "") || null, ano: anoValido(f.ano), genero: generoPT(f.genero) || f.genero || null,
     };
     if (!nova.notas_saida.length && !nova.notas_coracao.length && !nova.notas_fundo.length && !nova.acordes.length) return;
     const { data: velha } = await sb.from("acervo").select("*").eq("chave", nova.chave).maybeSingle();

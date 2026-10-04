@@ -206,3 +206,25 @@ export const SOBRE_FAMILIA: Record<Familia, string> = {
   Gourmand: "lembra comida: chocolate, caramelo, leite",
   Chipre: "saída cítrica, fundo de madeira e musgo",
 };
+
+/** "EDP", "eau de parfum" → "Eau de Parfum". */
+export function concentracaoPT(c?: string) {
+  const t = (c ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z ]/g, " ").replace(/\s+/g, " ").trim();
+  if (/extrait|^parfum$|pure perfume/.test(t)) return "Extrait de Parfum";
+  if (/eau de parfum|^edp$|edp intense/.test(t)) return /intense/.test(t) ? "Eau de Parfum Intense" : "Eau de Parfum";
+  if (/eau de toilette|^edt$/.test(t)) return "Eau de Toilette";
+  if (/eau de cologne|^edc$|cologne|^colonia$|agua de colonia/.test(t)) return "Eau de Cologne";
+  if (/^perfume$|^parfum$/.test(t)) return "Extrait de Parfum";
+  return c ?? "";
+}
+
+
+/** "for men" / "masculino" → "Masculino"; "for women and men" / "compartilhável" → "Unissex". */
+export function generoPT(g?: string | null) {
+  const t = (g ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  if (!t.trim()) return "";
+  if (/women and men|men and women|unisex|unissex|compartilh|ambos/.test(t)) return "Unissex";
+  if (/women|feminin|mulher/.test(t)) return "Feminino";
+  if (/\bmen\b|masculin|homem/.test(t)) return "Masculino";
+  return "";
+}
