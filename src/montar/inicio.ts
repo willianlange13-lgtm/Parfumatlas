@@ -11,9 +11,9 @@ import { territorio } from "@/lib/territorio";
 import { coordenadas, paisDaCasa } from "@/data/casas";
 import { hexA } from "@/desenho/h2";
 
-// foto do seu frasco (preenche o quadro) ou a oficial do Fragrantica (fundo branco); sem nenhuma, o desenho.
-// No destaque grande do topo vale só a oficial (decisão do Willian).
-const fr = (e: Entrada) => ({ ...frascoMini(e.perfume.nome, e.perfume.casa, e.perfume.acorde, e.perfume.forma, e.perfume.tampa, corDoAcorde(e.perfume.acorde)), foto: e.foto ?? e.perfume.imagem ?? null, oficial: !e.foto });
+// No Início, sempre que houver, vale a foto oficial recortada (só o frasco, com sombra e luz; decisão do Willian,
+// docs/DECISOES.md §17). A sua foto só entra quando não há a oficial; sem nenhuma, o desenho.
+const fr = (e: Entrada) => ({ ...frascoMini(e.perfume.nome, e.perfume.casa, e.perfume.acorde, e.perfume.forma, e.perfume.tampa, corDoAcorde(e.perfume.acorde)), foto: e.perfume.imagem ?? e.foto ?? null, oficial: Boolean(e.perfume.imagem) || !e.foto });
 /** Quanto dura, com dado real: o ajuste "em você" ou a média da comunidade (nunca uma conta inventada). */
 function duracao(e: { perfume: Perfume; minhaFixacao?: number | null }) {
   const meu = e.minhaFixacao ? NIVEIS_FIXACAO[e.minhaFixacao - 1] : null;
