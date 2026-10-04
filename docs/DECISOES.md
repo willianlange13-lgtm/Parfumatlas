@@ -269,3 +269,10 @@ Briefing do Willian: o desktop estava linear demais (preto + prata + cinza + dou
 - **Comparar no computador:** laudo técnico próprio (dois lados com foto, DNAs sobrepostos, % de semelhança, tabela, acordes em barras espelhadas, notas só em um / em comum / só no outro). O celular segue igual.
 - **Cantos no celular:** cartões em `--r-ed`, botões e campos em `--r-ctl` (inclusive o `Btn` do kit); botões redondos, etiquetas, barra de abas e folha de baixo ficam como estavam.
 - Ordem combinada: base do sistema → ficha → Início → demais telas, cada fase publicada e aprovada antes da próxima.
+
+## 19. Avisos e lançamentos
+
+- **Aviso diário** (`/api/avisos`, todo dia 07h30 de Campo Grande pela Vercel): perfume do dia, esquecidos e lançamentos acima do limite de afinidade. O texto do perfume do dia usa dado real (ajuste "em você" ou média da comunidade); a frase "nas reviews de dias parecidos" era inventada e saiu. "Árabe" nos tipos de alerta usa a lista de `src/data/casas.ts`.
+- **Lançamentos** (decisão do Willian): busca semanal com IA (`/api/lancamentos/buscar`, segunda 08h00), uma chamada com no máximo 4 buscas (~US$ 0,05/semana), nas casas da coleção + árabes grandes, últimos 3 meses. Cada achado vira perfume + linha em `lancamentos`; o aviso diário decide o que notifica pela afinidade. Em Ajustes dá para buscar na hora (pago).
+- Sem lançamento real no banco, a tela mostra o aviso de vazio. Antes ela caía nos lançamentos do catálogo de exemplo, que não eram reais.
+- **Teste:** "Enviar aviso de teste" em Ajustes (`/api/avisos/teste`) manda na hora para os aparelhos inscritos de quem está logado.

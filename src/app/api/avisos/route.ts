@@ -4,9 +4,10 @@ import { clienteServico } from "@/lib/supabase/servico";
 import { lerAcervo } from "@/lib/dados";
 import { obterClima } from "@/lib/clima";
 import { afinidade, esquecidos, perfumeDoDia } from "@/lib/analise";
+import { origemCasa } from "@/data/casas";
 
 const NICHO = new Set(["Creed", "Ex Nihilo", "Xerjoff", "Parfums de Marly", "Maison Francis Kurkdjian", "Tom Ford", "Kilian", "Frédéric Malle"]);
-const ARABE = new Set(["Lattafa", "Armaf", "Afnan"]);
+// árabes: a mesma lista do resto do app (src/data/casas.ts)
 
 /**
  * Envia os avisos do dia (perfume do dia, esquecidos e lançamentos acima do limite).
@@ -33,7 +34,7 @@ export async function GET(request: NextRequest) {
     if (c.notif_dia) {
       const clima = await obterClima(Number(c.latitude), Number(c.longitude), c.cidade);
       const d = perfumeDoDia(acervo.colecao, clima.agora.temp, clima.agora.umidade);
-      if (d) avisos.push({ titulo: "Perfume do dia", corpo: `${clima.agora.temp} °C em ${c.cidade}. Vai de ${d.entrada.perfume.nome}. ${d.porque.split(". ").slice(-1)[0]}`, url: `/colecao/${d.entrada.perfumeId}`, tag: "dia" });
+      if (d) avisos.push({ titulo: "Perfume do dia", corpo: `${clima.agora.temp} °C em ${c.cidade}. Vai de ${d.entrada.perfume.nome}. ${d.porque.split(". ")[0]}.`, url: `/colecao/${d.entrada.perfumeId}`, tag: "dia" });
     }
     if (c.notif_esquecidos) {
       const e = esquecidos(acervo.colecao, 1)[0];
@@ -46,7 +47,7 @@ export async function GET(request: NextRequest) {
       for (const l of acervo.lancamentos) {
         if (ja[l.perfume.id]) continue;
         const casa = l.perfume.casa;
-        const tipoOk = (tipos.includes("casas") && casas.has(casa)) || (tipos.includes("nicho") && NICHO.has(casa)) || (tipos.includes("arabe") && ARABE.has(casa)) || (tipos.includes("designer") && !NICHO.has(casa) && !ARABE.has(casa));
+        const tipoOk = (tipos.includes("casas") && casas.has(casa)) || (tipos.includes("nicho") && NICHO.has(casa)) || (tipos.includes("arabe") && origemCasa(casa) === "arabe") || (tipos.includes("designer") && !NICHO.has(casa) && origemCasa(casa) !== "arabe");
         const pct = afinidade(l.perfume, acervo.colecao);
         if (!tipoOk || pct < (c.alerta_afinidade ?? 80)) continue;
         avisos.push({ titulo: `Lançamento para você · ${pct}%`, corpo: `${l.perfume.nome} (${casa}). ${l.porque}`.slice(0, 180), url: `/novidades`, tag: `l-${l.perfume.id}` });

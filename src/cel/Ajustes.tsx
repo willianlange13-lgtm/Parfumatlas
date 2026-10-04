@@ -40,6 +40,18 @@ export function Ajustes({ cfg, classe, total, pcts, podeSalvar, sair }: Props) {
   const [busca, setBusca] = useState("");
   const [cidades, setCidades] = useState<{ nome: string; regiao: string; latitude: number; longitude: number }[]>([]);
   const [push, setPush] = useState<"" | "sim" | "nao" | "sem">("");
+  const [resposta, setResposta] = useState("");
+  // testes dos avisos: mostra o resultado embaixo da lista
+  async function acao(url: string, ok: (j: { enviados?: number; aparelhos?: number; novos?: string[]; vistos?: number }) => string) {
+    setResposta("Aguarde…");
+    try {
+      const r = await fetch(url, { method: "POST" });
+      const j = await r.json();
+      setResposta(r.ok ? ok(j) : j.erro ?? "Não deu certo agora.");
+    } catch {
+      setResposta("Não consegui falar com o servidor.");
+    }
+  }
   const [instalado, setInstalado] = useState(false);
 
   useEffect(() => {
@@ -115,6 +127,9 @@ export function Ajustes({ cfg, classe, total, pcts, podeSalvar, sair }: Props) {
         <Item ic="sol" titulo="Perfume do dia" sub={`todo dia às ${c.notifDiaHora.replace(":", "h")}`} dir={<Tog on={c.notifDia} mudar={(v) => notif({ notifDia: v })} rotulo="Perfume do dia" />} />
         <Item ic="colecao" titulo="Esquecidos" sub="quando passar de 30 dias parado" dir={<Tog on={c.notifEsquecidos} mudar={(v) => notif({ notifEsquecidos: v })} rotulo="Esquecidos" />} />
         {push === "nao" && typeof Notification !== "undefined" && Notification.permission === "denied" ? <div style={{ fontSize: 12, color: "var(--ink-3)", padding: "0 0 10px" }}>Avisos bloqueados neste aparelho.</div> : null}
+        <Item ic="check" titulo="Enviar aviso de teste" sub="chega na hora neste e nos outros aparelhos inscritos" onClick={() => acao("/api/avisos/teste", (j) => `Enviado para ${j.enviados} de ${j.aparelhos} aparelho(s).`)} />
+        <Item ic="busca" titulo="Buscar lançamentos agora" sub="a busca automática roda toda segunda; esta é uma a mais (pago)" onClick={() => acao("/api/lancamentos/buscar", (j) => j.novos?.length ? `Novos: ${j.novos.join(", ")}` : `Nenhum lançamento novo (${j.vistos ?? 0} encontrados já estavam no Atlas).`)} />
+        {resposta && <div style={{ fontSize: 12.5, color: "var(--ink-2)", padding: "4px 0 12px", lineHeight: 1.45 }}>{resposta}</div>}
       </Card>
 
       <Rot>Voz</Rot>

@@ -58,6 +58,7 @@ export function CelNovidades({ v, limite }: { v: V; limite: number }) {
         </Card>
       )}
 
+      {!v.cards.length && <span style={{ fontSize: 13.5, lineHeight: 1.5, color: "var(--ink-2)" }}>{v.dest.porque}</span>}
       {v.cards.map((c) => (
         <Card key={c.id} pad={12}>
           <div style={{ display: "flex", gap: 12 }}>

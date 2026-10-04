@@ -59,7 +59,7 @@ export async function montarLancamentos(filtro = "voce", limite = 80) {
           tampa: dp.tampa, vidro: `linear-gradient(115deg, rgba(255,255,255,.35) 0%, ${hexA(cor, 0.35)} 40%, ${hexA(cor, 0.7)} 100%)`,
           comparar: ligado ? `/comparar?a=${dp.id}&b=${ligado.id}` : `/comparar?a=${dp.id}`, som: `/sommelier?perfume=${dp.id}`,
         }
-      : { id: "", nome: "Nenhum lançamento", rot: "", linha: "", porque: "Nada novo neste filtro.", pct: 0, tampa: "#141417", vidro: "transparent", comparar: "#", som: "/sommelier" },
+      : { id: "", nome: "Nenhum lançamento", rot: "", linha: "", porque: acervo.lancamentos.length ? "Nada novo neste filtro." : "Ainda sem lançamentos. A busca automática roda toda segunda; em Ajustes › Notificações dá para buscar agora.", pct: 0, tampa: "#141417", vidro: "transparent", comparar: "#", som: "/sommelier" },
     destaque: dp
       ? {
           notas: [...dp.notas.saida.slice(0, 2), ...dp.notas.coracao.slice(0, 1), ...dp.notas.fundo.slice(0, 1)].map((n) => { const r = refNota(n); return { nome: n, d: r.icone, cor: t.amber, bg: r.foto ? "#FFFFFF" : hexA(t.amber, 0.14), borda: hexA(t.amber, 0.45), img: r.foto ?? "", semImg: !r.foto }; }),

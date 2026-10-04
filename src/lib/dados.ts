@@ -116,8 +116,8 @@ export async function lerAcervo(supabase: Cliente, userId?: string): Promise<Ace
     return { perfumeId: perfume.id, tipo: (l.tipo as Lancamento["tipo"]) ?? "PARECIDO", ligacao: "", porque: perfume.descricao ?? "", perfume };
   });
 
-  // sem lançamentos no banco ainda: usa a lista do catálogo (lançamentos reais, com a análise pronta)
-  return { demo: false, perfumes, colecao, lancamentos: lancamentos.length ? lancamentos : demo.lancamentos };
+  // sem lançamentos no banco: lista vazia e a tela avisa (a busca semanal preenche, docs/DECISOES.md §19)
+  return { demo: false, perfumes, colecao, lancamentos };
 }
 
 /** Garante que o perfume exista no banco: ids do catálogo local viram uma linha em "perfumes". Devolve o id do banco. */

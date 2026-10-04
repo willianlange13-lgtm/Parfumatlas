@@ -246,7 +246,10 @@ export function perfumeDoDia(colecao: Entrada[], temp: number, umidade: number) 
   const quente = temp >= 28;
   const clima = quente ? (umidade < 45 ? "Calor seco" : "Calor úmido") : temp >= 20 ? "Tempo ameno" : "Frio";
   const pede = quente ? "pede algo luminoso que segure a tarde toda" : temp >= 20 ? "deixa espaço para algo com mais corpo" : "pede um fundo quente";
-  const dura = e.perfume.fixacaoH ? ` Nas reviews de dias parecidos, passa das ${Math.floor(e.perfume.fixacaoH - (quente ? 0.5 : 0))} horas.` : "";
+  // duração real: o ajuste "em você" ou a média da comunidade (nunca uma conta inventada)
+  const NIV = ["até 2h", "2 a 4h", "4 a 7h", "7 a 12h", "mais de 12h"];
+  const hh = e.perfume.fixacaoH ? `${Math.floor(e.perfume.fixacaoH)}h${String(Math.round((e.perfume.fixacaoH % 1) * 60)).padStart(2, "0")}` : "";
+  const dura = e.minhaFixacao ? ` Em você dura ${NIV[e.minhaFixacao - 1]}.` : hh ? ` A comunidade dá cerca de ${hh} de fixação.` : "";
   return {
     entrada: e,
     porque: `${clima} ${pede}. O ${e.perfume.nome} abre em ${[n.saida[0], n.coracao[0]].filter(Boolean).map((x) => x.toLowerCase()).join(" e ")}.${dura}${dias >= 10 ? ` Está há ${dias} dias sem sair do armário.` : ""}`,
