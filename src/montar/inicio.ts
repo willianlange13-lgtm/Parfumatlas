@@ -62,9 +62,8 @@ export async function montarInicio(outra = 0) {
   const sem = semana(acervo.colecao, clima.dias.map((d) => ({ temp: d.temp, umidade: d.umidade })));
   const resgatados = sem.filter((s) => s?.esquecido).length;
 
-  // vitrine do topo (docs/DECISOES.md §21): carrossel com frascos seus, lançamentos e recomendações, girando por dia
-  const diaN = Math.floor((Date.now() - 4 * 36e5) / 864e5);
-  const girar = <T,>(l: T[], k: number) => (l.length ? Array.from({ length: Math.min(k, l.length) }, (_, i) => l[(diaN * k + i) % l.length]) : []);
+  // vitrine do topo (docs/DECISOES.md §21): um destaque só, sorteado a cada visita entre frascos seus, lançamentos e recomendações
+  const sortear = <T,>(l: T[]) => (l.length ? l[Math.floor(Math.random() * l.length)] : undefined);
   const slide = (e: { perfume: Perfume; minhaFixacao?: number | null }, tipo: "tenho" | "novidade" | "para-voce", entrada: string) => {
     const nomeH = e.perfume.nome.toUpperCase().split(" "), meio = Math.ceil(nomeH.length / 2);
     return {
@@ -76,16 +75,18 @@ export async function montarInicio(outra = 0) {
   };
   const jaTive = new Set(acervo.colecao.map((e) => e.perfume.id)); // tenho, tive ou quero: não entra como recomendação
   // seus: primeiro os mais tempo parados, com foto
-  const meusV = girar((itens.filter((e) => e.perfume.imagem).length >= 3 ? itens.filter((e) => e.perfume.imagem) : [...itens]).sort((a, b) => diasDesde(b.ultimoUso) - diasDesde(a.ultimoUso)), 3)
+  const meusV = ((itens.filter((e) => e.perfume.imagem).length >= 3 ? itens.filter((e) => e.perfume.imagem) : [...itens]).sort((a, b) => diasDesde(b.ultimoUso) - diasDesde(a.ultimoUso)))
     .map((e) => slide(e, "tenho", `ENTRADA Nº ${n3(e.numero)} · ${diasDesde(e.ultimoUso) >= 10 ? `HÁ ${diasDesde(e.ultimoUso)} DIAS SEM USAR` : `ADICIONADO EM ${mesAno(e.adicionadoEm)}`}`));
-  const novV = girar(acervo.lancamentos.filter((l) => l.perfume?.imagem && !jaTive.has(l.perfume.id)).slice(0, 12)
-    .map((l) => ({ l, af: afinidade(l.perfume, acervo.colecao) })).sort((a, b) => b.af - a.af), 2)
+  const novV = (acervo.lancamentos.filter((l) => l.perfume?.imagem && !jaTive.has(l.perfume.id)).slice(0, 12)
+    .map((l) => ({ l, af: afinidade(l.perfume, acervo.colecao) })).sort((a, b) => b.af - a.af).slice(0, 4))
     .map(({ l, af }) => slide({ perfume: l.perfume }, "novidade", `LANÇAMENTO · ${l.tipo} · ${af}% DE AFINIDADE`));
-  const novIds = new Set(novV.map((x) => x.href));
-  const recV = girar([...acervo.perfumes.values()].filter((p) => p.imagem && !jaTive.has(p.id) && !novIds.has(`/colecao/${p.id}`))
-    .map((p) => ({ p, af: afinidade(p, acervo.colecao) })).sort((a, b) => b.af - a.af).slice(0, 8), 2)
+  const novIds = new Set(novV.map((x) => x.href)); // recomendação não repete lançamento
+  const recV = ([...acervo.perfumes.values()].filter((p) => p.imagem && !jaTive.has(p.id) && !novIds.has(`/colecao/${p.id}`))
+    .map((p) => ({ p, af: afinidade(p, acervo.colecao) })).sort((a, b) => b.af - a.af).slice(0, 8))
     .map(({ p, af }) => slide({ perfume: p }, "para-voce", `${af}% DE AFINIDADE COM O SEU DNA`));
-  const vitrine = [meusV[0], novV[0], recV[0], meusV[1], novV[1], recV[1], meusV[2]].filter(Boolean);
+  // primeiro sorteia o tipo (seu, novidade ou para você), depois o perfume dentro dele
+  const escolhaV = sortear(sortear([meusV, novV, recV].filter((l) => l.length)) ?? []);
+  const vitrine = escolhaV ? [escolhaV] : [];
   if (!vitrine.length) {
     const ult = acervo.colecao.find((e) => e.situacao === "assinatura") ?? [...itens].sort((a, b) => b.numero - a.numero)[0];
     if (ult) vitrine.push(slide(ult, "tenho", `ENTRADA Nº ${n3(ult.numero)} · ADICIONADO EM ${mesAno(ult.adicionadoEm)}`));

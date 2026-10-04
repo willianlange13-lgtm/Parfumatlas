@@ -283,6 +283,6 @@ Briefing do Willian: o desktop estava linear demais (preto + prata + cinza + dou
 - **Linha do tempo**: entram os perfumes que ele teve, esmaecidos (ponto vazado), com legenda tenho/tive. O texto "coleção recente/clássica" conta só os atuais.
 - **Enciclopédia**: a nota em destaque gira por dia entre as notas da coleção e dos que ele teve; "para conhecer" gira por dia e nunca mostra o que ele tem ou teve. O mapa das casas também conta os que ele teve.
 
-## 21. Vitrine do Início em carrossel (out/2026)
+## 21. Vitrine do Início: um destaque que muda a cada visita (out/2026)
 
-- O destaque do topo deixou de ser sempre a assinatura (decisão do Willian). Agora é um carrossel que passa sozinho a cada 8 s (para com o mouse em cima, troca pelos pontinhos): 3 frascos dele (os mais tempo parados, girando por dia), 2 lançamentos (maior afinidade) e 2 recomendações que ele não tem nem teve (maior afinidade com o DNA). Cada um com selo NA COLEÇÃO, NOVIDADE ou PARA VOCÊ.
+- O destaque do topo deixou de ser sempre a assinatura (decisão do Willian). A cada vez que o Início abre, sorteia um só: primeiro o tipo (frasco dele, lançamento ou recomendação), depois o perfume dentro dele. Frascos dele: todos com foto; lançamentos: os 4 de maior afinidade; recomendações: os 8 de maior afinidade com o DNA que ele não tem nem teve. Selo NA COLEÇÃO, NOVIDADE ou PARA VOCÊ. Carrossel passando sozinho foi testado e recusado.
