@@ -15,7 +15,7 @@ type Campo = { l: string; v: string; st: string; mudar: (e: React.ChangeEvent<HT
 export type CadCel = {
   modo: Modo; setModo: (m: Modo) => void; foto: string | null; lido: string[]; cands: Cand[]; sel: number; ficha: Ficha | null; setFicha: (f: Ficha) => void;
   situacao: string; setSituacao: (s: string) => void; anotacao: string; setAnotacao: (s: string) => void; minhaFixacao: number | null; setMinhaFixacao: (n: number | null) => void; minhaProjecao: number | null; setMinhaProjecao: (n: number | null) => void; ocupado: string; ouvindo: boolean; fala: string; erro: string;
-  identificar: (m: "foto" | "link" | "nome", texto?: string, f?: undefined, rapido?: boolean) => void; pesquisou: boolean; completando: boolean; escolher: (c: Cand, i: number) => void; ouvir: () => void; salvar: () => void;
+  identificar: (m: "foto" | "link" | "nome", texto?: string, f?: undefined, rapido?: boolean) => void; pesquisou: boolean; completando: boolean; escolher: (c: Cand, i: number) => void; ouvir: () => void; salvar: () => void; manual: (texto?: string) => void;
   fotoEscolhida: (e: React.ChangeEvent<HTMLInputElement>) => void; seloBusca: Selo | null; seloFicha: Selo | null; campos: Campo[]; prog: { pct: number; ok: number; tot: number; rev: number }; fontes: { nome: string; info: string }[]; desemp: { l: string; seg: string[]; v: string }[]; quando: [string, number][];
 };
 
@@ -390,6 +390,7 @@ export function CelCadastro({ c, modoInicial }: { c: CadCel; modoInicial?: strin
       )}
 
       {c.erro && <span style={{ color: "var(--erro)", fontSize: 13.5 }}>{c.erro}</span>}
+      <button type="button" onClick={() => { c.manual(q); setPasso("revisar"); }} style={{ alignSelf: "flex-start", padding: "9px 14px", border: "1px dashed var(--line-2)", borderRadius: "var(--r-ctl)", background: "transparent", color: OURO, fontSize: 13.5, fontFamily: "inherit", flexShrink: 0 }}>+ Não achou? Adicionar sem pesquisa</button>
       {c.modo === "foto" && c.cands.length > 0 && rodape(btnP(c.ocupado === "ficha" ? "Montando a ficha…" : "É este", () => (f ? setPasso("revisar") : sel && c.escolher(sel, c.sel < 0 ? 0 : c.sel)), c.ocupado === "ficha"), btnS("Outra foto", fotografar))}
       {c.modo === "foto" && !c.cands.length && rodape(btnP(c.ocupado === "lendo" ? "Lendo o frasco…" : "Fotografar o frasco", fotografar, c.ocupado === "lendo"))}
       {c.modo === "link" && rodape(btnP(c.ocupado ? "Lendo…" : "Continuar", () => (f ? setPasso("revisar") : sel ? c.escolher(sel, 0) : q.trim() && c.identificar("link", q.trim())), Boolean(c.ocupado)))}

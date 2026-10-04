@@ -57,11 +57,14 @@ export function CadastroCliente({ base, modoInicial }: { base: Record<string, un
   const [buscaIA, setBuscaIA] = useState<boolean | null>(null);
   const [completando, setCompletando] = useState(false);
   const link = useRef<string | undefined>(undefined);
+  const manualRef = useRef(false); // ficha feita à mão: depois de salvar, abre o Editar
+  const ultimaBusca = useRef("");
   const salvoId = useRef<string | null>(null); // ficha salva antes da segunda etapa terminar
 
   async function identificar(m: "foto" | "link" | "nome", texto?: string, f?: { mime: string; base64: string }, rapido = false) {
     setOcupado("lendo"); setErro(""); setFicha(null); setSel(-1); setPesquisou(false);
     link.current = m === "link" ? texto : undefined;
+    if (m === "nome" && texto) ultimaBusca.current = texto;
     try {
       const r = await fetch("/api/identificar", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ modo: m, texto, foto: f, rapido }) });
       const j = await r.json();
@@ -81,6 +84,7 @@ export function CadastroCliente({ base, modoInicial }: { base: Record<string, un
   }
 
   async function escolher(c: Cand, i: number) {
+    manualRef.current = false;
     setSel(i); setOcupado("ficha"); setErro("");
     try {
       const r = await fetch("/api/ficha", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ nome: c.nome, casa: c.casa, concentracao: c.concentracao, link: c.link ?? link.current }), signal: AbortSignal.timeout(130000) });
@@ -123,14 +127,27 @@ export function CadastroCliente({ base, modoInicial }: { base: Record<string, un
     r.start();
   }
 
+  /** Adicionar sem pesquisa: ficha em branco com o nome digitado; você completa e salva (sem custo de IA). */
+  function manual(texto?: string) {
+    const campo = (document.querySelector('input[name="q"]') as HTMLInputElement | null)?.value;
+    const q = (texto ?? campo ?? ultimaBusca.current ?? "").trim();
+    manualRef.current = true;
+    setCands([]); setSel(-1); setErro(""); setCompletando(false);
+    setFicha({
+      nome: /^https?:\/\//.test(q) ? "" : q, casa: "", concentracao: "", perfumistas: [], familia: "", acorde: "Amadeirado", genero: "", pais: "", descricao: "",
+      notas: { saida: [], coracao: [], fundo: [] }, acordes: [], forma: "ret", tampa: "#141417", imagem: null, fonteFicha: null, revisar: ["nome", "casa"],
+    });
+  }
+
   async function salvar() {
     if (!ficha) return;
+    if (!ficha.nome.trim() || !ficha.casa.trim()) { setErro("Preencha o nome e a casa do perfume."); return; }
     setOcupado("salvando"); setErro("");
     const r = await fetch("/api/salvar", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ficha, situacao, anotacao, minhaFixacao, minhaProjecao, foto: foto ? { mime: foto.mime, base64: foto.base64 } : undefined }) });
     const j = await r.json();
     setOcupado("");
     if (!r.ok) setErro(j.erro ?? "Não consegui salvar.");
-    else { salvoId.current = j.id; router.push(`/colecao/${j.id}`); }
+    else { salvoId.current = j.id; router.push(manualRef.current ? `/editar/${j.id}` : `/colecao/${j.id}`); }
   }
 
   const muda = (k: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -155,7 +172,7 @@ export function CadastroCliente({ base, modoInicial }: { base: Record<string, un
   const campos = ficha ? [campo("NOME", ficha.nome), campo("CASA", ficha.casa), campo("CONCENTRAÇÃO", ficha.concentracao, CONCENTRACOES), campo("ANO", ficha.ano ? String(ficha.ano) : ""), campo("FAMÍLIA", ficha.familia), campo("GÊNERO", ficha.genero, GENEROS), campo("PAÍS", ficha.pais)] : [];
   const checks = ficha ? [ficha.nome, ficha.casa, ficha.concentracao, ficha.ano, ficha.familia, ficha.genero, ficha.pais, ficha.descricao, ficha.notas.saida.length, ficha.notas.coracao.length, ficha.notas.fundo.length, ficha.acordes.length, ficha.fixacaoH, ficha.projecaoM, ficha.votos?.estacoes, ficha.votos?.dia, ficha.acorde] : [];
   const pend = campos.filter((c) => c.st === "REVISAR").length;
-  const ok = checks.filter(Boolean).length - pend;
+  const ok = Math.max(0, checks.filter(Boolean).length - pend);
   const tot = 20;
   const arco = (fr: number) => { const c = 42, r = 34, a0 = -Math.PI / 2, a1 = a0 + Math.max(0.01, fr) * 2 * Math.PI * 0.9999; return `M ${(c + Math.cos(a0) * r).toFixed(1)} ${(c + Math.sin(a0) * r).toFixed(1)} A ${r} ${r} 0 ${a1 - a0 > Math.PI ? 1 : 0} 1 ${(c + Math.cos(a1) * r).toFixed(1)} ${(c + Math.sin(a1) * r).toFixed(1)}`; };
   const seg = (n: number) => Array.from({ length: 5 }, (_, i) => (i < n ? t.amber : t.chip2));
@@ -212,12 +229,13 @@ export function CadastroCliente({ base, modoInicial }: { base: Record<string, un
       txt: val ? nomes[val - 1] : "toque para marcar · senão vale a média da comunidade",
     })),
     salvar,
+    manual: () => manual(),
     salvarTxt: ocupado === "salvando" ? "Salvando…" : "Salvar na coleção",
     erro,
   };
   const cel = {
     modo, setModo: (m: Modo) => { setModo(m); setErro(""); }, foto: foto?.url ?? null, lido, cands, sel, ficha, setFicha, situacao, setSituacao, anotacao, setAnotacao, minhaFixacao, setMinhaFixacao, minhaProjecao, setMinhaProjecao, ocupado, ouvindo, fala, erro,
-    identificar, pesquisou, completando, escolher, seloBusca: seloBusca(buscaIA), seloFicha: seloFicha(ficha), ouvir, salvar, fotoEscolhida: v.fotoEscolhida, campos, prog: v.prog, fontes: v.fontes, desemp: v.desemp,
+    identificar, pesquisou, completando, escolher, manual, seloBusca: seloBusca(buscaIA), seloFicha: seloFicha(ficha), ouvir, salvar, fotoEscolhida: v.fotoEscolhida, campos, prog: v.prog, fontes: v.fontes, desemp: v.desemp,
     quando: ficha?.votos ? [["Inverno", ficha.votos.estacoes.inverno], ["Primavera", ficha.votos.estacoes.primavera], ["Verão", ficha.votos.estacoes.verao], ["Outono", ficha.votos.estacoes.outono], ["Dia", ficha.votos.dia], ["Noite", ficha.votos.noite]] as [string, number][] : [],
   };
   return (

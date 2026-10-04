@@ -289,3 +289,9 @@ Briefing do Willian: o desktop estava linear demais (preto + prata + cinza + dou
 ## 21. Vitrine do Início: um destaque que muda a cada visita (out/2026)
 
 - O destaque do topo deixou de ser sempre a assinatura (decisão do Willian). A cada vez que o Início abre, sorteia um só: primeiro o tipo (frasco dele, lançamento ou recomendação), depois o perfume dentro dele. Frascos dele: todos com foto; lançamentos: os 4 de maior afinidade; recomendações: os 8 de maior afinidade com o DNA que ele não tem nem teve. Selo NA COLEÇÃO, NOVIDADE ou PARA VOCÊ. Carrossel passando sozinho foi testado e recusado.
+
+## 22. Adicionar sem pesquisa e ficha editável (out/2026)
+
+- **Adicionar sem pesquisa** (pedido do Willian): botão "+ Não achou? Adicionar sem pesquisa" sempre visível no cadastro (computador e celular). Abre a ficha em branco com o nome digitado, sem IA e sem custo; nome e casa são obrigatórios. Depois de salvar, abre o Editar para completar pirâmide, acordes e quando usar.
+- **Acordes no Editar**: incluir, tirar e dar força (5 níveis, 20 a 100). O mais forte vira o acorde principal. Ficha sem acordes mostra no glifo "Sem acordes nesta ficha · Marcar em Editar" em vez de um desenho zerado.
+- **Quando usar no Editar**: primavera, verão, outono, inverno, dia e noite em 5 níveis. Alimenta a seção "Quando funciona" e a sugestão do dia pelo clima. Ficha feita à mão começa com tudo vazio (nada inventado).

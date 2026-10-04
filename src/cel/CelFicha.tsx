@@ -56,6 +56,7 @@ export function CelFicha({ v, x }: { v: V; x: ExtraFicha }) {
       </div>
       <div style={{ position: "relative", width: 330, height: 330, alignSelf: "center", flexShrink: 0 }}>
         <div style={{ position: "absolute", left: 50, top: 50 }}><Camadas camadas={v.glifo} tam={230} /></div>
+        {v.semAcordes && <a href={`/editar/${encodeURIComponent(v.cab.id)}`} style={{ position: "absolute", left: "50%", top: "50%", transform: "translate(-50%, -50%)", zIndex: 2, padding: "10px 14px", borderRadius: "var(--r-ctl)", background: "var(--bg)", border: "1px solid var(--line-2)", color: "var(--ink)", fontSize: 13, textDecoration: "none", textAlign: "center", lineHeight: 1.4 }}>Sem acordes nesta ficha<br /><span style={{ color: "var(--ouro, #D8B970)" }}>Marcar em Editar →</span></a>}
         {v.eixos.map((e, i) => {
           const a = (i * 2 * Math.PI) / n - Math.PI / 2;
           return (

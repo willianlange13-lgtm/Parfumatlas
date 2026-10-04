@@ -3,14 +3,19 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Icone } from "@/components/Icone";
 import { Frasco } from "@/components/Frasco";
-import type { Perfume } from "@/lib/tipos";
-import { CONCENTRACOES, FAMILIAS, GENEROS, NIVEIS_FIXACAO, NIVEIS_PROJECAO } from "@/lib/normalizar";
+import type { Perfume, Votos } from "@/lib/tipos";
+import { ACORDES, CONCENTRACOES, FAMILIAS, GENEROS, NIVEIS_FIXACAO, NIVEIS_PROJECAO, acordePrincipal, familiaAtlas } from "@/lib/normalizar";
 import { Card, MONO, NotaChip, OURO, Rot } from "./kit";
 import { reduzirFoto } from "./voz";
 
 type E = { situacao: string; anotacao: string; foto: string | null; minhaFixacao: number | null; minhaProjecao: number | null; minhaNota: number | null };
 const NF = NIVEIS_FIXACAO.map((n) => `${n.nome} · ${n.faixa}`);
 const NP = NIVEIS_PROJECAO.map((n) => `${n.nome} · ${n.faixa}`);
+const FORCA = ["Leve", "Presente", "Marcante", "Forte", "Dominante"];
+const QUANTO = ["Pouco", "Às vezes", "Bem", "Muito bem", "Ideal"];
+/** Votos vazios para ficha feita à mão: nada inventado, só o que você marcar. */
+const VAZIO: Votos = { total: 0, fixacao: [0, 0, 0, 0, 0], projecao: [0, 0, 0, 0], estacoes: { primavera: 0, verao: 0, outono: 0, inverno: 0 }, dia: 0, noite: 0, ocasioes: [] };
+const nivel = (v?: number) => (v ? Math.max(1, Math.min(5, Math.round(v / 20))) : null);
 
 export function Editar({ p: p0, e: e0, podeSalvar }: { p: Perfume; e: E; podeSalvar: boolean }) {
   const router = useRouter();
@@ -37,6 +42,16 @@ export function Editar({ p: p0, e: e0, podeSalvar }: { p: Perfume; e: E; podeSal
       </select>
     </label>
   );
+  // acordes: força em 5 níveis (20 a 100); o mais forte vira o acorde principal
+  const acordesNovos = (lista: { nome: string; valor: number }[]) => {
+    const ord = [...lista].sort((a, b) => b.valor - a.valor);
+    setP({ ...p, acordes: ord, acorde: ord[0] ? acordePrincipal(ord[0].nome) : p.acorde, familia: p.familia || familiaAtlas(ord.map((a) => a.nome).join(" "), ord[0]?.nome) });
+  };
+  const faltam = ACORDES.filter((a) => !p.acordes.some((x) => x.nome.toLowerCase() === a.toLowerCase()));
+  // quando usar: estações, dia e noite em 5 níveis
+  const votos = p.votos ?? VAZIO;
+  const mudaVoto = (k: "primavera" | "verao" | "outono" | "inverno" | "dia" | "noite", v: number) =>
+    setP({ ...p, votos: k === "dia" || k === "noite" ? { ...votos, [k]: v * 20 } : { ...votos, estacoes: { ...votos.estacoes, [k]: v * 20 } } });
   const tira = (k: "saida" | "coracao" | "fundo", n: string) => setP({ ...p, notas: { ...p.notas, [k]: p.notas[k].filter((x) => x !== n) } });
   const poe = (k: "saida" | "coracao" | "fundo") => { const n = prompt("Nome da nota"); if (n?.trim()) setP({ ...p, notas: { ...p.notas, [k]: [...p.notas[k], n.trim()] } }); };
 
@@ -125,6 +140,36 @@ export function Editar({ p: p0, e: e0, podeSalvar }: { p: Perfume; e: E; podeSal
               ))}
               <button type="button" onClick={() => poe(k)} className="tracejado" style={{ background: "none", padding: "3px 10px", borderRadius: 14 }}>+ nota</button>
             </div>
+          </div>
+        ))}
+      </Card>
+      <Card pad={14} gap={12}>
+        <Rot>Acordes</Rot>
+        <span style={{ fontSize: 12.5, color: "var(--ink-3)" }}>Desenham o DNA olfativo da ficha. Toque na barra para dar a força.</span>
+        {p.acordes.map((a) => (
+          <div key={a.nome} style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span style={{ fontSize: 14, flexGrow: 1 }}>{a.nome}</span>
+              <button type="button" onClick={() => acordesNovos(p.acordes.filter((x) => x.nome !== a.nome))} style={{ background: "none", border: "none", color: "var(--ink-3)", fontSize: 13 }} aria-label={`Tirar ${a.nome}`}>tirar ×</button>
+            </div>
+            {segs(5, 5, nivel(a.valor), (v) => acordesNovos(p.acordes.map((x) => (x.nome === a.nome ? { ...x, valor: v * 20 } : x))), FORCA)}
+          </div>
+        ))}
+        {faltam.length > 0 && (
+          <select value="" onChange={(x) => { const nome = x.target.value; if (nome) acordesNovos([...p.acordes, { nome, valor: 60 }]); }}
+            style={{ height: 38, borderRadius: "var(--r-ctl)", border: "1px dashed var(--line-2)", background: "transparent", color: "var(--ink-2)", fontSize: 13.5, padding: "0 10px", fontFamily: "inherit" }}>
+            <option value="" style={{ color: "#000" }}>+ acorde</option>
+            {faltam.map((a) => <option key={a} value={a} style={{ color: "#000" }}>{a}</option>)}
+          </select>
+        )}
+      </Card>
+      <Card pad={14} gap={12}>
+        <Rot>Quando usar</Rot>
+        <span style={{ fontSize: 12.5, color: "var(--ink-3)" }}>Estação e período em que ele funciona. Vale para a sugestão do dia pelo clima.</span>
+        {([["PRIMAVERA", "primavera"], ["VERÃO", "verao"], ["OUTONO", "outono"], ["INVERNO", "inverno"], ["DIA", "dia"], ["NOITE", "noite"]] as const).map(([nome, k]) => (
+          <div key={k} style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+            <span style={{ fontFamily: MONO, fontSize: 9, letterSpacing: ".1em", color: "var(--ink-3)" }}>{nome}</span>
+            {segs(5, 5, nivel(k === "dia" || k === "noite" ? votos[k] : votos.estacoes[k]), (v) => mudaVoto(k, v), QUANTO)}
           </div>
         ))}
       </Card>

@@ -232,3 +232,5 @@ export function generoPT(g?: string | null) {
 /** Opções das caixas de seleção do cadastro. */
 export const CONCENTRACOES = ["Eau de Cologne", "Eau de Toilette", "Eau de Parfum", "Eau de Parfum Intense", "Extrait de Parfum", "Parfum", "Óleo / Attar"] as const;
 export const GENEROS = ["Masculino", "Feminino", "Unissex"] as const;
+/** Acordes que o Atlas reconhece (mesma lista que a IA usa na ficha). */
+export const ACORDES = ["Frutado", "Cítrico", "Fresco", "Aromático", "Lavanda", "Aquático", "Mineral", "Floral", "Verde", "Amadeirado", "Oud", "Esfumaçado", "Couro", "Patchouli", "Incenso", "Âmbar", "Especiado", "Almíscar", "Tabaco", "Baunilha", "Doce", "Gourmand", "Mel", "Café"] as const;

@@ -202,6 +202,8 @@ export async function montarFicha(id: string) {
     clima,
     ocasioes: (p.votos?.ocasioes ?? base.ocasioes).map((o, i) => ({ nome: o.nome, v: o.v, cor: i < 2 ? t.sup[0] : i < 4 ? t.sup[1] : t.sup[2] })),
     glifo: glifo(AC.map((a) => a.valor), cores, false, terr.a),
+    // ficha sem acordes (adicionada à mão): o glifo fica vazio e a ficha pede para marcar em Editar
+    semAcordes: !p.acordes.length,
     terr: { ...terr, glowB: hexA(terr.b, 0.16), linha: hexA(terr.a, 0.35) },
     eixos,
     topFam: AC.slice(0, 3).map((a, i) => ({ nome: a.nome, cor: cores[i], bg: hexA(cores[i], 0.22) })),
