@@ -276,3 +276,13 @@ Briefing do Willian: o desktop estava linear demais (preto + prata + cinza + dou
 - **Lançamentos** (decisão do Willian): busca semanal com IA (`/api/lancamentos/buscar`, segunda 08h00), uma chamada por casa (até 3 buscas cada, abrindo primeiro a página da casa no Fragrantica e depois notícias do mês), 12 casas em paralelo (coleção primeiro, depois árabes grandes), últimos 3 meses, ~US$ 0,15–0,30/semana. Antes era uma chamada só com 4 buscas para todas as casas e os lançamentos do mês escapavam (ex.: Rayhaan). Cada achado vira perfume + linha em `lancamentos`; o aviso diário decide o que notifica pela afinidade. Em Ajustes dá para buscar na hora (pago).
 - Sem lançamento real no banco, a tela mostra o aviso de vazio. Antes ela caía nos lançamentos do catálogo de exemplo, que não eram reais.
 - **Teste:** "Enviar aviso de teste" em Ajustes (`/api/avisos/teste`) manda na hora para os aparelhos inscritos de quem está logado.
+
+## 20. Descobrir vivo (out/2026)
+
+- **Escola do nariz** (decisão do Willian): uma lição nova por semana, escrita pela IA a partir dos frascos que ele tem (e dos que teve), sem pesquisa na web (centavos por semana). Cada lição traz o conceito, um exercício prático com 2 ou 3 frascos dele e o botão "Marcar como feita"; o progresso é real. As lições ficam em `configuracoes.escola` (rodar `supabase/migrations/0004_escola.sql`). A lição é gerada depois que a página abre (`after`) e aparece na visita seguinte. Sem a coluna, a página mostra as lições fixas de exemplo e avisa.
+- **Linha do tempo**: entram os perfumes que ele teve, esmaecidos (ponto vazado), com legenda tenho/tive. O texto "coleção recente/clássica" conta só os atuais.
+- **Enciclopédia**: a nota em destaque gira por dia entre as notas da coleção e dos que ele teve; "para conhecer" gira por dia e nunca mostra o que ele tem ou teve. O mapa das casas também conta os que ele teve.
+
+## 21. Vitrine do Início em carrossel (out/2026)
+
+- O destaque do topo deixou de ser sempre a assinatura (decisão do Willian). Agora é um carrossel que passa sozinho a cada 8 s (para com o mouse em cima, troca pelos pontinhos): 3 frascos dele (os mais tempo parados, girando por dia), 2 lançamentos (maior afinidade) e 2 recomendações que ele não tem nem teve (maior afinidade com o DNA). Cada um com selo NA COLEÇÃO, NOVIDADE ou PARA VOCÊ.
