@@ -248,3 +248,14 @@ A foto oficial do Fragrantica (frasco em fundo branco) é tratada pelo próprio 
 - foto oficial aparece sem fundo, com sombra; foto do próprio Willian preenche o quadro (cover);
 - frasco claro (mais de 40% do frasco quase branco) não é recortado: separar vidro branco de fundo branco dá serrilhado. Vira cartão (sobra branca cortada, cantos arredondados);
 - no destaque grande do Início vale só a foto oficial (decisão do Willian); sem ela, o frasco desenhado.
+
+## 18. Direção visual: personalidade sem perder a identidade (out/2026)
+
+Briefing do Willian: o desktop estava linear demais (preto + prata + cinza + dourado em tudo). Lapidar, não reconstruir.
+
+- **Três vozes:** `--serif` Cormorant Garamond (nomes de perfume, grandes títulos, frases editoriais; substituiu a Montserrat), `--sans` Instrument Sans (interface e texto), `--mono` JetBrains Mono só para dados (entrada, ano, coordenadas, concentração, indicadores).
+- **Três raios:** `--r-ed` 18px (contêiner editorial), `--r-ctl` 12px (controles), cápsula só com função (etiquetas pequenas, botões redondos). Os `Des*.tsx` usam os tokens (troca automática feita com regra: contêiner 20–32px → `--r-ed`; botão-cápsula de 30–60px de altura → `--r-ctl`).
+- **Botão metálico** só na ação principal da tela (Explorar coleção, Perguntar ao Sommelier, Adicionar perfume, Salvar, enviar no Sommelier). Secundários: contorno.
+- **Territórios olfativos** (`src/lib/territorio.ts`): a família/acordes do perfume definem `--terr-a`, `--terr-b`, `--terr-glow`. Aparecem só como atmosfera: luz ambiente, brilho, barras, bordas especiais, DNA. Nunca card pintado.
+- **Semelhantes** continuam fora da ficha (decisão anterior mantida).
+- Ordem combinada: base do sistema → ficha → Início → demais telas, cada fase publicada e aprovada antes da próxima.

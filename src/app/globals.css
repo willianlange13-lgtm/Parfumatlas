@@ -1,4 +1,8 @@
-/* Parfum Atlas · sistema visual (base preta, prata e ouro champanhe) */
+/* Parfum Atlas · sistema visual (base preta, prata e ouro champanhe)
+ * Três vozes: --serif (nomes e títulos editoriais), --sans (interface), --mono (dados, entrada, coordenadas).
+ * Três raios: --r-ed (contêiner editorial), --r-ctl (controles), --r-pill (só quando a cápsula tem função).
+ * Território olfativo: --terr-a / --terr-b / --terr-glow vêm da família do perfume (src/lib/territorio.ts)
+ * e só aparecem como atmosfera (luz, brilho, barras, bordas especiais), nunca como card pintado. */
 :root {
   --bg: #050506;
   --surface: #0d0d10;
@@ -28,7 +32,15 @@
   --sans: "Instrument Sans", system-ui, sans-serif;
   --mono: "JetBrains Mono", ui-monospace, monospace;
   --script: "Pinyon Script", cursive;
-  --marca: "Montserrat", "Instrument Sans", sans-serif;
+  --serif: "Cormorant Garamond", "Iowan Old Style", Georgia, serif;
+  --marca: var(--serif); /* antes Montserrat: os títulos agora são editoriais */
+  --r-ed: 18px;
+  --r-ctl: 12px;
+  --r-pill: 999px;
+  /* território neutro (sem perfume em foco): o próprio prata/ouro da marca */
+  --terr-a: #c9d1de;
+  --terr-b: #d8b970;
+  --terr-glow: rgba(201, 209, 222, 0.10);
   --tab-h: 0px;
   color-scheme: dark;
 }
@@ -168,3 +180,10 @@ img { display: block; max-width: 100%; }
   body:has(.topo-app:not(.so-inicio-esconde)) .c-tela { padding-top: 0; }
   .c-folha { max-height: calc(88dvh - env(safe-area-inset-top)); }
 }
+
+/* ---------- vozes editoriais (desktop e celular) ---------- */
+.serif { font-family: var(--serif); font-weight: 500; letter-spacing: -0.005em; }
+.titulo-ed { font-family: var(--serif); font-weight: 500; line-height: 1.02; letter-spacing: -0.01em; }
+.coord { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.14em; color: var(--ink-3); text-transform: uppercase; }
+/* botão secundário: escuro com contorno (o metálico fica só para a ação principal) */
+.btn-sec { background: transparent !important; color: var(--ink) !important; border: 1px solid var(--line-2) !important; }

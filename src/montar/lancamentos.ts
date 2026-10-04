@@ -36,7 +36,8 @@ export async function montarLancamentos(filtro = "voce", limite = 80) {
       notas: [p.notas.saida[0], p.notas.coracao[0], p.notas.fundo[0]].filter(Boolean).join(" · "),
       bw: f[0], bh: f[1], br: f[2], capW: Math.round(f[0] * 0.48), lw: f[0] - 14, tampa: p.tampa, rot: p.casa.split(" ")[0].toUpperCase().slice(0, 8),
       vidro: `linear-gradient(115deg, rgba(255,255,255,.35) 0%, ${hexA(cor, 0.32)} 45%, ${hexA(cor, 0.6)} 100%)`, palco: `radial-gradient(ellipse at 50% 85%, ${hexA(cor, 0.3)} 0%, ${t.surface} 72%)`,
-      btn: q ? "✓ No seu Quero" : "Adicionar ao Quero", btnBg: q ? t.chip2 : t.btn, btnCor: q ? t.ink : t.onBtn, href: `/colecao/${p.id}`,
+      btn: q ? "✓ No seu Quero" : "Adicionar ao Quero", btnBg: q ? t.chip2 : "transparent", btnCor: t.ink, // secundário: o metálico fica só na ação principal da tela
+      href: `/colecao/${p.id}`,
     };
   };
 
