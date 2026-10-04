@@ -47,7 +47,7 @@ export default async function Curiosidade({ searchParams }: PageProps<"/curiosid
         <div>
           {linhas.map(([l, v]) => (
             <div key={l} style={{ padding: "10px 0", borderTop: "1px solid var(--line)", display: "flex", flexDirection: "column", gap: 4 }}>
-              <span style={{ fontFamily: "var(--mono)", fontSize: 9.5, letterSpacing: ".12em", color: "var(--ink-3)", textTransform: "uppercase" }}>{l}</span>
+              <span style={{ fontFamily: "var(--mono)", fontSize: 9.5, letterSpacing: ".08em", color: "var(--ink-3)", textTransform: "uppercase" }}>{l}</span>
               <span style={{ fontSize: 14, lineHeight: 1.45 }}>{v}</span>
             </div>
           ))}

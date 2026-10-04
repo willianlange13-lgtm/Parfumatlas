@@ -234,7 +234,7 @@ export function CelCadastro({ c, modoInicial }: { c: CadCel; modoInicial?: strin
         </div>
         <div style={{ textAlign: "center", display: "flex", flexDirection: "column", gap: 4 }}>
           <span style={{ fontSize: 24, fontFamily: "var(--marca)", fontWeight: 500 }}>{f.nome}</span>
-          <span style={{ fontFamily: MONO, fontSize: 10, letterSpacing: ".12em", color: "var(--ink-3)" }}>{f.casa.toUpperCase()}</span>
+          <span style={{ fontFamily: MONO, fontSize: 10, letterSpacing: ".08em", color: "var(--ink-3)" }}>{f.casa.toUpperCase()}</span>
         </div>
         <Rot>Adicionar como</Rot>
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
@@ -280,7 +280,7 @@ export function CelCadastro({ c, modoInicial }: { c: CadCel; modoInicial?: strin
             ) : (
               <span style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 10, color: "var(--ink-2)" }}>
                 <Icone nome="camera" tamanho={34} traco={1.3} />
-                <span style={{ fontFamily: MONO, fontSize: 10, letterSpacing: ".14em" }}>TOQUE PARA FOTOGRAFAR</span>
+                <span style={{ fontFamily: MONO, fontSize: 10, letterSpacing: ".08em" }}>TOQUE PARA FOTOGRAFAR</span>
               </span>
             )}
             {[["left", "top"], ["right", "top"], ["left", "bottom"], ["right", "bottom"]].map(([h, v]) => (

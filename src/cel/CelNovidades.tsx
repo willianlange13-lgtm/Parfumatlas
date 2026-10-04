@@ -38,7 +38,7 @@ export function CelNovidades({ v, limite }: { v: V; limite: number }) {
               <span style={{ fontSize: 22, fontFamily: "var(--marca)", fontWeight: 500, lineHeight: 1.1 }}>{d.nome}</span>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <Anel valor={d.pct / 100} txt={`${d.pct}%`} tam={48} sw={4} cor={OURO} />
-                <span style={{ fontFamily: MONO, fontSize: 9.5, letterSpacing: ".14em", color: "var(--ink-3)" }}>AFINIDADE</span>
+                <span style={{ fontFamily: MONO, fontSize: 9.5, letterSpacing: ".08em", color: "var(--ink-3)" }}>AFINIDADE</span>
               </div>
             </div>
           </div>
