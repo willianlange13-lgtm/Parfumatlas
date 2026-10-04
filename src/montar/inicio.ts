@@ -14,12 +14,12 @@ const fr = (e: Entrada) => ({ ...frascoMini(e.perfume.nome, e.perfume.casa, e.pe
 /** Quanto dura, com dado real: o ajuste "em você" ou a média da comunidade (nunca uma conta inventada). */
 function duracao(e: Entrada) {
   const meu = e.minhaFixacao ? NIVEIS_FIXACAO[e.minhaFixacao - 1] : null;
-  if (meu) return { longo: `em você a fixação é ${meu.nome.toLowerCase()} (${meu.faixa})`, curto: `Em você: ${meu.nome.toLowerCase()}, ${meu.faixa}.` };
+  if (meu) return { longo: `em você a fixação é ${meu.nome.toLowerCase()} (${meu.faixa})`, curto: `Em você: ${meu.nome.toLowerCase()}, ${meu.faixa}.`, chip: `Em você: ${meu.faixa}` };
   const h = e.perfume.fixacaoH;
   if (!h) return null;
   const hh = Math.floor(h), mm = Math.round((h - hh) * 60);
   const txt = `${hh}h${mm ? String(mm).padStart(2, "0") : ""}`;
-  return { longo: `a comunidade dá cerca de ${txt} de fixação`, curto: `Comunidade: cerca de ${txt}.` };
+  return { longo: `a comunidade dá cerca de ${txt} de fixação`, curto: `Comunidade: cerca de ${txt}.`, chip: `Fixação ~${txt}` };
 }
 
 export async function montarInicio(outra = 0) {
@@ -67,8 +67,8 @@ export async function montarInicio(outra = 0) {
     anel: glifo(d.vetor.map((x) => Math.max(18, x)), EC),
     dia: fd ? { ...fd, fundo: fd.fundo, vidro: fd.vidro, id: escolhido!.id, porque, href: `/colecao/${escolhido!.perfumeId}`, outra: `/?outra=${outra + 1}`, clima: [clima.cidade, `${temp} °C`, descricaoAr(umid)].filter(Boolean).join(" · ") } : { ...base.dia, nome: "—", id: "", href: "/adicionar", outra: "/", clima: "" },
     hero: destaque
-      ? { foto: destaque.perfume.imagem ?? null, nome: destaque.perfume.nome, casaUp: destaque.perfume.casa.toUpperCase(), l1: nomeH.slice(0, meio).join(" "), l2: nomeH.slice(meio).join(" "), conc: (destaque.perfume.concentracao ?? "").toUpperCase(), entrada: `ENTRADA Nº ${n3(destaque.numero)} · ADICIONADO EM ${mesAno(destaque.adicionadoEm)}` }
-      : { foto: null, nome: "Parfum Atlas", casaUp: "", l1: "PARFUM", l2: "ATLAS", conc: "", entrada: "" },
+      ? { foto: destaque.perfume.imagem ?? null, nome: destaque.perfume.nome, familia: destaque.perfume.familia, notas: [destaque.perfume.notas.saida[0], destaque.perfume.notas.coracao[0], destaque.perfume.notas.fundo[0]].filter(Boolean).join(" · "), dura: duracao(destaque)?.chip ?? "", href: `/colecao/${destaque.perfumeId}`, casaUp: destaque.perfume.casa.toUpperCase(), l1: nomeH.slice(0, meio).join(" "), l2: nomeH.slice(meio).join(" "), conc: (destaque.perfume.concentracao ?? "").toUpperCase(), entrada: `ENTRADA Nº ${n3(destaque.numero)} · ADICIONADO EM ${mesAno(destaque.adicionadoEm)}` }
+      : { foto: null, nome: "Parfum Atlas", familia: "", notas: "", dura: "", href: "", casaUp: "", l1: "PARFUM", l2: "ATLAS", conc: "", entrada: "" },
     cur: { nota: c.nota, foto: nota(c.nota).foto ?? "", titulo: c.titulo, texto: curTexto, link: `Ver a nota ${c.nota.toLowerCase()}`, href: `/descobrir?nota=${encodeURIComponent(c.nota)}` },
     previsao: `previsão para ${clima.cidade}, um perfume da sua coleção para cada dia`,
     resgata: resgatados ? `Resgata ${resgatados} esquecido${resgatados > 1 ? "s" : ""}` : "",
