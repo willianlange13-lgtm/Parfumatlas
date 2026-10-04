@@ -33,7 +33,7 @@ const SCHEMA = {
 };
 
 /**
- * Busca semanal de lançamentos (docs/DECISOES.md §19): uma chamada com pesquisa, no máximo 4 buscas.
+ * Busca semanal de lançamentos (docs/DECISOES.md §19): uma chamada por casa (até 3 pesquisas), 12 casas em paralelo.
  * Procura nas casas da coleção e nas árabes grandes; grava cada achado como perfume + lançamento.
  * O aviso diário (/api/avisos) é quem decide o que vira notificação, pela afinidade.
  */
@@ -43,18 +43,22 @@ export async function buscarLancamentos(sb: Cliente): Promise<{ novos: string[];
   const contagem = new Map<string, number>();
   for (const r of (col ?? []) as unknown as { perfume: { casa: string } | null }[]) if (r.perfume?.casa) contagem.set(r.perfume.casa, (contagem.get(r.perfume.casa) ?? 0) + 1);
   const minhas = [...contagem.entries()].sort((a, b) => b[1] - a[1]).map(([c]) => c).slice(0, 10);
-  const casas = [...new Set([...minhas, ...ARABES_FIXAS])].slice(0, 16);
+  const casas = [...new Set([...minhas, ...ARABES_FIXAS])].slice(0, 12);
   const hoje = new Date();
   const desde = new Date(hoje.getFullYear(), hoje.getMonth() - 3, 1);
   const mesAno = (d: Date) => d.toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
 
-  const r = await geminiJSON<{ lancamentos: Achado[] }>([{ text: `Liste os perfumes LANÇADOS de ${mesAno(desde)} até ${mesAno(hoje)} por estas casas: ${casas.join(", ")}.
-Use o Fragrantica (seção de lançamentos de cada casa) e notícias de perfumaria. Só perfumes que existem de verdade e saíram nesse período; nada anterior.
+  // uma busca por casa (até 3 pesquisas), todas em paralelo: com todas numa chamada só, os recentes escapavam
+  const pedir = (casa: string) => geminiJSON<{ lancamentos: Achado[] }>([{ text: `Liste os perfumes da casa "${casa}" LANÇADOS de ${mesAno(desde)} até ${mesAno(hoje)}, incluindo os deste mês.
+Primeiro abra a página da casa no Fragrantica (fragrantica.com.br/designers/...), que lista do mais novo para o mais antigo; depois procure notícias de lançamento de ${mesAno(hoje)}.
+Só perfumes que existem de verdade e saíram nesse período; nada anterior.
 Para cada um: nome (sem a casa), casa, ano e mês de lançamento, tipo (FLANKER se for versão de uma linha existente, VERSÃO NOVA se for reformulação/concentração nova, INSPIRADO se for clone de um original famoso, PARECIDO nos demais casos), inspirado_em (o original, se for clone), concentração, uma descrição de até 15 palavras em português, o link da página no Fragrantica, as notas de saída/coração/fundo e os acordes principais, em português.
-O que não encontrar fica vazio. No máximo 15 perfumes, dos mais comentados para os menos.` }], { schema: SCHEMA, pesquisar: true, maxBuscas: 4, tempo: 110000, tarefa: "lancamentos" }).catch((e) => { throw new Error(e instanceof Error ? e.message.slice(0, 160) : "falhou"); });
+O que não encontrar fica vazio. Se a casa não lançou nada no período, devolva a lista vazia.` }], { schema: SCHEMA, pesquisar: true, maxBuscas: 3, tempo: 100000, tarefa: "lancamentos" }).then((x) => x.lancamentos ?? []).catch(() => [] as Achado[]);
+  const listas = await Promise.all(casas.map(pedir)); // todas juntas: em lotes passaria do tempo da Vercel
+  const r = { lancamentos: listas.flat() };
 
   const novos: string[] = [];
-  const achados = (r.lancamentos ?? []).filter((x) => x?.nome && x?.casa).slice(0, 15);
+  const achados = r.lancamentos.filter((x) => x?.nome && x?.casa).slice(0, 60);
   for (const x of achados) {
     const ano = Number(x.ano) || hoje.getFullYear();
     if (ano < desde.getFullYear()) continue;

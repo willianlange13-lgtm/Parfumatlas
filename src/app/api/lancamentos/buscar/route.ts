@@ -8,7 +8,7 @@ import { buscarLancamentos } from "@/lib/lancamentos-busca";
  * GET: o agendador da Vercel, uma vez por semana (vercel.json), com o CRON_SECRET.
  * POST: "Buscar lançamentos agora" em Ajustes (precisa estar logado).
  */
-export const maxDuration = 120;
+export const maxDuration = 300;
 
 async function rodar() {
   const sb = clienteServico();
