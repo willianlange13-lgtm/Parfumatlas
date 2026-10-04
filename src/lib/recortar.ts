@@ -52,6 +52,17 @@ export async function recortar(entrada: Buffer): Promise<Buffer> {
     }
   }
 
+  // frasco claro (branco, vidro transparente) em fundo branco não dá para separar com segurança:
+  // em vez de um recorte serrilhado, devolve a foto como cartão (sobra branca cortada, cantos arredondados)
+  let mantidos = 0, claros = 0;
+  for (let i = 0; i < W * H; i++) {
+    if (fundo[i]) continue;
+    mantidos++;
+    const o = i * 4;
+    if (Math.min(data[o], data[o + 1], data[o + 2]) >= 225) claros++;
+  }
+  if (mantidos && claros / mantidos > 0.4) return cartao(entrada);
+
   // 3. transparência e contorno suave
   for (let i = 0; i < W * H; i++) {
     const o = i * 4;
@@ -64,4 +75,13 @@ export async function recortar(entrada: Buffer): Promise<Buffer> {
     }
   }
   return sharp(data, { raw: { width: W, height: H, channels: 4 } }).trim({ threshold: 1 }).png({ compressionLevel: 9 }).toBuffer();
+}
+
+/** Foto como cartão: corta a sobra branca, deixa uma margem e arredonda os cantos. */
+async function cartao(entrada: Buffer): Promise<Buffer> {
+  const justo = await sharp(entrada).trim({ background: "#ffffff", threshold: 12 }).extend({ top: 16, bottom: 16, left: 16, right: 16, background: "#ffffff" }).png().toBuffer();
+  const { width = 0, height = 0 } = await sharp(justo).metadata();
+  const r = Math.round(Math.min(width, height) * 0.08);
+  const mascara = Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}"><rect width="${width}" height="${height}" rx="${r}" ry="${r}" fill="#fff"/></svg>`);
+  return sharp(justo).ensureAlpha().composite([{ input: mascara, blend: "dest-in" }]).png({ compressionLevel: 9 }).toBuffer();
 }

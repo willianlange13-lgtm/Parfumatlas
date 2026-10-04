@@ -246,4 +246,5 @@ A foto oficial do Fragrantica (frasco em fundo branco) é tratada pelo próprio 
 
 - `semFundo()` (`src/lib/sem-fundo.ts`) troca o endereço do fimgs.net pelo tratado; aplicado ao ler do banco (`perfumeDaLinha`) e nas prévias do cadastro. No banco continua o endereço original;
 - foto oficial aparece sem fundo, com sombra; foto do próprio Willian preenche o quadro (cover);
+- frasco claro (mais de 40% do frasco quase branco) não é recortado: separar vidro branco de fundo branco dá serrilhado. Vira cartão (sobra branca cortada, cantos arredondados);
 - no destaque grande do Início vale só a foto oficial (decisão do Willian); sem ela, o frasco desenhado.
