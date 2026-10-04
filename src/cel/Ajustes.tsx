@@ -4,7 +4,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { Icone } from "@/components/Icone";
 import type { Config } from "@/lib/config";
 import { Card, Circ, MONO, OURO, Rot } from "./kit";
-import { ativarAvisos, avisosAtivos } from "./push";
+import { ativarAvisos, avisosAtivos, erroAvisos } from "./push";
 
 type Props = { cfg: Config; classe: string; total: number; pcts: number[]; podeSalvar: boolean; sair: () => void };
 
@@ -77,7 +77,7 @@ export function Ajustes({ cfg, classe, total, pcts, podeSalvar, sair }: Props) {
     if (liga && push !== "sim") {
       const ok = await ativarAvisos();
       setPush(ok);
-      if (ok !== "sim") { setAviso(ok === "sem" ? "Este navegador não recebe avisos. No iPhone, instale o app na tela inicial primeiro." : "Os avisos foram bloqueados. Libere nas configurações do celular."); }
+      if (ok !== "sim") setAviso(erroAvisos);
     }
     salvar(parte);
   }
@@ -127,7 +127,14 @@ export function Ajustes({ cfg, classe, total, pcts, podeSalvar, sair }: Props) {
         <Item ic="sol" titulo="Perfume do dia" sub={`todo dia às ${c.notifDiaHora.replace(":", "h")}`} dir={<Tog on={c.notifDia} mudar={(v) => notif({ notifDia: v })} rotulo="Perfume do dia" />} />
         <Item ic="colecao" titulo="Esquecidos" sub="quando passar de 30 dias parado" dir={<Tog on={c.notifEsquecidos} mudar={(v) => notif({ notifEsquecidos: v })} rotulo="Esquecidos" />} />
         {push === "nao" && typeof Notification !== "undefined" && Notification.permission === "denied" ? <div style={{ fontSize: 12, color: "var(--ink-3)", padding: "0 0 10px" }}>Avisos bloqueados neste aparelho.</div> : null}
-        <Item ic="check" titulo="Enviar aviso de teste" sub="chega na hora neste e nos outros aparelhos inscritos" onClick={() => acao("/api/avisos/teste", (j) => `Enviado para ${j.enviados} de ${j.aparelhos} aparelho(s).`)} />
+        <Item ic="check" titulo="Enviar aviso de teste" sub="chega na hora neste e nos outros aparelhos inscritos" onClick={async () => {
+          // inscreve (ou reinscreve) este aparelho antes de mandar, assim o teste não depende do botão ter sido ligado depois das chaves
+          setResposta("Aguarde…");
+          const ok = await ativarAvisos();
+          setPush(ok);
+          if (ok !== "sim") { setResposta(erroAvisos); return; }
+          acao("/api/avisos/teste", (j) => `Enviado para ${j.enviados} de ${j.aparelhos} aparelho(s).`);
+        }} />
         <Item ic="busca" titulo="Buscar lançamentos agora" sub="a busca automática roda toda segunda; esta é uma a mais (pago)" onClick={() => acao("/api/lancamentos/buscar", (j) => j.novos?.length ? `Novos: ${j.novos.join(", ")}` : `Nenhum lançamento novo (${j.vistos ?? 0} encontrados já estavam no Atlas).`)} />
         {resposta && <div style={{ fontSize: 12.5, color: "var(--ink-2)", padding: "4px 0 12px", lineHeight: 1.45 }}>{resposta}</div>}
       </Card>

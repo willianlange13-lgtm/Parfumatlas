@@ -14,15 +14,17 @@ export async function POST() {
   webpush.setVapidDetails(`mailto:${process.env.AVISOS_EMAIL ?? "avisos@parfumatlas.app"}`, pub, priv);
   const { data: subs } = await sb.from("inscricoes_push").select("id, endpoint, chaves").eq("user_id", u.user.id);
   if (!subs?.length) return NextResponse.json({ erro: "Nenhum aparelho inscrito. Ligue um dos avisos acima neste celular e permita as notificações." }, { status: 400 });
-  let enviados = 0;
+  let enviados = 0, falha = "";
   for (const s of subs) {
     try {
       await webpush.sendNotification({ endpoint: s.endpoint, keys: s.chaves }, JSON.stringify({ titulo: "Parfum Atlas", corpo: "Aviso de teste: se chegou, as notificações estão funcionando.", url: "/", tag: "teste" }));
       enviados++;
     } catch (e) {
       const st = (e as { statusCode?: number }).statusCode;
+      falha = `${st ?? ""} ${(e as { body?: string }).body ?? (e instanceof Error ? e.message : "")}`.trim().slice(0, 160);
       if (st === 404 || st === 410) await sb.from("inscricoes_push").delete().eq("id", s.id);
     }
   }
+  if (!enviados) return NextResponse.json({ erro: `O envio falhou: ${falha || "sem resposta"}. Toque de novo para reinscrever.` }, { status: 502 });
   return NextResponse.json({ ok: true, enviados, aparelhos: subs.length });
 }
