@@ -51,6 +51,10 @@ export interface Perfume {
   buscaParecidos?: { id: string; inicio: number } | null;
   /** original que este perfume imita (chave para reaproveitar a pesquisa) */
   dnaOriginal?: string | null;
+  /** de onde veio a ficha: "acervo" (lote importado, sem custo) ou "ia" (pesquisa paga) */
+  fonteFicha?: "acervo" | "ia" | null;
+  /** só no cadastro: a ficha já estava salva e foi reaproveitada (sem custo) */
+  reaproveitada?: boolean;
   imagem?: string | null;
   fontes?: { nome: string; url?: string; oQue: string }[];
   revisar?: string[];

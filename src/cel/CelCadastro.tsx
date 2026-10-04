@@ -6,6 +6,7 @@ import type { Perfume } from "@/lib/tipos";
 import { Anel, Card, Circ, MONO, NotaChip, OURO, Rot } from "./kit";
 import { NIVEIS_FIXACAO, NIVEIS_PROJECAO } from "@/lib/normalizar";
 import { semFundo } from "@/lib/sem-fundo";
+import type { Selo } from "@/lib/selo-fonte";
 
 type Modo = "foto" | "link" | "nome" | "voz";
 type Cand = { nome: string; casa: string; concentracao: string; por: string; pct: number; link?: string; imagem?: string | null };
@@ -15,7 +16,7 @@ export type CadCel = {
   modo: Modo; setModo: (m: Modo) => void; foto: string | null; lido: string[]; cands: Cand[]; sel: number; ficha: Ficha | null; setFicha: (f: Ficha) => void;
   situacao: string; setSituacao: (s: string) => void; anotacao: string; setAnotacao: (s: string) => void; minhaFixacao: number | null; setMinhaFixacao: (n: number | null) => void; minhaProjecao: number | null; setMinhaProjecao: (n: number | null) => void; ocupado: string; ouvindo: boolean; fala: string; erro: string;
   identificar: (m: "foto" | "link" | "nome", texto?: string, f?: undefined, rapido?: boolean) => void; pesquisou: boolean; completando: boolean; escolher: (c: Cand, i: number) => void; ouvir: () => void; salvar: () => void;
-  fotoEscolhida: (e: React.ChangeEvent<HTMLInputElement>) => void; campos: Campo[]; prog: { pct: number; ok: number; tot: number; rev: number }; fontes: { nome: string; info: string }[]; desemp: { l: string; seg: string[]; v: string }[]; quando: [string, number][];
+  fotoEscolhida: (e: React.ChangeEvent<HTMLInputElement>) => void; seloBusca: Selo | null; seloFicha: Selo | null; campos: Campo[]; prog: { pct: number; ok: number; tot: number; rev: number }; fontes: { nome: string; info: string }[]; desemp: { l: string; seg: string[]; v: string }[]; quando: [string, number][];
 };
 
 const MODOS: [Modo, string, string][] = [["foto", "Foto", "camera"], ["link", "Link", "link"], ["nome", "Nome", "texto"], ["voz", "Voz", "mic"]];
@@ -32,6 +33,12 @@ function Nivel({ titulo, niveis, val, set }: { titulo: string; niveis: string[];
       <span style={{ fontSize: 12.5, textAlign: "right", color: "var(--ink-2)" }}>{val ? niveis[val - 1] : "toque para marcar · senão vale a média da comunidade"}</span>
     </div>
   );
+}
+
+/** Selo pequeno: "sem custo" em cinza, "IA · paga" em dourado. */
+function SeloFonte({ s }: { s: Selo | null }) {
+  if (!s) return null;
+  return <span style={{ alignSelf: "flex-start", padding: "3px 9px", borderRadius: 10, border: `1px solid ${s.pago ? OURO : "var(--line-2)"}`, color: s.pago ? OURO : "var(--ink-2)", fontFamily: MONO, fontSize: 9.5, letterSpacing: ".06em", textTransform: "uppercase" }}>{s.txt}</span>;
 }
 
 function Passos({ n, txt }: { n: number; txt: string }) {
@@ -131,6 +138,7 @@ export function CelCadastro({ c, modoInicial }: { c: CadCel; modoInicial?: strin
           </div>
         </Card>
         <div style={{ display: "flex", justifyContent: "space-between" }}><Rot>Ficha preenchida</Rot><span style={{ fontSize: 12, color: "var(--ink-3)" }}>toque para corrigir</span></div>
+        <SeloFonte s={c.seloFicha} />
         <div className="c-grade2" style={{ gap: 8 }}>
           {c.campos.map((x) => {
             const rev = x.st === "REVISAR";
@@ -279,7 +287,7 @@ export function CelCadastro({ c, modoInicial }: { c: CadCel; modoInicial?: strin
               <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>{c.lido.map((x) => <span key={x} style={{ padding: "4px 10px", borderRadius: 10, background: "var(--chip)", fontSize: 12 }}>{x}</span>)}</div>
             </>
           )}
-          {c.cands.length > 0 && <><Rot>É este?</Rot><CandLista c={c} /></>}
+          {c.cands.length > 0 && <><div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}><Rot>É este?</Rot><SeloFonte s={c.seloBusca} /></div><CandLista c={c} /></>}
         </>
       )}
 

@@ -9,7 +9,7 @@ import type { Perfume, Votos } from "@/lib/tipos";
 import { acordeConhecido, familiaAtlas, acordePT, acordePrincipal, horasDosVotos, metrosDosVotos, notaConhecida, notasPT, votosDe, temVotos } from "@/lib/normalizar";
 
 export type Candidato = { nome: string; casa: string; concentracao: string; por: string; pct: number; link?: string; imagem?: string | null };
-export type Identificacao = { lido: string[]; candidatos: Candidato[] };
+export type Identificacao = { lido: string[]; candidatos: Candidato[]; /** a busca usou IA (paga)? */ buscaIA?: boolean };
 import { acharNoAcervo, buscarNoAcervo, fichaDoAcervo, guardarNoAcervo, notasSemTraducao } from "@/lib/acervo-global";
 
 export type FichaIA = Omit<Perfume, "id" | "clima"> & { revisar: string[]; completar?: boolean; fragrantica?: string };
@@ -73,7 +73,7 @@ export async function identificar(modo: "foto" | "link" | "nome", texto?: string
       .map((a) => ({ nome: a.nome, casa: a.casa, concentracao: "", por: "Do acervo", pct: a.pct, link: a.fragrantica ?? undefined, imagem: fotoDoFragrantica(a.fragrantica) }));
     const juntos = [...local, ...doAcervo].sort((a, b) => b.pct - a.pct).slice(0, 5);
     // enquanto digita: sem gastar IA; e se o acervo/catálogo já achou com segurança, também não
-    if (rapido || !geminiConfigurado() || juntos.some((c) => c.pct >= 90)) return { lido: [], candidatos: juntos };
+    if (rapido || !geminiConfigurado() || juntos.some((c) => c.pct >= 90)) return { lido: [], candidatos: juntos, buscaIA: false };
   }
   if (geminiConfigurado()) {
     try {
@@ -87,16 +87,16 @@ export async function identificar(modo: "foto" | "link" | "nome", texto?: string
           const a = x?.nome ? await acharNoAcervo(x.nome, x.casa) : null;
           return a ? { ...x, por: `${x.por} · do acervo`, link: a.fragrantica ?? x.link, imagem: fotoDoFragrantica(a.fragrantica) } : x;
         }));
-        return { ...lida, candidatos: cands };
+        return { ...lida, candidatos: cands, buscaIA: true };
       }
       if (usaOpenAI() && texto) {
         // modelo leve com pesquisa: só a lista de opções, a ficha vem depois que a pessoa escolhe
         const r = await geminiJSON<Identificacao>([{ text: `O usuário procura o perfume: "${texto}". Pesquise no Fragrantica (fragrantica.com.br ou fragrantica.com) e liste de 1 a 5 perfumes que existem de verdade e que ele pode querer dizer, do mais provável ao menos. Inclua as versões parecidas da mesma linha (ex.: EDP, Intense, Elixir) quando existirem. Para cada um: nome sem a casa, casa, concentração (em maiúsculas), em "por" um motivo curto em português (ex.: "Nome e casa iguais", "Mesma linha, outra versão"), a confiança em "pct" (0 a 100) e em "link" o endereço da página dele no Fragrantica.` }], { schema: SCHEMA_ID, pesquisar: true, leve: true, maxBuscas: 2, tarefa: "identificar_nome" });
         const lista = (r.candidatos ?? []).filter((x) => x?.nome).slice(0, 5).map((x) => ({ ...x, link: x.link && /fragrantica\./i.test(x.link) ? x.link : undefined, imagem: fotoDoFragrantica(x.link) }));
-        if (lista.length) return { lido: [], candidatos: lista };
+        if (lista.length) return { lido: [], candidatos: lista, buscaIA: true };
       }
       const r = await geminiJSON<Identificacao>([{ text: `O usuário digitou ou falou: "${texto}". Liste até 3 perfumes que existem de verdade e que ele pode querer dizer, do mais provável ao menos, com nome, casa e concentração (em maiúsculas). Em "por", um motivo curto em português. Se não reconhecer, devolva a lista vazia.` }], { schema: SCHEMA_ID, leve: true });
-      if (r.candidatos?.length) return r;
+      if (r.candidatos?.length) return { ...r, buscaIA: true };
     } catch (e) {
       console.error("identificar", e);
     }
@@ -249,11 +249,11 @@ export async function gerarFicha(c: { nome: string; casa: string; concentracao?:
   const { perfumes } = await carregarAcervo();
   const local = [...perfumes.values()].find((p) => normal(p.nome) === normal(c.nome) && normal(p.casa) === normal(c.casa));
   const salva = await fichaSalva(c.nome, c.casa);
-  if (salva) return salva;
+  if (salva) return { ...salva, reaproveitada: true };
   // acervo global: ficha sem IA (só traduz nota que sobrou em inglês, com o modelo leve)
   const doAcervo = await acharNoAcervo(c.nome, c.casa);
   const fa = doAcervo ? fichaDoAcervo(doAcervo) : null;
-  if (fa) return geminiConfigurado() && notasSemTraducao(doAcervo!).length ? traduzirSobras(fa) : fa;
+  if (fa) return { ...(geminiConfigurado() && notasSemTraducao(doAcervo!).length ? await traduzirSobras(fa) : fa), fonteFicha: "acervo" };
   if (geminiConfigurado()) {
     ultimoErroFicha = "";
     const alvo = `"${c.nome}"${c.casa ? ` da casa "${c.casa}"` : ""}${c.concentracao ? ` (${c.concentracao})` : ""}`;
@@ -261,7 +261,7 @@ export async function gerarFicha(c: { nome: string; casa: string; concentracao?:
       // fora do acervo: pesquisa paga e o resultado entra no acervo para a próxima vez sair de graça
       const f = await fichaChatGPT(c, alvo, local);
       if (f) await guardarNoAcervo({ ...f, fragrantica: c.link ?? f.fragrantica });
-      return f;
+      return f ? { ...f, fonteFicha: "ia" } : f;
     }
     // 1) a página do link, lida direto (dados reais e a foto oficial)
     let pagina: Pagina | null = c.link ? await lerPagina(c.link) : null;

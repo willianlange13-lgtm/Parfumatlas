@@ -8,6 +8,7 @@ import { hexA } from "@/lib/cores";
 import type { Perfume } from "@/lib/tipos";
 import { NIVEIS_FIXACAO, NIVEIS_PROJECAO } from "@/lib/normalizar";
 import { semFundo } from "@/lib/sem-fundo";
+import { seloBusca, seloFicha } from "@/lib/selo-fonte";
 
 type Modo = "foto" | "link" | "nome" | "voz";
 type Cand = { nome: string; casa: string; concentracao: string; por: string; pct: number; link?: string; imagem?: string | null };
@@ -52,6 +53,7 @@ export function CadastroCliente({ base, modoInicial }: { base: Record<string, un
   const [fala, setFala] = useState("");
   const [erro, setErro] = useState("");
   const [pesquisou, setPesquisou] = useState(false);
+  const [buscaIA, setBuscaIA] = useState<boolean | null>(null);
   const [completando, setCompletando] = useState(false);
   const link = useRef<string | undefined>(undefined);
   const salvoId = useRef<string | null>(null); // ficha salva antes da segunda etapa terminar
@@ -64,6 +66,7 @@ export function CadastroCliente({ base, modoInicial }: { base: Record<string, un
       const j = await r.json();
       setLido(j.lido ?? []);
       setCands(j.candidatos ?? []);
+      setBuscaIA(rapido ? null : Boolean(j.buscaIA));
       setPesquisou(!rapido);
       if (rapido) return; // enquanto digita: só mostra o catálogo, sem erro e sem escolher
       if (!j.candidatos?.length) setErro(j.ia === false ? "A IA ainda não está ligada (falta a chave do Gemini na Vercel). Sem ela, só acho os perfumes do catálogo de exemplo." : "Não encontrei esse perfume. Tente o nome completo com a casa, ou cole o link do Fragrantica.");
@@ -177,7 +180,8 @@ export function CadastroCliente({ base, modoInicial }: { base: Record<string, un
     identificar: (e: React.FormEvent<HTMLFormElement>) => { e.preventDefault(); const q = (e.currentTarget.elements.namedItem("q") as HTMLInputElement).value.trim(); if (!q) return; identificar(/^https?:\/\//.test(q) ? "link" : "nome", q); },
     placeholder: PH[modo],
     botaoBusca: ocupado === "lendo" ? "Buscando…" : "Buscar",
-    candTxt: foto ? "candidatos encontrados pela foto, do mais provável ao menos" : "candidatos encontrados, do mais provável ao menos",
+    candTxt: `${foto ? "candidatos encontrados pela foto, do mais provável ao menos" : "candidatos encontrados, do mais provável ao menos"}${seloBusca(buscaIA) ? ` · ${seloBusca(buscaIA)!.txt}` : ""}`,
+    seloFicha: seloFicha(ficha),
     temCand: cands.length > 0,
     semCand: cands.length === 0,
     candVazio: ocupado === "lendo" ? "Procurando…" : "Tire uma foto do frasco, cole um link, digite o nome ou toque em Voz. Os candidatos aparecem aqui.",
@@ -212,7 +216,7 @@ export function CadastroCliente({ base, modoInicial }: { base: Record<string, un
   };
   const cel = {
     modo, setModo: (m: Modo) => { setModo(m); setErro(""); }, foto: foto?.url ?? null, lido, cands, sel, ficha, setFicha, situacao, setSituacao, anotacao, setAnotacao, minhaFixacao, setMinhaFixacao, minhaProjecao, setMinhaProjecao, ocupado, ouvindo, fala, erro,
-    identificar, pesquisou, completando, escolher, ouvir, salvar, fotoEscolhida: v.fotoEscolhida, campos, prog: v.prog, fontes: v.fontes, desemp: v.desemp,
+    identificar, pesquisou, completando, escolher, seloBusca: seloBusca(buscaIA), seloFicha: seloFicha(ficha), ouvir, salvar, fotoEscolhida: v.fotoEscolhida, campos, prog: v.prog, fontes: v.fontes, desemp: v.desemp,
     quando: ficha?.votos ? [["Inverno", ficha.votos.estacoes.inverno], ["Primavera", ficha.votos.estacoes.primavera], ["Verão", ficha.votos.estacoes.verao], ["Outono", ficha.votos.estacoes.outono], ["Dia", ficha.votos.dia], ["Noite", ficha.votos.noite]] as [string, number][] : [],
   };
   return (
