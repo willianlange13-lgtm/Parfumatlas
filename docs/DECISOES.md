@@ -250,6 +250,7 @@ A foto oficial do Fragrantica (frasco em fundo branco) é tratada pelo próprio 
 - no destaque grande do Início vale só a foto oficial (decisão do Willian); sem ela, o frasco desenhado.
 
 - **Recorte v4 (out/2026, decisão do Willian: "só o frasco, com sombra e luz")**: o apagamento do fundo agora para nas bordas do frasco (variação de tom), tira sobras soltas e suaviza o contorno; a beirada pega a cor de dentro do frasco (sem contorno branco em frasco escuro). Com isso frasco branco e vidro claro também saem recortados; o cartão com fundo branco ficou só como último recurso (resultado sem sentido). No Início, a foto oficial recortada tem prioridade sobre a foto que você tirou. Cache sobe para v=4.
+- **Recorte v5**: a cor do fundo é lida na moldura da foto (algumas vêm em cinza bem claro, não branco); o halo do JPEG em volta de frasco escuro sai (só onde há frasco bem mais escuro perto); vidro transparente que sai em pedaços vira a silhueta do frasco (envoltória convexa dos pedaços). As fotos do catálogo de referência também passam pelo recorte. Cache v=5.
 
 ## 18. Direção visual: personalidade sem perder a identidade (out/2026)
 

@@ -1,3 +1,4 @@
+import { semFundo } from "@/lib/sem-fundo";
 import type { Forma, Perfume, Votos, ItemColecao, Lancamento } from "@/lib/tipos";
 import { familiaAtlas } from "@/lib/normalizar";
 
@@ -78,7 +79,8 @@ const FRAGRANTICA: Record<string, number> = {
   "fleur-narcotique": 27571,
   "lust-in-paradise": 53588
 };
-const fotoOficial = (id: string) => (FRAGRANTICA[id] ? `https://fimgs.net/mdimg/perfume/375x500.${FRAGRANTICA[id]}.jpg` : null);
+// passa pelo recorte também (docs/DECISOES.md §17): antes o catálogo mostrava a foto com fundo branco
+const fotoOficial = (id: string) => (FRAGRANTICA[id] ? semFundo(`https://fimgs.net/mdimg/perfume/375x500.${FRAGRANTICA[id]}.jpg`) : null);
 
 function p(b: Base): Perfume {
   return {

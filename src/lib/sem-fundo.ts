@@ -5,9 +5,9 @@
  */
 export function semFundo(url?: string | null): string | null {
   if (!url) return null;
-  if (url.startsWith("/api/frasco")) return url.replace(/&v=\d+$/, "&v=4");
+  if (url.startsWith("/api/frasco")) return url.replace(/&v=\d+$/, "&v=5");
   const id = url.match(/fimgs\.net\/mdimg\/perfume\/(?:375x500|o)\.(\d+)\.jpg/i)?.[1];
-  return id ? `/api/frasco?id=${id}&v=4` : url; // v sobe quando o recorte muda (a CDN guarda por 1 ano)
+  return id ? `/api/frasco?id=${id}&v=5` : url; // v sobe quando o recorte muda (a CDN guarda por 1 ano)
 }
 
 /** É a foto oficial tratada (sem fundo)? Serve para não pôr fundo branco nem cortar o frasco. */
