@@ -6,7 +6,7 @@ import { lerPagina, linkDePerfume, type Pagina } from "@/lib/pagina";
 import { verificarParecidos } from "@/lib/verificar";
 import { fotoConferida } from "@/lib/fotos";
 import type { Perfume, Votos } from "@/lib/tipos";
-import { concentracaoPT, generoPT, acordeConhecido, familiaAtlas, acordePT, acordePrincipal, horasDosVotos, metrosDosVotos, notaConhecida, notasPT, votosDe, temVotos } from "@/lib/normalizar";
+import { NIVEIS_FIXACAO, NIVEIS_PROJECAO, concentracaoPT, generoPT, acordeConhecido, familiaAtlas, acordePT, acordePrincipal, horasDosVotos, metrosDosVotos, notaConhecida, notasPT, votosDe, temVotos } from "@/lib/normalizar";
 
 export type Candidato = { nome: string; casa: string; concentracao: string; por: string; pct: number; link?: string; imagem?: string | null };
 export type Identificacao = { lido: string[]; candidatos: Candidato[]; /** a busca usou IA (paga)? */ buscaIA?: boolean };
@@ -336,10 +336,11 @@ async function fichaSalva(nome: string, casa: string): Promise<FichaIA | null> {
  */
 /**
  * Ficha que veio do acervo: a IA completa TUDO o que o acervo deixou vazio (docs/DECISOES.md §23):
- * ano, concentração, gênero, país, perfumistas, descrição, camadas da pirâmide vazias, acordes (ou a força
+ * fixação e projeção (o principal: o lote quase nunca traz), ano, concentração, gênero, país, descrição, camadas da pirâmide vazias, acordes (ou a força
  * dos que já estão), "quando usar", contagem de votos e o link do Fragrantica (que dá a foto).
  * Nunca troca o que já estava preenchido nem o que o Willian escolheu. Uma chamada; modelo leve, a não
- * ser quando falta pirâmide ou acordes (aí o modelo da ficha, que lê melhor a página).
+ * ser quando falta fixação/projeção, pirâmide ou acordes (aí o modelo da ficha, que lê melhor a página).
+ * Fixação e projeção: primeiro a contagem de votos; se não vier, pelo menos o nível mais votado.
  */
 async function completarDoAcervo(f: FichaIA): Promise<FichaIA> {
   const vazioQuando = !f.votos?.estacoes || Object.values(f.votos.estacoes).every((x) => !x);
@@ -353,30 +354,32 @@ async function completarDoAcervo(f: FichaIA): Promise<FichaIA> {
     !f.concentracao && "concentracao (como aparece na página)",
     !f.genero && "genero (para homens, para mulheres ou compartilhável)",
     !f.pais && "pais (país da marca, em português)",
-    !f.perfumistas?.length && "perfumistas (nomes de quem criou, se a página mostrar)",
     !f.descricao && "descricao (UMA frase de até 15 palavras sobre o cheiro, em português)",
     camadasVazias.length > 0 && `notas da pirâmide: ${camadasVazias.map((k) => ({ saida: "saida (topo)", coracao: "coracao (meio)", fundo: "fundo (base)" })[k]).join(", ")}; em português`,
     (semAcordes || forcaInventada) && "acordes (os \"Principais acordes\" na ordem da página, nome em português e valor = largura da barra de 0 a 100)",
     vazioQuando && "estacoes (votos de primavera, verao, outono, inverno), dia e noite",
-    semContagem && "fixacao (as 5 contagens de Longevidade) e projecao (as 4 contagens de Rastro), com total",
+    semContagem && "fixacao: as 5 contagens de votos de Longevidade/Longevity na ordem [muito fraca, fraca, moderada, longa, eterna]; projecao: as 4 contagens de Rastro/Sillage na ordem [íntima, moderada, forte, enorme]; total de votos",
+    semContagem && "nivelFixacao (a barra de Longevidade com MAIS votos: Muito fraca, Fraca, Moderada, Longa ou Eterna) e nivelProjecao (a barra de Rastro com MAIS votos: Íntima, Moderada, Forte ou Enorme)",
     !f.fragrantica && "link (endereço da página do perfume no Fragrantica)",
   ].filter(Boolean) as string[];
   if (!falta.length || !geminiConfigurado()) return { ...f, completar: false };
   type Falta = {
-    ano?: number | null; concentracao?: string | null; genero?: string | null; pais?: string | null; perfumistas?: string[] | null; descricao?: string | null;
+    ano?: number | null; concentracao?: string | null; genero?: string | null; pais?: string | null; descricao?: string | null;
     saida?: string[] | null; coracao?: string[] | null; fundo?: string[] | null; acordes?: { nome: string; valor: number }[] | null;
     estacoes?: { primavera?: number; verao?: number; outono?: number; inverno?: number } | null; dia?: number | null; noite?: number | null;
     fixacao?: number[] | null; projecao?: number[] | null; total?: number | null; link?: string | null;
+    nivelFixacao?: string | null; nivelProjecao?: string | null;
   };
   const NUM = { type: "NUMBER" }, TXT = { type: "STRING" }, LISTA = { type: "ARRAY", items: TXT };
   const SCHEMA_FALTA = { type: "OBJECT", properties: {
-    ano: { type: "INTEGER" }, concentracao: TXT, genero: TXT, pais: TXT, perfumistas: LISTA, descricao: TXT, saida: LISTA, coracao: LISTA, fundo: LISTA,
+    ano: { type: "INTEGER" }, concentracao: TXT, genero: TXT, pais: TXT, descricao: TXT, saida: LISTA, coracao: LISTA, fundo: LISTA,
     acordes: { type: "ARRAY", items: { type: "OBJECT", properties: { nome: TXT, valor: NUM }, required: ["nome", "valor"] } },
     estacoes: { type: "OBJECT", properties: { primavera: NUM, verao: NUM, outono: NUM, inverno: NUM }, required: [] }, dia: NUM, noite: NUM,
     fixacao: { type: "ARRAY", items: NUM }, projecao: { type: "ARRAY", items: NUM }, total: { type: "INTEGER" }, link: TXT,
+    nivelFixacao: { type: "STRING", enum: NIVEIS_FIXACAO.map((n) => n.nome) }, nivelProjecao: { type: "STRING", enum: NIVEIS_PROJECAO.map((n) => n.nome) },
   }, required: [] };
   const alvo = `"${f.nome}" da casa "${f.casa}"`;
-  const pesado = camadasVazias.length > 0 || semAcordes;
+  const pesado = semContagem || camadasVazias.length > 0 || semAcordes;
   const x = await geminiJSON<Falta>([{ text: `Abra a página do perfume ${alvo} no Fragrantica${f.fragrantica ? ` (${f.fragrantica})` : ""} e copie só estes campos:\n- ${falta.join("\n- ")}\nCopie da página (se o Fragrantica não tiver, use o Parfumo ou o site da marca); o que não encontrar fica null. Não estime e não copie números desta instrução.` }],
     { schema: SCHEMA_FALTA, pesquisar: true, leve: !pesado, tempo: 90000, maxBuscas: pesado ? 3 : 2, tarefa: "completar_acervo" }).catch((e) => { console.error("[atlas:completar_acervo]", f.nome, e instanceof Error ? e.message : e); return {} as Falta; });
   const out: FichaIA = { ...f, completar: false, notas: { ...f.notas } };
@@ -386,7 +389,6 @@ async function completarDoAcervo(f: FichaIA): Promise<FichaIA> {
   if (!out.concentracao && x.concentracao) { out.concentracao = concentracaoPT(x.concentracao); tira("concentracao"); }
   if (!out.genero && generoPT(x.genero)) { out.genero = generoPT(x.genero); tira("genero"); }
   if (!out.pais && x.pais?.trim()) { out.pais = x.pais.trim(); tira("pais"); }
-  if (!out.perfumistas?.length && x.perfumistas?.length) out.perfumistas = x.perfumistas.map((n) => String(n).trim()).filter(Boolean).slice(0, 4);
   if (!out.descricao && x.descricao) out.descricao = x.descricao.split(/\s+/).slice(0, 15).join(" ");
   for (const k of camadasVazias) { const l = notasPT(x[k] ?? []); if (l.length) out.notas[k] = l; }
   const lidosAc = (x.acordes ?? []).map((a) => ({ nome: acordePT(String(a?.nome ?? "")), valor: Math.max(0, Math.min(100, Math.round(Number(a?.valor) <= 1 ? Number(a?.valor) * 100 : Number(a?.valor)))) })).filter((a) => a.nome && a.valor > 0);
@@ -414,6 +416,14 @@ async function completarDoAcervo(f: FichaIA): Promise<FichaIA> {
       out.fixacaoH = horasDosVotos(lidos.fixacao); out.projecaoM = metrosDosVotos(lidos.projecao); tira("votos");
     }
     out.votos = v;
+  }
+  // sem a contagem, vale o nível mais votado (o mesmo dado que o lote do acervo traria)
+  if (semContagem && !temVotos(out.votos?.fixacao)) {
+    const nf = NIVEIS_FIXACAO.find((n) => n.nome === x.nivelFixacao), np = NIVEIS_PROJECAO.find((n) => n.nome === x.nivelProjecao);
+    const v: Votos = { ...(out.votos ?? { total: 0, fixacao: [0, 0, 0, 0, 0], projecao: [0, 0, 0, 0], estacoes: { primavera: 0, verao: 0, outono: 0, inverno: 0 }, dia: 0, noite: 0, ocasioes: [] }) };
+    if (nf && !v.nivelFixacao) { v.nivelFixacao = nf.nome; out.fixacaoH = nf.h; v.origem = "acervo"; }
+    if (np && !v.nivelProjecao) { v.nivelProjecao = np.nome; out.projecaoM = np.m; v.origem = "acervo"; }
+    if (nf || np) { out.votos = v; tira("votos"); }
   }
   out.votos = { ...(out.votos as Votos), completadoEm: new Date().toISOString() };
   return out;

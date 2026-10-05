@@ -298,7 +298,8 @@ Briefing do Willian: o desktop estava linear demais (preto + prata + cinza + dou
 
 ## 23. O que o acervo não trouxe, a IA completa (out/2026)
 
-- Pedido do Willian: sempre que a ficha vier do acervo com campos vazios, a IA completa. Antes ela só cuidava de ano, concentração, gênero, descrição, "quando usar" e votos; agora cobre também país, perfumistas, camadas vazias da pirâmide, acordes que faltam (ou a força real da barra, já que o lote só traz a ordem) e o link do Fragrantica (que dá a foto).
-- Nunca troca o que já estava preenchido. Uma chamada por perfume: modelo leve com até 2 buscas; quando falta pirâmide ou acordes, o modelo da ficha com até 3 buscas. Falha fica registrada no log (`[atlas:completar_acervo]`).
+- Pedido do Willian: sempre que a ficha vier do acervo com campos vazios, a IA completa. Antes ela só cuidava de ano, concentração, gênero, descrição, "quando usar" e votos; agora cobre também país, camadas vazias da pirâmide, acordes que faltam (ou a força real da barra, já que o lote só traz a ordem) e o link do Fragrantica (que dá a foto).
+- Nunca troca o que já estava preenchido. Uma chamada por perfume: modelo leve com até 2 buscas; quando falta fixação/projeção, pirâmide ou acordes, o modelo da ficha com até 3 buscas. Falha fica registrada no log (`[atlas:completar_acervo]`).
 - No cadastro roda em segundo plano, como antes, e o que chega entra na ficha (e na já salva, via `/api/ficha/anexar`).
+- **Fixação e projeção** são o principal buraco do acervo (o lote quase nunca traz). A IA busca a contagem de votos do Fragrantica; se não vier, pelo menos o nível mais votado de cada um (o mesmo dado do lote), que vai também para o acervo. Perfumistas ficam de fora (saíram da ficha).
 - Fichas do acervo já salvas com buracos: ao abrir a ficha, a IA completa depois da página (`after`), uma vez só (marca `votos.completadoEm`), e o resultado também vai para o acervo. Aparece na próxima visita.

@@ -106,11 +106,11 @@ export function CadastroCliente({ base, modoInicial }: { base: Record<string, un
       const j = (await r.json()) as Ficha;
       // junta só o que a segunda busca traz, sem desfazer o que a pessoa já editou
       setFicha((f) => (f ? { ...f, ano: f.ano ?? j.ano, concentracao: f.concentracao || j.concentracao, genero: f.genero || j.genero, descricao: f.descricao || j.descricao,
-        pais: f.pais || j.pais, perfumistas: f.perfumistas?.length ? f.perfumistas : (j.perfumistas ?? []), familia: f.familia || j.familia,
+        pais: f.pais || j.pais, familia: f.familia || j.familia,
         notas: { saida: f.notas.saida.length ? f.notas.saida : (j.notas?.saida ?? []), coracao: f.notas.coracao.length ? f.notas.coracao : (j.notas?.coracao ?? []), fundo: f.notas.fundo.length ? f.notas.fundo : (j.notas?.fundo ?? []) },
         acordes: j.acordes?.length ? j.acordes : f.acordes, acorde: j.acordes?.length ? j.acorde : f.acorde, imagem: f.imagem ?? j.imagem, fragrantica: f.fragrantica ?? j.fragrantica, votos: j.votos ?? f.votos, fixacaoH: j.fixacaoH ?? f.fixacaoH, projecaoM: j.projecaoM ?? f.projecaoM, parecidos: j.parecidos ?? f.parecidos, mesmaCasa: j.mesmaCasa ?? f.mesmaCasa, revisar: f.revisar.filter((x) => !["votos", "ano", "concentracao", "genero"].includes(x) || (j.revisar ?? []).includes(x)) } : f));
       // se a pessoa já salvou, leva o que chegou para a ficha salva
-      if (salvoId.current) await fetch("/api/ficha/anexar", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: salvoId.current, parecidos: j.parecidos, mesmaCasa: j.mesmaCasa, votos: j.votos, fixacaoH: j.fixacaoH, projecaoM: j.projecaoM, ano: j.ano, concentracao: j.concentracao, genero: j.genero, descricao: j.descricao, pais: j.pais, perfumistas: j.perfumistas, notas: j.notas, acordes: j.acordes, acorde: j.acorde, familia: j.familia, imagem: j.imagem }) }).then(() => router.refresh()).catch(() => {});
+      if (salvoId.current) await fetch("/api/ficha/anexar", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: salvoId.current, parecidos: j.parecidos, mesmaCasa: j.mesmaCasa, votos: j.votos, fixacaoH: j.fixacaoH, projecaoM: j.projecaoM, ano: j.ano, concentracao: j.concentracao, genero: j.genero, descricao: j.descricao, pais: j.pais, notas: j.notas, acordes: j.acordes, acorde: j.acorde, familia: j.familia, imagem: j.imagem }) }).then(() => router.refresh()).catch(() => {});
     } catch { /* fica com o que já tem */ } finally {
       setCompletando(false);
     }

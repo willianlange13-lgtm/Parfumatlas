@@ -4,7 +4,7 @@ import { buscarEntrada, garantirPerfume, linhaDoPerfume } from "@/lib/dados";
 import type { Perfume } from "@/lib/tipos";
 import { juntarCompletado } from "@/lib/completar-salvo";
 
-type Corpo = { id: string } & Pick<Perfume, "parecidos" | "mesmaCasa" | "votos" | "fixacaoH" | "projecaoM" | "ano" | "concentracao" | "genero" | "descricao"> & Partial<Pick<Perfume, "pais" | "perfumistas" | "notas" | "acordes" | "acorde" | "familia" | "imagem">>;
+type Corpo = { id: string } & Pick<Perfume, "parecidos" | "mesmaCasa" | "votos" | "fixacaoH" | "projecaoM" | "ano" | "concentracao" | "genero" | "descricao"> & Partial<Pick<Perfume, "pais" | "notas" | "acordes" | "acorde" | "familia" | "imagem">>;
 
 /** Junta à ficha já salva o que chegou da segunda etapa (parecidos, mesma casa, votos). */
 export async function POST(request: NextRequest) {

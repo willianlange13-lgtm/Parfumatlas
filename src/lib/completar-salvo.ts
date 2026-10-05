@@ -21,7 +21,6 @@ export function juntarCompletado(perfume: Perfume, b: Partial<Perfume>): Perfume
     genero: perfume.genero || b.genero,
     descricao: perfume.descricao || b.descricao,
     pais: perfume.pais || b.pais,
-    perfumistas: perfume.perfumistas.length ? perfume.perfumistas : (b.perfumistas ?? []),
     familia: perfume.familia || b.familia || perfume.familia,
     notas: { saida: n.saida.length ? n.saida : (b.notas?.saida ?? []), coracao: n.coracao.length ? n.coracao : (b.notas?.coracao ?? []), fundo: n.fundo.length ? n.fundo : (b.notas?.fundo ?? []) },
     // a IA só devolve acordes diferentes quando faltavam ou quando trouxe a força real da barra
@@ -34,7 +33,7 @@ export function juntarCompletado(perfume: Perfume, b: Partial<Perfume>): Perfume
 /** A ficha do acervo ainda tem buraco que a IA pode tapar? */
 export function temBuraco(p: Perfume): boolean {
   const v = p.votos;
-  return !p.ano || !p.concentracao || !p.genero || !p.pais || !p.descricao || !p.perfumistas.length
+  return !p.ano || !p.concentracao || !p.genero || !p.pais || !p.descricao
     || !p.notas.saida.length || !p.notas.coracao.length || !p.notas.fundo.length || !p.acordes.length
     || !v?.estacoes || Object.values(v.estacoes).every((x) => !x) || !v.fixacao?.some((x) => x > 0);
 }
