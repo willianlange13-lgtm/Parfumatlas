@@ -307,4 +307,5 @@ Briefing do Willian: o desktop estava linear demais (preto + prata + cinza + dou
 - Diagnóstico: `/api/diagnostico?completar=Nome&casa=Casa` mostra o antes e o depois da completação, o tempo e o erro (gasta uma pesquisa).
 - Pedido do Willian depois do teste com o Club De Nuit Elite (2026): também "quando usar" (estações, dia e noite) é estimado pelas resenhas e notas quando o perfume ainda não tem votos, com selo "estimativa" na ficha (`votos.quandoEstimado`). A força dos acordes do acervo passa a casar pela posição quando o nome não bate (acervo e Fragrantica listam na mesma ordem); só entra se não for a escala inventada.
 - **Acordes com nomes diferentes que querem dizer o mesmo** (pedido do Willian: almíscar = almiscarado, madeira = amadeirado): `chaveAcorde` em `src/lib/normalizar.ts` passa pela tradução, por uma lista de sinônimos e tira acento e terminação. É usada para casar a força dos acordes na completação e para não repetir acorde no Editar.
+- Força dos acordes que vem em escada perfeita (100, 90, 80…) é descartada: é número inventado pela IA, não a barra lida. Fica a ordem do acervo.
 

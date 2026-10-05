@@ -402,7 +402,9 @@ async function completarDoAcervo(f: FichaIA): Promise<FichaIA> {
     // (o acervo e o Fragrantica listam os acordes na mesma ordem, do maior para o menor)
     const forca = new Map(lidosAc.map((a) => [chaveAcorde(a.nome), a.valor]));
     const ordem = lidosAc.map((a) => a.valor).sort((a, b) => b - a);
-    const inventada = ordem.every((v, i) => v === Math.max(30, 100 - i * 12));
+    // escada perfeita (100, 90, 80… ou 100, 88, 76…) não é barra lida, é número inventado: descarta
+    const passos = ordem.slice(1).map((v, i) => ordem[i] - v);
+    const inventada = ordem.every((v, i) => v === Math.max(30, 100 - i * 12)) || (ordem.length >= 4 && passos.every((d) => Math.abs(d - passos[0]) <= 1));
     if (!inventada) {
       out.acordes = f.acordes.map((a, i) => ({ ...a, valor: forca.get(chaveAcorde(a.nome)) ?? ordem[i] ?? Math.max(10, ordem[ordem.length - 1] - 5 * (i - ordem.length + 1)) }));
       out.acordes.sort((a, b) => b.valor - a.valor);
