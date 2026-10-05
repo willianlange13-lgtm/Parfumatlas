@@ -356,8 +356,8 @@ async function completarDoAcervo(f: FichaIA): Promise<FichaIA> {
     !f.pais && "pais (país da marca, em português)",
     !f.descricao && "descricao (UMA frase de até 15 palavras sobre o cheiro, em português)",
     camadasVazias.length > 0 && `notas da pirâmide: ${camadasVazias.map((k) => ({ saida: "saida (topo)", coracao: "coracao (meio)", fundo: "fundo (base)" })[k]).join(", ")}; em português`,
-    (semAcordes || forcaInventada) && "acordes (os \"Principais acordes\" na ordem da página, nome em português e valor = largura da barra de 0 a 100)",
-    vazioQuando && "estacoes (votos de primavera, verao, outono, inverno), dia e noite",
+    (semAcordes || forcaInventada) && "acordes: TODOS os \"Principais acordes\" da página do Fragrantica, na mesma ordem (do maior para o menor), com valor = largura da barra de 0 a 100 (o primeiro é 100; os outros, proporcionais ao tamanho da barra)",
+    vazioQuando && "estacoes (votos de primavera, verao, outono, inverno, de 0 a 100) e dia e noite (de 0 a 100), das barras do Fragrantica. Se o perfume ainda não tem esses votos, estime pelas resenhas e pelas notas (ex.: fresco e cítrico pede verão e dia) e use origemQuando = \"estimativa\"; se veio das barras, origemQuando = \"fragrantica\"",
     semContagem && "fixacao: as 5 contagens de votos de Longevidade/Longevity na ordem [muito fraca, fraca, moderada, longa, eterna]; projecao: as 4 contagens de Rastro/Sillage na ordem [íntima, moderada, forte, enorme]; total de votos",
     semContagem && "nivelFixacao (a barra de Longevidade com MAIS votos: Muito fraca, Fraca, Moderada, Longa ou Eterna) e nivelProjecao (a barra de Rastro com MAIS votos: Íntima, Moderada, Forte ou Enorme). Se o perfume é novo e o Fragrantica ainda não tem votos, leia resenhas (Parfumo, lojas, vídeos) e dê o nível que elas indicam, com origemNivel = \"estimativa\"; se veio das barras do Fragrantica, origemNivel = \"fragrantica\"",
     !f.fragrantica && "link (endereço da página do perfume no Fragrantica)",
@@ -368,7 +368,7 @@ async function completarDoAcervo(f: FichaIA): Promise<FichaIA> {
     saida?: string[] | null; coracao?: string[] | null; fundo?: string[] | null; acordes?: { nome: string; valor: number }[] | null;
     estacoes?: { primavera?: number; verao?: number; outono?: number; inverno?: number } | null; dia?: number | null; noite?: number | null;
     fixacao?: number[] | null; projecao?: number[] | null; total?: number | null; link?: string | null;
-    nivelFixacao?: string | null; nivelProjecao?: string | null; origemNivel?: "fragrantica" | "estimativa" | null;
+    nivelFixacao?: string | null; nivelProjecao?: string | null; origemNivel?: "fragrantica" | "estimativa" | null; origemQuando?: "fragrantica" | "estimativa" | null;
   };
   const NUM = { type: "NUMBER" }, TXT = { type: "STRING" }, LISTA = { type: "ARRAY", items: TXT };
   const SCHEMA_FALTA = { type: "OBJECT", properties: {
@@ -376,7 +376,7 @@ async function completarDoAcervo(f: FichaIA): Promise<FichaIA> {
     acordes: { type: "ARRAY", items: { type: "OBJECT", properties: { nome: TXT, valor: NUM }, required: ["nome", "valor"] } },
     estacoes: { type: "OBJECT", properties: { primavera: NUM, verao: NUM, outono: NUM, inverno: NUM }, required: [] }, dia: NUM, noite: NUM,
     fixacao: { type: "ARRAY", items: NUM }, projecao: { type: "ARRAY", items: NUM }, total: { type: "INTEGER" }, link: TXT,
-    nivelFixacao: { type: "STRING", enum: NIVEIS_FIXACAO.map((n) => n.nome) }, nivelProjecao: { type: "STRING", enum: NIVEIS_PROJECAO.map((n) => n.nome) }, origemNivel: { type: "STRING", enum: ["fragrantica", "estimativa"] },
+    nivelFixacao: { type: "STRING", enum: NIVEIS_FIXACAO.map((n) => n.nome) }, nivelProjecao: { type: "STRING", enum: NIVEIS_PROJECAO.map((n) => n.nome) }, origemNivel: { type: "STRING", enum: ["fragrantica", "estimativa"] }, origemQuando: { type: "STRING", enum: ["fragrantica", "estimativa"] },
   }, required: [] };
   const alvo = `"${f.nome}" da casa "${f.casa}"`;
   const pesado = semContagem || camadasVazias.length > 0 || semAcordes;
@@ -397,10 +397,16 @@ async function completarDoAcervo(f: FichaIA): Promise<FichaIA> {
     out.acordes = lidosAc.filter((a, i, l) => l.findIndex((y) => y.nome === a.nome) === i).slice(0, 10);
     out.acorde = acordePrincipal(out.acordes[0].nome);
     if (!f.familia) out.familia = familiaAtlas(out.acordes.map((a) => a.nome).join(" "), out.acordes[0].nome);
-  } else if (forcaInventada && lidosAc.length) {
-    // só troca a força dos acordes que já estão (mesmo nome); a lista do acervo continua a mesma
+  } else if (forcaInventada && lidosAc.length >= 3) {
+    // a lista do acervo continua a mesma; só a força muda. Primeiro pelo nome; o que não casar, pela posição
+    // (o acervo e o Fragrantica listam os acordes na mesma ordem, do maior para o menor)
     const forca = new Map(lidosAc.map((a) => [a.nome.toLowerCase(), a.valor]));
-    if (f.acordes.some((a) => forca.has(a.nome.toLowerCase()))) out.acordes = f.acordes.map((a) => ({ ...a, valor: forca.get(a.nome.toLowerCase()) ?? Math.min(a.valor, 30) }));
+    const ordem = lidosAc.map((a) => a.valor).sort((a, b) => b - a);
+    const inventada = ordem.every((v, i) => v === Math.max(30, 100 - i * 12));
+    if (!inventada) {
+      out.acordes = f.acordes.map((a, i) => ({ ...a, valor: forca.get(a.nome.toLowerCase()) ?? ordem[i] ?? Math.max(10, ordem[ordem.length - 1] - 5 * (i - ordem.length + 1)) }));
+      out.acordes.sort((a, b) => b.valor - a.valor);
+    }
   }
   if (!out.fragrantica && x.link && /fragrantica\.com(\.br)?\/perfume\//i.test(x.link)) {
     out.fragrantica = x.link;
@@ -410,7 +416,7 @@ async function completarDoAcervo(f: FichaIA): Promise<FichaIA> {
   const lidos = votosDe({ total: x.total ?? 0, fixacao: x.fixacao ?? undefined, projecao: x.projecao ?? undefined, estacoes: x.estacoes ?? undefined, dia: x.dia ?? undefined, noite: x.noite ?? undefined, origem: "fragrantica" } as unknown as Partial<Votos>, OCASIOES);
   if (lidos) {
     const v: Votos = { ...(out.votos ?? { total: 0, fixacao: [0, 0, 0, 0, 0], projecao: [0, 0, 0, 0], estacoes: { primavera: 0, verao: 0, outono: 0, inverno: 0 }, dia: 0, noite: 0, ocasioes: [] }) };
-    if (vazioQuando && Object.values(lidos.estacoes).some((n) => n > 0)) { v.estacoes = lidos.estacoes; v.dia = lidos.dia; v.noite = lidos.noite; }
+    if (vazioQuando && Object.values(lidos.estacoes).some((n) => n > 0)) { v.estacoes = lidos.estacoes; v.dia = lidos.dia; v.noite = lidos.noite; if (x.origemQuando === "estimativa") v.quandoEstimado = true; }
     const contagemBoa = semContagem && temVotos(lidos.fixacao) && temVotos(lidos.projecao) && !votosSuspeitos(lidos, f.nome, f.casa);
     if (contagemBoa) {
       Object.assign(v, { fixacao: lidos.fixacao, projecao: lidos.projecao, total: lidos.total, origem: "fragrantica" });

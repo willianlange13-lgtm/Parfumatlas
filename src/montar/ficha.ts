@@ -205,6 +205,7 @@ export async function montarFicha(id: string) {
     glifo: glifo(AC.map((a) => a.valor), cores, false, terr.a),
     // ficha sem acordes (adicionada à mão): o glifo fica vazio e a ficha pede para marcar em Editar
     semAcordes: !p.acordes.length,
+    quandoEst: Boolean(p.votos?.quandoEstimado),
     terr: { ...terr, glowB: hexA(terr.b, 0.16), linha: hexA(terr.a, 0.35) },
     eixos,
     topFam: AC.slice(0, 3).map((a, i) => ({ nome: a.nome, cor: cores[i], bg: hexA(cores[i], 0.22) })),

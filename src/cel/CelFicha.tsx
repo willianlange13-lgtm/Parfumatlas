@@ -130,7 +130,7 @@ export function CelFicha({ v, x }: { v: V; x: ExtraFicha }) {
 
       {/* 06 · quando funciona e votos */}
       <Card fundo="vinho" pad={16}>
-        <Rot>Quando funciona</Rot>
+        <Rot>{v.quandoEst ? "Quando funciona · estimativa" : "Quando funciona"}</Rot>
         <div style={{ position: "relative", width: 280, height: 260, alignSelf: "center" }}>
           <svg viewBox="0 0 280 260" style={{ position: "absolute", inset: 0, width: 280, height: 260 }}>
             <path d={v.roda.guia} style={{ fill: "none", stroke: "var(--line-2)" }} />

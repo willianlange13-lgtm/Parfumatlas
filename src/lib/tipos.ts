@@ -20,6 +20,8 @@ export interface Votos {
   completadoEm?: string;
   /** nível de fixação/projeção estimado pelas resenhas (perfume novo, sem votos no Fragrantica); não vai para o acervo */
   estimado?: boolean;
+  /** estações e dia/noite estimados pelas resenhas (perfume sem votos ainda) */
+  quandoEstimado?: boolean;
 }
 
 export interface PontoClima { t: number; h: number; seco: boolean }
