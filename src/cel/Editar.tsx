@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Icone } from "@/components/Icone";
 import { Frasco } from "@/components/Frasco";
 import type { Perfume, Votos } from "@/lib/tipos";
-import { ACORDES, CONCENTRACOES, FAMILIAS, GENEROS, NIVEIS_FIXACAO, NIVEIS_PROJECAO, acordePrincipal, familiaAtlas } from "@/lib/normalizar";
+import { ACORDES, CONCENTRACOES, FAMILIAS, GENEROS, NIVEIS_FIXACAO, NIVEIS_PROJECAO, acordePrincipal, familiaAtlas, mesmoAcorde } from "@/lib/normalizar";
 import { Card, MONO, NotaChip, OURO, Rot } from "./kit";
 import { reduzirFoto } from "./voz";
 
@@ -47,7 +47,7 @@ export function Editar({ p: p0, e: e0, podeSalvar }: { p: Perfume; e: E; podeSal
     const ord = [...lista].sort((a, b) => b.valor - a.valor);
     setP({ ...p, acordes: ord, acorde: ord[0] ? acordePrincipal(ord[0].nome) : p.acorde, familia: p.familia || familiaAtlas(ord.map((a) => a.nome).join(" "), ord[0]?.nome) });
   };
-  const faltam = ACORDES.filter((a) => !p.acordes.some((x) => x.nome.toLowerCase() === a.toLowerCase()));
+  const faltam = ACORDES.filter((a) => !p.acordes.some((x) => mesmoAcorde(x.nome, a)));
   // quando usar: estações, dia e noite em 5 níveis
   const votos = p.votos ?? VAZIO;
   const mudaVoto = (k: "primavera" | "verao" | "outono" | "inverno" | "dia" | "noite", v: number) =>

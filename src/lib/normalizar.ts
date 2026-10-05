@@ -83,12 +83,31 @@ const ACORDE: Record<string, string> = {
   tropical: "Tropical", coconut: "Coco", honey: "Mel", coffee: "Café", lactonic: "Lactônico", lactonico: "Lactônico", mineral: "Mineral", salty: "Salgado", salgado: "Salgado", cherry: "Cereja",
   iris: "Íris", violet: "Violeta", patchouli: "Patchouli", animalic: "Animálico", resinous: "Resinoso", resinoso: "Resinoso", gourmand: "Gourmand", cacao: "Cacau", nutty: "Amendoado", caramel: "Caramelo",
   metallic: "Metálico", soapy: "Ensaboado", cinnamon: "Canela", rum: "Rum", whiskey: "Uísque", "tuberose": "Tuberosa", "aldehydic": "Aldeídico",
+  // sinônimos (pedido do Willian: almíscar = almiscarado, madeira = amadeirado...)
+  almiscar: "Almiscarado", musk: "Almiscarado", madeira: "Amadeirado", madeiras: "Amadeirado", wood: "Amadeirado", woods: "Amadeirado", amadeirada: "Amadeirado",
+  citricos: "Cítrico", citrica: "Cítrico", frutas: "Frutado", fruta: "Frutado", frutal: "Frutado", flor: "Floral", flores: "Floral", florais: "Floral",
+  ambarado: "Âmbar", ambarada: "Âmbar", talco: "Atalcado", po: "Atalcado", terra: "Terroso", defumado: "Esfumaçado", fumaca: "Esfumaçado", smoke: "Esfumaçado",
+  mar: "Marinho", oceano: "Marinho", ozono: "Ozônico", ervas: "Herbal", herbaceo: "Herbal", erva: "Herbal", musgo: "Musgoso", resina: "Resinoso", resinas: "Resinoso",
+  balsamo: "Balsâmico", couros: "Couro", baunilhado: "Baunilha", adocicado: "Doce", lactico: "Lactônico", leitoso: "Lactônico", coco: "Coco", cafe: "Café", mel: "Mel",
+  rosas: "Rosa", rosado: "Rosa", violetas: "Violeta", lavandas: "Lavanda", tabacos: "Tabaco", aquosa: "Aquático", aquoso: "Aquático",
 };
 
 export function acordePT(a: string) {
   const t = tira(a.replace(/\([^)]*\)/g, ""));
   return ACORDE[t] ?? a.trim().charAt(0).toUpperCase() + a.trim().slice(1).toLowerCase();
 }
+
+/**
+ * Chave para comparar acordes com nomes diferentes que querem dizer o mesmo (almíscar × almiscarado,
+ * madeira × amadeirado, woody × amadeirado): passa pela tradução/sinônimos e tira acento e terminação.
+ */
+export function chaveAcorde(a: string): string {
+  const t = tira(acordePT(a)).replace(/[^a-z ]/g, "").trim();
+  const sem = t.replace(/(ados|adas|ado|ada|osos|osas|oso|osa|icos|icas|ico|ica|ais|al|os|as|o|a|s)$/, "");
+  const raiz = sem.length >= 4 ? sem : t; // palavra curta (rosa, oud) fica inteira
+  return raiz.startsWith("amadeir") ? raiz.slice(1) : raiz; // amadeirado × madeira
+}
+export const mesmoAcorde = (a: string, b: string) => chaveAcorde(a) === chaveAcorde(b);
 
 /** Acorde principal do Atlas (um dos 11) a partir do acorde do Fragrantica. */
 export function acordePrincipal(a: string) {

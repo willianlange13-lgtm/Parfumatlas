@@ -6,7 +6,7 @@ import { lerPagina, linkDePerfume, type Pagina } from "@/lib/pagina";
 import { verificarParecidos } from "@/lib/verificar";
 import { fotoConferida } from "@/lib/fotos";
 import type { Perfume, Votos } from "@/lib/tipos";
-import { NIVEIS_FIXACAO, NIVEIS_PROJECAO, concentracaoPT, generoPT, acordeConhecido, familiaAtlas, acordePT, acordePrincipal, horasDosVotos, metrosDosVotos, notaConhecida, notasPT, votosDe, temVotos } from "@/lib/normalizar";
+import { NIVEIS_FIXACAO, NIVEIS_PROJECAO, chaveAcorde, concentracaoPT, generoPT, acordeConhecido, familiaAtlas, acordePT, acordePrincipal, horasDosVotos, metrosDosVotos, notaConhecida, notasPT, votosDe, temVotos } from "@/lib/normalizar";
 
 export type Candidato = { nome: string; casa: string; concentracao: string; por: string; pct: number; link?: string; imagem?: string | null };
 export type Identificacao = { lido: string[]; candidatos: Candidato[]; /** a busca usou IA (paga)? */ buscaIA?: boolean };
@@ -394,17 +394,17 @@ async function completarDoAcervo(f: FichaIA): Promise<FichaIA> {
   for (const k of camadasVazias) { const l = notasPT(x[k] ?? []); if (l.length) out.notas[k] = l; }
   const lidosAc = (x.acordes ?? []).map((a) => ({ nome: acordePT(String(a?.nome ?? "")), valor: Math.max(0, Math.min(100, Math.round(Number(a?.valor) <= 1 ? Number(a?.valor) * 100 : Number(a?.valor)))) })).filter((a) => a.nome && a.valor > 0);
   if (semAcordes && lidosAc.length) {
-    out.acordes = lidosAc.filter((a, i, l) => l.findIndex((y) => y.nome === a.nome) === i).slice(0, 10);
+    out.acordes = lidosAc.filter((a, i, l) => l.findIndex((y) => chaveAcorde(y.nome) === chaveAcorde(a.nome)) === i).slice(0, 10);
     out.acorde = acordePrincipal(out.acordes[0].nome);
     if (!f.familia) out.familia = familiaAtlas(out.acordes.map((a) => a.nome).join(" "), out.acordes[0].nome);
   } else if (forcaInventada && lidosAc.length >= 3) {
     // a lista do acervo continua a mesma; só a força muda. Primeiro pelo nome; o que não casar, pela posição
     // (o acervo e o Fragrantica listam os acordes na mesma ordem, do maior para o menor)
-    const forca = new Map(lidosAc.map((a) => [a.nome.toLowerCase(), a.valor]));
+    const forca = new Map(lidosAc.map((a) => [chaveAcorde(a.nome), a.valor]));
     const ordem = lidosAc.map((a) => a.valor).sort((a, b) => b - a);
     const inventada = ordem.every((v, i) => v === Math.max(30, 100 - i * 12));
     if (!inventada) {
-      out.acordes = f.acordes.map((a, i) => ({ ...a, valor: forca.get(a.nome.toLowerCase()) ?? ordem[i] ?? Math.max(10, ordem[ordem.length - 1] - 5 * (i - ordem.length + 1)) }));
+      out.acordes = f.acordes.map((a, i) => ({ ...a, valor: forca.get(chaveAcorde(a.nome)) ?? ordem[i] ?? Math.max(10, ordem[ordem.length - 1] - 5 * (i - ordem.length + 1)) }));
       out.acordes.sort((a, b) => b.valor - a.valor);
     }
   }
