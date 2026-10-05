@@ -335,37 +335,78 @@ async function fichaSalva(nome: string, casa: string): Promise<FichaIA | null> {
  * (nada de estimativa). Os dois são usados na limpeza histórica dos votos.
  */
 /**
- * Ficha que veio do acervo: a IA completa SÓ o que ficou vazio (ano, concentração, gênero, descrição,
- * "quando usar" e, se o lote não trouxe, a contagem de votos). Uma chamada, modelo leve, no máximo 2 buscas.
- * Nunca troca pirâmide, acordes nem o que o Willian já escolheu.
+ * Ficha que veio do acervo: a IA completa TUDO o que o acervo deixou vazio (docs/DECISOES.md §23):
+ * ano, concentração, gênero, país, perfumistas, descrição, camadas da pirâmide vazias, acordes (ou a força
+ * dos que já estão), "quando usar", contagem de votos e o link do Fragrantica (que dá a foto).
+ * Nunca troca o que já estava preenchido nem o que o Willian escolheu. Uma chamada; modelo leve, a não
+ * ser quando falta pirâmide ou acordes (aí o modelo da ficha, que lê melhor a página).
  */
 async function completarDoAcervo(f: FichaIA): Promise<FichaIA> {
   const vazioQuando = !f.votos?.estacoes || Object.values(f.votos.estacoes).every((x) => !x);
   const semContagem = !f.votos?.fixacao?.some((x) => x > 0);
+  const camadasVazias = (["saida", "coracao", "fundo"] as const).filter((k) => !f.notas?.[k]?.length);
+  const semAcordes = !f.acordes?.length;
+  // acordes do acervo vêm só com a ordem (força inventada pela posição): pede a largura real da barra
+  const forcaInventada = !semAcordes && f.acordes.every((a, i) => a.valor === Math.max(30, 100 - i * 12));
   const falta = [
     !f.ano && "ano (ano de lançamento)",
     !f.concentracao && "concentracao (como aparece na página)",
     !f.genero && "genero (para homens, para mulheres ou compartilhável)",
+    !f.pais && "pais (país da marca, em português)",
+    !f.perfumistas?.length && "perfumistas (nomes de quem criou, se a página mostrar)",
     !f.descricao && "descricao (UMA frase de até 15 palavras sobre o cheiro, em português)",
+    camadasVazias.length > 0 && `notas da pirâmide: ${camadasVazias.map((k) => ({ saida: "saida (topo)", coracao: "coracao (meio)", fundo: "fundo (base)" })[k]).join(", ")}; em português`,
+    (semAcordes || forcaInventada) && "acordes (os \"Principais acordes\" na ordem da página, nome em português e valor = largura da barra de 0 a 100)",
     vazioQuando && "estacoes (votos de primavera, verao, outono, inverno), dia e noite",
     semContagem && "fixacao (as 5 contagens de Longevidade) e projecao (as 4 contagens de Rastro), com total",
+    !f.fragrantica && "link (endereço da página do perfume no Fragrantica)",
   ].filter(Boolean) as string[];
   if (!falta.length || !geminiConfigurado()) return { ...f, completar: false };
-  type Falta = { ano?: number | null; concentracao?: string | null; genero?: string | null; descricao?: string | null; estacoes?: { primavera?: number; verao?: number; outono?: number; inverno?: number } | null; dia?: number | null; noite?: number | null; fixacao?: number[] | null; projecao?: number[] | null; total?: number | null };
-  const NUM = { type: "NUMBER" };
-  const SCHEMA_FALTA = { type: "OBJECT", properties: { ano: { type: "INTEGER" }, concentracao: { type: "STRING" }, genero: { type: "STRING" }, descricao: { type: "STRING" }, estacoes: { type: "OBJECT", properties: { primavera: NUM, verao: NUM, outono: NUM, inverno: NUM }, required: [] }, dia: NUM, noite: NUM, fixacao: { type: "ARRAY", items: NUM }, projecao: { type: "ARRAY", items: NUM }, total: { type: "INTEGER" } }, required: [] };
+  type Falta = {
+    ano?: number | null; concentracao?: string | null; genero?: string | null; pais?: string | null; perfumistas?: string[] | null; descricao?: string | null;
+    saida?: string[] | null; coracao?: string[] | null; fundo?: string[] | null; acordes?: { nome: string; valor: number }[] | null;
+    estacoes?: { primavera?: number; verao?: number; outono?: number; inverno?: number } | null; dia?: number | null; noite?: number | null;
+    fixacao?: number[] | null; projecao?: number[] | null; total?: number | null; link?: string | null;
+  };
+  const NUM = { type: "NUMBER" }, TXT = { type: "STRING" }, LISTA = { type: "ARRAY", items: TXT };
+  const SCHEMA_FALTA = { type: "OBJECT", properties: {
+    ano: { type: "INTEGER" }, concentracao: TXT, genero: TXT, pais: TXT, perfumistas: LISTA, descricao: TXT, saida: LISTA, coracao: LISTA, fundo: LISTA,
+    acordes: { type: "ARRAY", items: { type: "OBJECT", properties: { nome: TXT, valor: NUM }, required: ["nome", "valor"] } },
+    estacoes: { type: "OBJECT", properties: { primavera: NUM, verao: NUM, outono: NUM, inverno: NUM }, required: [] }, dia: NUM, noite: NUM,
+    fixacao: { type: "ARRAY", items: NUM }, projecao: { type: "ARRAY", items: NUM }, total: { type: "INTEGER" }, link: TXT,
+  }, required: [] };
   const alvo = `"${f.nome}" da casa "${f.casa}"`;
-  const x = await geminiJSON<Falta>([{ text: `Abra a página do perfume ${alvo} no Fragrantica${f.fragrantica ? ` (${f.fragrantica})` : ""} e copie só estes campos:\n- ${falta.join("\n- ")}\nCopie da página; o que não aparecer fica null. Não estime e não copie números desta instrução.` }], { schema: SCHEMA_FALTA, pesquisar: true, leve: true, tempo: 60000, maxBuscas: 2, tarefa: "completar_acervo" }).catch(() => ({}) as Falta);
-  const out: FichaIA = { ...f, completar: false };
+  const pesado = camadasVazias.length > 0 || semAcordes;
+  const x = await geminiJSON<Falta>([{ text: `Abra a página do perfume ${alvo} no Fragrantica${f.fragrantica ? ` (${f.fragrantica})` : ""} e copie só estes campos:\n- ${falta.join("\n- ")}\nCopie da página (se o Fragrantica não tiver, use o Parfumo ou o site da marca); o que não encontrar fica null. Não estime e não copie números desta instrução.` }],
+    { schema: SCHEMA_FALTA, pesquisar: true, leve: !pesado, tempo: 90000, maxBuscas: pesado ? 3 : 2, tarefa: "completar_acervo" }).catch((e) => { console.error("[atlas:completar_acervo]", f.nome, e instanceof Error ? e.message : e); return {} as Falta; });
+  const out: FichaIA = { ...f, completar: false, notas: { ...f.notas } };
   const tira = (k: string) => { out.revisar = (out.revisar ?? []).filter((r) => r !== k); };
   const ano = Number(x.ano);
   if (!out.ano && ano >= 1700 && ano <= new Date().getFullYear() + 1) { out.ano = ano; tira("ano"); }
   if (!out.concentracao && x.concentracao) { out.concentracao = concentracaoPT(x.concentracao); tira("concentracao"); }
   if (!out.genero && generoPT(x.genero)) { out.genero = generoPT(x.genero); tira("genero"); }
+  if (!out.pais && x.pais?.trim()) { out.pais = x.pais.trim(); tira("pais"); }
+  if (!out.perfumistas?.length && x.perfumistas?.length) out.perfumistas = x.perfumistas.map((n) => String(n).trim()).filter(Boolean).slice(0, 4);
   if (!out.descricao && x.descricao) out.descricao = x.descricao.split(/\s+/).slice(0, 15).join(" ");
+  for (const k of camadasVazias) { const l = notasPT(x[k] ?? []); if (l.length) out.notas[k] = l; }
+  const lidosAc = (x.acordes ?? []).map((a) => ({ nome: acordePT(String(a?.nome ?? "")), valor: Math.max(0, Math.min(100, Math.round(Number(a?.valor) <= 1 ? Number(a?.valor) * 100 : Number(a?.valor)))) })).filter((a) => a.nome && a.valor > 0);
+  if (semAcordes && lidosAc.length) {
+    out.acordes = lidosAc.filter((a, i, l) => l.findIndex((y) => y.nome === a.nome) === i).slice(0, 10);
+    out.acorde = acordePrincipal(out.acordes[0].nome);
+    if (!f.familia) out.familia = familiaAtlas(out.acordes.map((a) => a.nome).join(" "), out.acordes[0].nome);
+  } else if (forcaInventada && lidosAc.length) {
+    // só troca a força dos acordes que já estão (mesmo nome); a lista do acervo continua a mesma
+    const forca = new Map(lidosAc.map((a) => [a.nome.toLowerCase(), a.valor]));
+    if (f.acordes.some((a) => forca.has(a.nome.toLowerCase()))) out.acordes = f.acordes.map((a) => ({ ...a, valor: forca.get(a.nome.toLowerCase()) ?? Math.min(a.valor, 30) }));
+  }
+  if (!out.fragrantica && x.link && /fragrantica\.com(\.br)?\/perfume\//i.test(x.link)) {
+    out.fragrantica = x.link;
+    const id = x.link.match(/-(\d+)\.html/)?.[1];
+    if (!out.imagem && id) out.imagem = `https://fimgs.net/mdimg/perfume/375x500.${id}.jpg`;
+  }
   const lidos = votosDe({ total: x.total ?? 0, fixacao: x.fixacao ?? undefined, projecao: x.projecao ?? undefined, estacoes: x.estacoes ?? undefined, dia: x.dia ?? undefined, noite: x.noite ?? undefined, origem: "fragrantica" } as unknown as Partial<Votos>, OCASIOES);
-  if (lidos && out.votos) {
-    const v = { ...out.votos };
+  if (lidos) {
+    const v: Votos = { ...(out.votos ?? { total: 0, fixacao: [0, 0, 0, 0, 0], projecao: [0, 0, 0, 0], estacoes: { primavera: 0, verao: 0, outono: 0, inverno: 0 }, dia: 0, noite: 0, ocasioes: [] }) };
     if (vazioQuando && Object.values(lidos.estacoes).some((n) => n > 0)) { v.estacoes = lidos.estacoes; v.dia = lidos.dia; v.noite = lidos.noite; }
     const contagemBoa = semContagem && temVotos(lidos.fixacao) && temVotos(lidos.projecao) && !votosSuspeitos(lidos, f.nome, f.casa);
     if (contagemBoa) {
@@ -374,6 +415,7 @@ async function completarDoAcervo(f: FichaIA): Promise<FichaIA> {
     }
     out.votos = v;
   }
+  out.votos = { ...(out.votos as Votos), completadoEm: new Date().toISOString() };
   return out;
 }
 

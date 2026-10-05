@@ -16,6 +16,8 @@ export interface Votos {
   /** só com origem "acervo": nível mais votado no Fragrantica (sem distribuição) */
   nivelFixacao?: string;
   nivelProjecao?: string;
+  /** quando a IA completou o que o acervo deixou vazio (não repete a cada visita) */
+  completadoEm?: string;
 }
 
 export interface PontoClima { t: number; h: number; seco: boolean }

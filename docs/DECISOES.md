@@ -295,3 +295,10 @@ Briefing do Willian: o desktop estava linear demais (preto + prata + cinza + dou
 - **Adicionar sem pesquisa** (pedido do Willian): botão "+ Não achou? Adicionar sem pesquisa" sempre visível no cadastro (computador e celular). Abre a ficha em branco com o nome digitado, sem IA e sem custo; nome e casa são obrigatórios. Depois de salvar, abre o Editar para completar pirâmide, acordes e quando usar.
 - **Acordes no Editar**: incluir, tirar e dar força (5 níveis, 20 a 100). O mais forte vira o acorde principal. Ficha sem acordes mostra no glifo "Sem acordes nesta ficha · Marcar em Editar" em vez de um desenho zerado.
 - **Quando usar no Editar**: primavera, verão, outono, inverno, dia e noite em 5 níveis. Alimenta a seção "Quando funciona" e a sugestão do dia pelo clima. Ficha feita à mão começa com tudo vazio (nada inventado).
+
+## 23. O que o acervo não trouxe, a IA completa (out/2026)
+
+- Pedido do Willian: sempre que a ficha vier do acervo com campos vazios, a IA completa. Antes ela só cuidava de ano, concentração, gênero, descrição, "quando usar" e votos; agora cobre também país, perfumistas, camadas vazias da pirâmide, acordes que faltam (ou a força real da barra, já que o lote só traz a ordem) e o link do Fragrantica (que dá a foto).
+- Nunca troca o que já estava preenchido. Uma chamada por perfume: modelo leve com até 2 buscas; quando falta pirâmide ou acordes, o modelo da ficha com até 3 buscas. Falha fica registrada no log (`[atlas:completar_acervo]`).
+- No cadastro roda em segundo plano, como antes, e o que chega entra na ficha (e na já salva, via `/api/ficha/anexar`).
+- Fichas do acervo já salvas com buracos: ao abrir a ficha, a IA completa depois da página (`after`), uma vez só (marca `votos.completadoEm`), e o resultado também vai para o acervo. Aparece na próxima visita.
