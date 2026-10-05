@@ -18,6 +18,8 @@ export interface Votos {
   nivelProjecao?: string;
   /** quando a IA completou o que o acervo deixou vazio (não repete a cada visita) */
   completadoEm?: string;
+  /** nível de fixação/projeção estimado pelas resenhas (perfume novo, sem votos no Fragrantica); não vai para o acervo */
+  estimado?: boolean;
 }
 
 export interface PontoClima { t: number; h: number; seco: boolean }

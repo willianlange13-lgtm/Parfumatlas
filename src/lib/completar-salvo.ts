@@ -47,6 +47,7 @@ export async function completarSalvo(sb: Cliente, p: Perfume): Promise<void> {
   const base: FichaIA = { ...p, revisar: [], completar: true };
   const pronta = await completarFicha(base);
   const novo = juntarCompletado(p, pronta);
+  if ((pronta as FichaIA & { erroComplemento?: string }).erroComplemento) return; // a IA falhou: tenta de novo na próxima visita
   novo.votos = { ...(novo.votos ?? pronta.votos!), completadoEm: pronta.votos?.completadoEm ?? new Date().toISOString() };
   const { error } = await sb.from("perfumes").update(linhaDoPerfume(novo)).eq("id", p.id);
   if (error) console.error("[atlas:completar_salvo]", p.nome, error.message);

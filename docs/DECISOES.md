@@ -303,3 +303,6 @@ Briefing do Willian: o desktop estava linear demais (preto + prata + cinza + dou
 - No cadastro roda em segundo plano, como antes, e o que chega entra na ficha (e na já salva, via `/api/ficha/anexar`).
 - **Fixação e projeção** são o principal buraco do acervo (o lote quase nunca traz). A IA busca a contagem de votos do Fragrantica; se não vier, pelo menos o nível mais votado de cada um (o mesmo dado do lote), que vai também para o acervo. Perfumistas ficam de fora (saíram da ficha).
 - Fichas do acervo já salvas com buracos: ao abrir a ficha, a IA completa depois da página (`after`), uma vez só (marca `votos.completadoEm`), e o resultado também vai para o acervo. Aparece na próxima visita.
+- **Perfume novo sem votos** (ex.: lançamento do ano): o Fragrantica ainda não tem as barras. Aí a IA dá o nível pelas resenhas, marcado como **estimativa** na ficha e no cadastro; estimativa não vai para o acervo. Se a IA falhar, o cadastro avisa o motivo e a ficha salva tenta de novo na próxima abertura (só marca `completadoEm` quando a IA respondeu).
+- Diagnóstico: `/api/diagnostico?completar=Nome&casa=Casa` mostra o antes e o depois da completação, o tempo e o erro (gasta uma pesquisa).
+

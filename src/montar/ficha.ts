@@ -99,7 +99,8 @@ export async function montarFicha(id: string) {
   const minhaF = entrada?.minhaFixacao ? NIVEIS_FIXACAO[entrada.minhaFixacao - 1] : null;
   const minhaP = entrada?.minhaProjecao ? NIVEIS_PROJECAO[Math.min(4, entrada.minhaProjecao) - 1] : null;
   const doAcervo = p.votos?.origem === "acervo";
-  const comunidadeF = doAcervo ? `comunidade: ${p.votos?.nivelFixacao ?? "—"}` : !temF ? "sem votos da comunidade" : `comunidade: ${hm(horas)}${p.votos?.origem === "estimativa" ? " (estimativa)" : ""}`;
+  const est = p.votos?.estimado ? " (estimativa)" : "";
+  const comunidadeF = doAcervo ? `comunidade: ${p.votos?.nivelFixacao ?? "—"}${est}` : !temF ? "sem votos da comunidade" : `comunidade: ${hm(horas)}${p.votos?.origem === "estimativa" ? " (estimativa)" : ""}`;
   const comunidadeP = `comunidade: ${nivelP}, ${metros.toFixed(1).replace(".", ",")} m`;
   const g1 = gauge((minhaF?.h ?? horas) / 12, hFam / 12, terr.a), g2 = gauge((minhaP?.m ?? metros) / 3, mFam / 3, terr.b);
 
@@ -222,7 +223,7 @@ export async function montarFicha(id: string) {
     ],
     gauges: [
       minhaF ? { nome: "Fixação · em você", txt: minhaF.nome, sub: `${minhaF.faixa} · ${comunidadeF}`, ref: `Média da família: ${hm(hFam)}`, trilho: g1.trilho, valor: g1.valor, marca: g1.marca, cor: g1.cor } :
-      { nome: "Fixação", txt: horas > 0 ? hm(horas) : "—", sub: doAcervo ? `${p.votos?.nivelFixacao ?? "nível"}: o mais votado no Fragrantica` : !temF ? "estimativa (votos do Fragrantica não encontrados)" : p.votos?.origem === "estimativa" ? "estimativa pelas resenhas" : `média ponderada de ${(p.votos?.total ?? 0).toLocaleString("pt-BR")} votos`, ref: `Média da família: ${hm(hFam)}`, trilho: g1.trilho, valor: g1.valor, marca: g1.marca, cor: g1.cor },
+      { nome: "Fixação", txt: horas > 0 ? hm(horas) : "—", sub: doAcervo ? (p.votos?.estimado ? `${p.votos?.nivelFixacao ?? "nível"}: estimativa pelas resenhas (perfume sem votos ainda)` : `${p.votos?.nivelFixacao ?? "nível"}: o mais votado no Fragrantica`) : !temF ? "estimativa (votos do Fragrantica não encontrados)" : p.votos?.origem === "estimativa" ? "estimativa pelas resenhas" : `média ponderada de ${(p.votos?.total ?? 0).toLocaleString("pt-BR")} votos`, ref: `Média da família: ${hm(hFam)}`, trilho: g1.trilho, valor: g1.valor, marca: g1.marca, cor: g1.cor },
       minhaP ? { nome: "Projeção · em você", txt: minhaP.nome, sub: `${minhaP.faixa} · ${comunidadeP}`, ref: `Média da família: ${mFam.toFixed(1).replace(".", ",")} metro${mFam >= 2 ? "s" : ""}`, trilho: g2.trilho, valor: g2.valor, marca: g2.marca, cor: g2.cor } :
       { nome: "Projeção", txt: nivelP, sub: `alcança cerca de ${metros.toFixed(1).replace(".", ",")} metro${metros >= 2 ? "s" : ""} de distância nas 2 primeiras horas`, ref: `Média da família: ${mFam.toFixed(1).replace(".", ",")} metro${mFam >= 2 ? "s" : ""}`, trilho: g2.trilho, valor: g2.valor, marca: g2.marca, cor: g2.cor },
     ],

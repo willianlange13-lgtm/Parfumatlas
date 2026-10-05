@@ -359,7 +359,7 @@ async function completarDoAcervo(f: FichaIA): Promise<FichaIA> {
     (semAcordes || forcaInventada) && "acordes (os \"Principais acordes\" na ordem da página, nome em português e valor = largura da barra de 0 a 100)",
     vazioQuando && "estacoes (votos de primavera, verao, outono, inverno), dia e noite",
     semContagem && "fixacao: as 5 contagens de votos de Longevidade/Longevity na ordem [muito fraca, fraca, moderada, longa, eterna]; projecao: as 4 contagens de Rastro/Sillage na ordem [íntima, moderada, forte, enorme]; total de votos",
-    semContagem && "nivelFixacao (a barra de Longevidade com MAIS votos: Muito fraca, Fraca, Moderada, Longa ou Eterna) e nivelProjecao (a barra de Rastro com MAIS votos: Íntima, Moderada, Forte ou Enorme)",
+    semContagem && "nivelFixacao (a barra de Longevidade com MAIS votos: Muito fraca, Fraca, Moderada, Longa ou Eterna) e nivelProjecao (a barra de Rastro com MAIS votos: Íntima, Moderada, Forte ou Enorme). Se o perfume é novo e o Fragrantica ainda não tem votos, leia resenhas (Parfumo, lojas, vídeos) e dê o nível que elas indicam, com origemNivel = \"estimativa\"; se veio das barras do Fragrantica, origemNivel = \"fragrantica\"",
     !f.fragrantica && "link (endereço da página do perfume no Fragrantica)",
   ].filter(Boolean) as string[];
   if (!falta.length || !geminiConfigurado()) return { ...f, completar: false };
@@ -368,7 +368,7 @@ async function completarDoAcervo(f: FichaIA): Promise<FichaIA> {
     saida?: string[] | null; coracao?: string[] | null; fundo?: string[] | null; acordes?: { nome: string; valor: number }[] | null;
     estacoes?: { primavera?: number; verao?: number; outono?: number; inverno?: number } | null; dia?: number | null; noite?: number | null;
     fixacao?: number[] | null; projecao?: number[] | null; total?: number | null; link?: string | null;
-    nivelFixacao?: string | null; nivelProjecao?: string | null;
+    nivelFixacao?: string | null; nivelProjecao?: string | null; origemNivel?: "fragrantica" | "estimativa" | null;
   };
   const NUM = { type: "NUMBER" }, TXT = { type: "STRING" }, LISTA = { type: "ARRAY", items: TXT };
   const SCHEMA_FALTA = { type: "OBJECT", properties: {
@@ -376,12 +376,13 @@ async function completarDoAcervo(f: FichaIA): Promise<FichaIA> {
     acordes: { type: "ARRAY", items: { type: "OBJECT", properties: { nome: TXT, valor: NUM }, required: ["nome", "valor"] } },
     estacoes: { type: "OBJECT", properties: { primavera: NUM, verao: NUM, outono: NUM, inverno: NUM }, required: [] }, dia: NUM, noite: NUM,
     fixacao: { type: "ARRAY", items: NUM }, projecao: { type: "ARRAY", items: NUM }, total: { type: "INTEGER" }, link: TXT,
-    nivelFixacao: { type: "STRING", enum: NIVEIS_FIXACAO.map((n) => n.nome) }, nivelProjecao: { type: "STRING", enum: NIVEIS_PROJECAO.map((n) => n.nome) },
+    nivelFixacao: { type: "STRING", enum: NIVEIS_FIXACAO.map((n) => n.nome) }, nivelProjecao: { type: "STRING", enum: NIVEIS_PROJECAO.map((n) => n.nome) }, origemNivel: { type: "STRING", enum: ["fragrantica", "estimativa"] },
   }, required: [] };
   const alvo = `"${f.nome}" da casa "${f.casa}"`;
   const pesado = semContagem || camadasVazias.length > 0 || semAcordes;
+  let erro = "";
   const x = await geminiJSON<Falta>([{ text: `Abra a página do perfume ${alvo} no Fragrantica${f.fragrantica ? ` (${f.fragrantica})` : ""} e copie só estes campos:\n- ${falta.join("\n- ")}\nCopie da página (se o Fragrantica não tiver, use o Parfumo ou o site da marca); o que não encontrar fica null. Não estime e não copie números desta instrução.` }],
-    { schema: SCHEMA_FALTA, pesquisar: true, leve: !pesado, tempo: 90000, maxBuscas: pesado ? 3 : 2, tarefa: "completar_acervo" }).catch((e) => { console.error("[atlas:completar_acervo]", f.nome, e instanceof Error ? e.message : e); return {} as Falta; });
+    { schema: SCHEMA_FALTA, pesquisar: true, leve: !pesado, tempo: 75000, maxBuscas: pesado ? 3 : 2, tarefa: "completar_acervo" }).catch((e) => { erro = e instanceof Error ? e.message : String(e); console.error("[atlas:completar_acervo]", f.nome, erro); return {} as Falta; });
   const out: FichaIA = { ...f, completar: false, notas: { ...f.notas } };
   const tira = (k: string) => { out.revisar = (out.revisar ?? []).filter((r) => r !== k); };
   const ano = Number(x.ano);
@@ -423,9 +424,12 @@ async function completarDoAcervo(f: FichaIA): Promise<FichaIA> {
     const v: Votos = { ...(out.votos ?? { total: 0, fixacao: [0, 0, 0, 0, 0], projecao: [0, 0, 0, 0], estacoes: { primavera: 0, verao: 0, outono: 0, inverno: 0 }, dia: 0, noite: 0, ocasioes: [] }) };
     if (nf && !v.nivelFixacao) { v.nivelFixacao = nf.nome; out.fixacaoH = nf.h; v.origem = "acervo"; }
     if (np && !v.nivelProjecao) { v.nivelProjecao = np.nome; out.projecaoM = np.m; v.origem = "acervo"; }
+    if ((nf || np) && x.origemNivel === "estimativa") v.estimado = true;
     if (nf || np) { out.votos = v; tira("votos"); }
   }
-  out.votos = { ...(out.votos as Votos), completadoEm: new Date().toISOString() };
+  // marca como completada só quando a IA respondeu; se falhou, a próxima abertura da ficha tenta de novo
+  if (!erro && out.votos) out.votos = { ...out.votos, completadoEm: new Date().toISOString() };
+  if (erro) (out as FichaIA & { erroComplemento?: string }).erroComplemento = erro.slice(0, 200);
   return out;
 }
 

@@ -18,6 +18,20 @@ export async function GET(request: NextRequest) {
   const dup = request.nextUrl.searchParams.get("duplicados");
   if (dup) return duplicados(dup === "juntar");
   if (votos) return votosSuspeitosNoBanco(votos === "corrigir");
+  // ?completar=Nome&casa=Casa : mostra o que a IA completa numa ficha do acervo (gasta uma pesquisa)
+  const comp = request.nextUrl.searchParams.get("completar");
+  if (comp) {
+    const t0 = Date.now();
+    const base = await gerarFicha({ nome: comp, casa: request.nextUrl.searchParams.get("casa") ?? "" });
+    if (!base) return NextResponse.json({ erro: `não achei a ficha: ${ultimoErroFicha}` });
+    const p = await completarFicha(base);
+    return NextResponse.json({
+      fonte: base.fonteFicha ?? "ia", segundos: Math.round((Date.now() - t0) / 1000),
+      erro: (p as { erroComplemento?: string }).erroComplemento ?? null,
+      antes: { fixacaoH: base.fixacaoH ?? null, projecaoM: base.projecaoM ?? null, votos: base.votos ?? null },
+      depois: { fixacaoH: p.fixacaoH ?? null, projecaoM: p.projecaoM ?? null, votos: p.votos ?? null, ano: p.ano, genero: p.genero, concentracao: p.concentracao, pais: p.pais, acordes: p.acordes, notas: p.notas },
+    });
+  }
   const r: Record<string, string> = {};
   r.supabase = supabaseConfigurado() ? "chaves ok" : "FALTA NEXT_PUBLIC_SUPABASE_URL ou NEXT_PUBLIC_SUPABASE_ANON_KEY";
   if (supabaseConfigurado()) {

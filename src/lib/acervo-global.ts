@@ -176,8 +176,8 @@ export async function guardarNoAcervo(f: FichaIA): Promise<void> {
       fragrantica: linkFr.fragrantica,
       notas_saida: f.notas?.saida ?? [], notas_coracao: f.notas?.coracao ?? [], notas_fundo: f.notas?.fundo ?? [],
       acordes: (f.acordes ?? []).map((a) => a.nome).filter(Boolean),
-      fixacao_nivel: f.votos?.origem === "acervo" ? f.votos.nivelFixacao ?? null : NIVEIS_FIXACAO[maisVotado(fx)]?.nome ?? null,
-      projecao_nivel: f.votos?.origem === "acervo" ? f.votos.nivelProjecao ?? null : NIVEIS_PROJECAO[maisVotado(pj)]?.nome ?? null,
+      fixacao_nivel: f.votos?.estimado ? null : f.votos?.origem === "acervo" ? f.votos.nivelFixacao ?? null : NIVEIS_FIXACAO[maisVotado(fx)]?.nome ?? null,
+      projecao_nivel: f.votos?.estimado ? null : f.votos?.origem === "acervo" ? f.votos.nivelProjecao ?? null : NIVEIS_PROJECAO[maisVotado(pj)]?.nome ?? null,
       concentracao: concentracaoPT(f.concentracao ?? "") || null, ano: anoValido(f.ano), genero: generoPT(f.genero) || f.genero || null,
     };
     if (!nova.notas_saida.length && !nova.notas_coracao.length && !nova.notas_fundo.length && !nova.acordes.length) return;

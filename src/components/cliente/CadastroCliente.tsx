@@ -104,6 +104,9 @@ export function CadastroCliente({ base, modoInicial }: { base: Record<string, un
     try {
       const r = await fetch("/api/ficha/completar", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(base), signal: AbortSignal.timeout(130000) });
       const j = (await r.json()) as Ficha;
+      const falhou = (j as Ficha & { erroComplemento?: string | boolean }).erroComplemento;
+      if (falhou) setErro(`A IA não conseguiu completar a ficha agora${typeof falhou === "string" ? ` (${falhou})` : ""}. Pode salvar assim; ao abrir a ficha depois, ela tenta de novo.`);
+      else if (!j.votos?.nivelFixacao && !j.votos?.fixacao?.some((x) => x > 0)) setErro("A IA não achou fixação nem projeção desse perfume. Você pode marcar \"como fica em você\" ao lado.");
       // junta só o que a segunda busca traz, sem desfazer o que a pessoa já editou
       setFicha((f) => (f ? { ...f, ano: f.ano ?? j.ano, concentracao: f.concentracao || j.concentracao, genero: f.genero || j.genero, descricao: f.descricao || j.descricao,
         pais: f.pais || j.pais, familia: f.familia || j.familia,
@@ -218,8 +221,8 @@ export function CadastroCliente({ base, modoInicial }: { base: Record<string, un
     campos,
     piramide: ficha ? ([["SAÍDA", "saida"], ["CORAÇÃO", "coracao"], ["FUNDO", "fundo"]] as const).map(([nome, k]) => ({ nome, notas: ficha.notas[k].map(notaChip), addNota: addNota(k) })) : [],
     desemp: ficha ? [
-      { l: ficha.votos?.origem === "estimativa" ? "FIXAÇÃO · ESTIMATIVA" : ficha.votos?.origem === "acervo" ? "FIXAÇÃO · ACERVO" : "FIXAÇÃO", seg: seg(nivelF >= 0 ? nivelF + 1 : NIVEL_F.indexOf(ficha.votos?.nivelFixacao ?? "") + 1), v: `${NIVEL_F[nivelF] ?? ficha.votos?.nivelFixacao ?? "—"}${ficha.fixacaoH ? ` · ${Math.floor(ficha.fixacaoH)}h${String(Math.round((ficha.fixacaoH % 1) * 60)).padStart(2, "0")}` : ""}` },
-      { l: ficha.votos?.origem === "estimativa" ? "PROJEÇÃO · ESTIMATIVA" : ficha.votos?.origem === "acervo" ? "PROJEÇÃO · ACERVO" : "PROJEÇÃO", seg: seg(Math.round((((nivelP >= 0 ? nivelP : NIVEL_P.indexOf(ficha.votos?.nivelProjecao ?? "")) + 1) / 4) * 5)), v: `${NIVEL_P[nivelP] ?? ficha.votos?.nivelProjecao ?? "—"}${ficha.projecaoM ? ` · ${ficha.projecaoM.toFixed(1).replace(".", ",")} m` : ""}` },
+      { l: ficha.votos?.origem === "estimativa" ? "FIXAÇÃO · ESTIMATIVA" : ficha.votos?.estimado ? "FIXAÇÃO · ESTIMATIVA" : ficha.votos?.origem === "acervo" ? "FIXAÇÃO · ACERVO" : "FIXAÇÃO", seg: seg(nivelF >= 0 ? nivelF + 1 : NIVEL_F.indexOf(ficha.votos?.nivelFixacao ?? "") + 1), v: `${NIVEL_F[nivelF] ?? ficha.votos?.nivelFixacao ?? (completando ? "buscando…" : "—")}${ficha.fixacaoH ? ` · ${Math.floor(ficha.fixacaoH)}h${String(Math.round((ficha.fixacaoH % 1) * 60)).padStart(2, "0")}` : ""}` },
+      { l: ficha.votos?.origem === "estimativa" ? "PROJEÇÃO · ESTIMATIVA" : ficha.votos?.estimado ? "PROJEÇÃO · ESTIMATIVA" : ficha.votos?.origem === "acervo" ? "PROJEÇÃO · ACERVO" : "PROJEÇÃO", seg: seg(Math.round((((nivelP >= 0 ? nivelP : NIVEL_P.indexOf(ficha.votos?.nivelProjecao ?? "")) + 1) / 4) * 5)), v: `${NIVEL_P[nivelP] ?? ficha.votos?.nivelProjecao ?? (completando ? "buscando…" : "—")}${ficha.projecaoM ? ` · ${ficha.projecaoM.toFixed(1).replace(".", ",")} m` : ""}` },
     ] : [],
     prog: { trilho: "M 8.0 42.0 a 34 34 0 1 0 68.0 0 a 34 34 0 1 0 -68.0 0 Z", arco: arco(ok / tot), pct: Math.round((ok / tot) * 100), ok, tot, rev: pend },
     fontes: [] as { nome: string; info: string; ic: string; bg: string }[], // "fontes lidas" saiu da ficha
