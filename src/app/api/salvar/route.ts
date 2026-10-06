@@ -8,7 +8,7 @@ import type { FichaIA } from "@/lib/ficha";
 export const maxDuration = 60;
 
 export async function POST(request: NextRequest) {
-  const b = (await request.json()) as { ficha: FichaIA; situacao: string; anotacao?: string; minhaFixacao?: number | null; minhaProjecao?: number | null; foto?: { mime: string; base64: string } };
+  const b = (await request.json()) as { ficha: FichaIA; situacao: string; anotacao?: string; minhaFixacao?: number | null; minhaProjecao?: number | null; minhaNota?: number | null; foto?: { mime: string; base64: string } };
   if (!supabaseConfigurado()) return NextResponse.json({ erro: "O banco ainda não está ligado. Configure o Supabase para salvar." }, { status: 400 });
   const supabase = await createClient();
   const linha = linhaDoPerfume({ ...b.ficha, id: "" });
@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
   }
   const situacao = ["tenho", "tive", "quero", "assinatura"].includes(b.situacao) ? b.situacao : "tenho";
   if (situacao === "assinatura") await supabase.from("colecao").update({ situacao: "tenho" }).eq("situacao", "assinatura");
-  const { data: c, error: e2 } = await supabase.from("colecao").upsert({ perfume_id: p.id, situacao, anotacao: b.anotacao || null, ...(b.minhaFixacao ? { minha_fixacao: b.minhaFixacao } : {}), ...(b.minhaProjecao ? { minha_projecao: b.minhaProjecao } : {}), ...(foto_url ? { foto_url } : {}) }, { onConflict: "user_id,perfume_id" }).select("numero").single();
+  const { data: c, error: e2 } = await supabase.from("colecao").upsert({ perfume_id: p.id, situacao, anotacao: b.anotacao || null, ...(b.minhaFixacao ? { minha_fixacao: b.minhaFixacao } : {}), ...(b.minhaNota ? { minha_nota: b.minhaNota } : {}), ...(b.minhaProjecao ? { minha_projecao: b.minhaProjecao } : {}), ...(foto_url ? { foto_url } : {}) }, { onConflict: "user_id,perfume_id" }).select("numero").single();
   if (e2) return NextResponse.json({ erro: e2.message }, { status: 500 });
   return NextResponse.json({ id: p.id, numero: c?.numero });
 }

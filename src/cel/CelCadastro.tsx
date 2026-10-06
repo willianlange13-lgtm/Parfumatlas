@@ -6,6 +6,7 @@ import type { Perfume } from "@/lib/tipos";
 import { Anel, Card, Circ, MONO, NotaChip, OURO, Rot } from "./kit";
 import { NIVEIS_FIXACAO, NIVEIS_PROJECAO } from "@/lib/normalizar";
 import { semFundo } from "@/lib/sem-fundo";
+import { EditorAcordes, EditorNota, EditorQuando } from "./EditoresFicha";
 import type { Selo } from "@/lib/selo-fonte";
 
 type Modo = "foto" | "link" | "nome" | "voz";
@@ -14,7 +15,7 @@ type Ficha = Omit<Perfume, "id" | "clima"> & { revisar: string[]; completar?: bo
 type Campo = { l: string; v: string; st: string; mudar: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void; opcoes?: string[] };
 export type CadCel = {
   modo: Modo; setModo: (m: Modo) => void; foto: string | null; lido: string[]; cands: Cand[]; sel: number; ficha: Ficha | null; setFicha: (f: Ficha) => void;
-  situacao: string; setSituacao: (s: string) => void; anotacao: string; setAnotacao: (s: string) => void; minhaFixacao: number | null; setMinhaFixacao: (n: number | null) => void; minhaProjecao: number | null; setMinhaProjecao: (n: number | null) => void; ocupado: string; ouvindo: boolean; fala: string; erro: string;
+  situacao: string; setSituacao: (s: string) => void; anotacao: string; setAnotacao: (s: string) => void; minhaFixacao: number | null; setMinhaFixacao: (n: number | null) => void; minhaProjecao: number | null; setMinhaProjecao: (n: number | null) => void; minhaNota: number | null; setMinhaNota: (n: number | null) => void; ocupado: string; ouvindo: boolean; fala: string; erro: string;
   identificar: (m: "foto" | "link" | "nome", texto?: string, f?: undefined, rapido?: boolean) => void; pesquisou: boolean; completando: boolean; escolher: (c: Cand, i: number) => void; ouvir: () => void; salvar: () => void; manual: (texto?: string) => void;
   fotoEscolhida: (e: React.ChangeEvent<HTMLInputElement>) => void; seloBusca: Selo | null; seloFicha: Selo | null; campos: Campo[]; prog: { pct: number; ok: number; tot: number; rev: number }; fontes: { nome: string; info: string }[]; desemp: { l: string; seg: string[]; v: string }[]; quando: [string, number][];
 };
@@ -179,30 +180,9 @@ export function CelCadastro({ c, modoInicial }: { c: CadCel; modoInicial?: strin
             </div>
           ))}
         </Card>
-        {f.acordes.length > 0 && (
-          <Card pad={14} gap={8}>
-            <Rot>Principais acordes</Rot>
-            {f.acordes.slice(0, 8).map((a) => (
-              <div key={a.nome} style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 13 }}>
-                <span style={{ width: 118, color: "var(--ink-2)" }}>{a.nome}</span>
-                <span style={{ flexGrow: 1, height: 6, borderRadius: 3, background: "var(--chip)", display: "flex" }}><span style={{ width: `${a.valor}%`, borderRadius: 3, background: a === f.acordes[0] ? OURO : "var(--prata)" }} /></span>
-              </div>
-            ))}
-          </Card>
-        )}
-        {c.quando.length > 0 && (
-          <Card pad={14} gap={8}>
-            <Rot>Quando usar</Rot>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(6, minmax(0, 1fr))", gap: 6, alignItems: "end", height: 90 }}>
-              {c.quando.map(([nome, v]) => (
-                <div key={nome} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, height: "100%", justifyContent: "flex-end" }}>
-                  <span style={{ width: "70%", height: `${Math.max(4, v * 0.6)}px`, borderRadius: 4, background: v >= 80 ? OURO : "var(--prata)" }} />
-                  <span style={{ fontSize: 10, color: "var(--ink-3)" }}>{nome}</span>
-                </div>
-              ))}
-            </div>
-          </Card>
-        )}
+        {/* acordes e quando usar já editáveis no cadastro, preenchidos pela IA (docs/DECISOES.md §24) */}
+        <EditorAcordes acordes={f.acordes} set={(l, pr) => c.setFicha({ ...f, acordes: l, acorde: pr ?? f.acorde })} aviso={c.completando ? "A IA ainda está buscando; o que chegar entra aqui." : undefined} />
+        <EditorQuando votos={f.votos} estimado={f.votos?.quandoEstimado} set={(v) => c.setFicha({ ...f, votos: v })} />
         {c.fontes.length > 0 && (
           <Card pad={14} gap={10}>
             <Rot>Fontes lidas</Rot>
@@ -245,6 +225,7 @@ export function CelCadastro({ c, modoInicial }: { c: CadCel; modoInicial?: strin
         <Rot>Como fica em você (opcional)</Rot>
         <Nivel titulo="FIXAÇÃO NA SUA PELE" niveis={NIVEIS_FIXACAO.map((n) => `${n.nome} · ${n.faixa}`)} val={c.minhaFixacao} set={c.setMinhaFixacao} />
         <Nivel titulo="PROJEÇÃO NA SUA PELE" niveis={NIVEIS_PROJECAO.map((n) => `${n.nome} · ${n.faixa}`)} val={c.minhaProjecao} set={c.setMinhaProjecao} />
+        <EditorNota val={c.minhaNota} set={c.setMinhaNota} />
         {c.prog.rev > 0 && (
           <div style={{ display: "flex", gap: 10, padding: "12px 14px", borderRadius: 16, background: "var(--chip)", fontSize: 12.5, lineHeight: 1.45, color: "var(--ink-2)" }}>
             <Icone nome="check" tamanho={16} />Ficha com {c.prog.ok} de {c.prog.tot} campos. Os campos marcados para revisar ficam guardados para você conferir depois.

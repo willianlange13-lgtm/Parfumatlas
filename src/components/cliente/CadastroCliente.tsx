@@ -8,6 +8,7 @@ import { hexA } from "@/lib/cores";
 import type { Perfume } from "@/lib/tipos";
 import { CONCENTRACOES, GENEROS, NIVEIS_FIXACAO, NIVEIS_PROJECAO } from "@/lib/normalizar";
 import { semFundo } from "@/lib/sem-fundo";
+import { EditorAcordes, EditorNota, EditorQuando } from "@/cel/EditoresFicha";
 import { seloBusca, seloFicha } from "@/lib/selo-fonte";
 
 type Modo = "foto" | "link" | "nome" | "voz";
@@ -49,6 +50,7 @@ export function CadastroCliente({ base, modoInicial }: { base: Record<string, un
   const [anotacao, setAnotacao] = useState("");
   const [minhaFixacao, setMinhaFixacao] = useState<number | null>(null);
   const [minhaProjecao, setMinhaProjecao] = useState<number | null>(null);
+  const [minhaNota, setMinhaNota] = useState<number | null>(null);
   const [ocupado, setOcupado] = useState<"" | "lendo" | "ficha" | "salvando">("");
   const [ouvindo, setOuvindo] = useState(false);
   const [fala, setFala] = useState("");
@@ -57,7 +59,7 @@ export function CadastroCliente({ base, modoInicial }: { base: Record<string, un
   const [buscaIA, setBuscaIA] = useState<boolean | null>(null);
   const [completando, setCompletando] = useState(false);
   const link = useRef<string | undefined>(undefined);
-  const manualRef = useRef(false); // ficha feita à mão: depois de salvar, abre o Editar
+  const manualRef = useRef(false); // ficha feita à mão (sem pesquisa)
   const ultimaBusca = useRef("");
   const salvoId = useRef<string | null>(null); // ficha salva antes da segunda etapa terminar
 
@@ -98,6 +100,8 @@ export function CadastroCliente({ base, modoInicial }: { base: Record<string, un
     }
   }
 
+  const mexeu = (a: unknown, b: unknown) => JSON.stringify(a) !== JSON.stringify(b);
+  const quando = (v?: Ficha["votos"]) => (v ? [v.estacoes, v.dia, v.noite] : null);
   /** Votos e parecidos em segundo plano: a ficha já aparece enquanto isso. */
   async function completar(base: Ficha) {
     setCompletando(true);
@@ -111,7 +115,8 @@ export function CadastroCliente({ base, modoInicial }: { base: Record<string, un
       setFicha((f) => (f ? { ...f, ano: f.ano ?? j.ano, concentracao: f.concentracao || j.concentracao, genero: f.genero || j.genero, descricao: f.descricao || j.descricao,
         pais: f.pais || j.pais, familia: f.familia || j.familia,
         notas: { saida: f.notas.saida.length ? f.notas.saida : (j.notas?.saida ?? []), coracao: f.notas.coracao.length ? f.notas.coracao : (j.notas?.coracao ?? []), fundo: f.notas.fundo.length ? f.notas.fundo : (j.notas?.fundo ?? []) },
-        acordes: j.acordes?.length ? j.acordes : f.acordes, acorde: j.acordes?.length ? j.acorde : f.acorde, imagem: f.imagem ?? j.imagem, fragrantica: f.fragrantica ?? j.fragrantica, votos: j.votos ?? f.votos, fixacaoH: j.fixacaoH ?? f.fixacaoH, projecaoM: j.projecaoM ?? f.projecaoM, parecidos: j.parecidos ?? f.parecidos, mesmaCasa: j.mesmaCasa ?? f.mesmaCasa, revisar: f.revisar.filter((x) => !["votos", "ano", "concentracao", "genero"].includes(x) || (j.revisar ?? []).includes(x)) } : f));
+        // o que você mexeu enquanto a IA buscava fica como você deixou
+        acordes: mexeu(f.acordes, base.acordes) || !j.acordes?.length ? f.acordes : j.acordes, acorde: mexeu(f.acordes, base.acordes) || !j.acordes?.length ? f.acorde : j.acorde, imagem: f.imagem ?? j.imagem, fragrantica: f.fragrantica ?? j.fragrantica, votos: j.votos ? (mexeu(quando(f.votos), quando(base.votos)) ? { ...j.votos, estacoes: f.votos!.estacoes, dia: f.votos!.dia, noite: f.votos!.noite, quandoEstimado: f.votos!.quandoEstimado } : j.votos) : f.votos, fixacaoH: j.fixacaoH ?? f.fixacaoH, projecaoM: j.projecaoM ?? f.projecaoM, parecidos: j.parecidos ?? f.parecidos, mesmaCasa: j.mesmaCasa ?? f.mesmaCasa, revisar: f.revisar.filter((x) => !["votos", "ano", "concentracao", "genero"].includes(x) || (j.revisar ?? []).includes(x)) } : f));
       // se a pessoa já salvou, leva o que chegou para a ficha salva
       if (salvoId.current) await fetch("/api/ficha/anexar", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: salvoId.current, parecidos: j.parecidos, mesmaCasa: j.mesmaCasa, votos: j.votos, fixacaoH: j.fixacaoH, projecaoM: j.projecaoM, ano: j.ano, concentracao: j.concentracao, genero: j.genero, descricao: j.descricao, pais: j.pais, notas: j.notas, acordes: j.acordes, acorde: j.acorde, familia: j.familia, imagem: j.imagem }) }).then(() => router.refresh()).catch(() => {});
     } catch { /* fica com o que já tem */ } finally {
@@ -149,11 +154,11 @@ export function CadastroCliente({ base, modoInicial }: { base: Record<string, un
     if (!ficha) return;
     if (!ficha.nome.trim() || !ficha.casa.trim()) { setErro("Preencha o nome e a casa do perfume."); return; }
     setOcupado("salvando"); setErro("");
-    const r = await fetch("/api/salvar", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ficha, situacao, anotacao, minhaFixacao, minhaProjecao, foto: foto ? { mime: foto.mime, base64: foto.base64 } : undefined }) });
+    const r = await fetch("/api/salvar", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ficha, situacao, anotacao, minhaFixacao, minhaProjecao, minhaNota, foto: foto ? { mime: foto.mime, base64: foto.base64 } : undefined }) });
     const j = await r.json();
     setOcupado("");
     if (!r.ok) setErro(j.erro ?? "Não consegui salvar.");
-    else { salvoId.current = j.id; router.push(manualRef.current ? `/editar/${j.id}` : `/colecao/${j.id}`); }
+    else { salvoId.current = j.id; router.push(`/colecao/${j.id}`); /* tudo já se preenche no cadastro: não precisa passar pelo Editar */ }
   }
 
   const muda = (k: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -236,11 +241,19 @@ export function CadastroCliente({ base, modoInicial }: { base: Record<string, un
     })),
     salvar,
     manual: () => manual(),
+    // acordes, quando usar e a sua nota no próprio cadastro (docs/DECISOES.md §24)
+    editores: ficha ? (
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 16, marginTop: 16, gridColumn: "1 / -1" }}>
+        <EditorAcordes acordes={ficha.acordes} set={(l, pr) => setFicha((f) => (f ? { ...f, acordes: l, acorde: pr ?? f.acorde } : f))} aviso={completando ? "A IA ainda está buscando; o que chegar entra aqui." : undefined} />
+        <EditorQuando votos={ficha.votos} estimado={ficha.votos?.quandoEstimado} set={(vv) => setFicha((f) => (f ? { ...f, votos: vv } : f))} />
+      </div>
+    ) : null,
+    notaEditor: <EditorNota val={minhaNota} set={setMinhaNota} />,
     salvarTxt: ocupado === "salvando" ? "Salvando…" : "Salvar na coleção",
     erro,
   };
   const cel = {
-    modo, setModo: (m: Modo) => { setModo(m); setErro(""); }, foto: foto?.url ?? null, lido, cands, sel, ficha, setFicha, situacao, setSituacao, anotacao, setAnotacao, minhaFixacao, setMinhaFixacao, minhaProjecao, setMinhaProjecao, ocupado, ouvindo, fala, erro,
+    modo, setModo: (m: Modo) => { setModo(m); setErro(""); }, foto: foto?.url ?? null, lido, cands, sel, ficha, setFicha, situacao, setSituacao, anotacao, setAnotacao, minhaFixacao, setMinhaFixacao, minhaProjecao, setMinhaProjecao, minhaNota, setMinhaNota, ocupado, ouvindo, fala, erro,
     identificar, pesquisou, completando, escolher, manual, seloBusca: seloBusca(buscaIA), seloFicha: seloFicha(ficha), ouvir, salvar, fotoEscolhida: v.fotoEscolhida, campos, prog: v.prog, fontes: v.fontes, desemp: v.desemp,
     quando: ficha?.votos ? [["Inverno", ficha.votos.estacoes.inverno], ["Primavera", ficha.votos.estacoes.primavera], ["Verão", ficha.votos.estacoes.verao], ["Outono", ficha.votos.estacoes.outono], ["Dia", ficha.votos.dia], ["Noite", ficha.votos.noite]] as [string, number][] : [],
   };

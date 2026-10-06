@@ -309,3 +309,9 @@ Briefing do Willian: o desktop estava linear demais (preto + prata + cinza + dou
 - **Acordes com nomes diferentes que querem dizer o mesmo** (pedido do Willian: almíscar = almiscarado, madeira = amadeirado): `chaveAcorde` em `src/lib/normalizar.ts` passa pela tradução, por uma lista de sinônimos e tira acento e terminação. É usada para casar a força dos acordes na completação e para não repetir acorde no Editar.
 - Força dos acordes que vem em escada perfeita (100, 90, 80…) é descartada: é número inventado pela IA, não a barra lida. Fica a ordem do acervo.
 
+## 24. Tudo no cadastro, sem passar pelo Editar (out/2026)
+
+- Pedido do Willian ("senão eu tenho dois trabalhos"): acordes com força, "quando usar" (estações, dia e noite) e a sua nota agora estão no próprio cadastro, no computador e no celular. Vêm preenchidos com o que o acervo ou a IA trouxeram; o que faltar, você marca ali. Componentes em `src/cel/EditoresFicha.tsx`.
+- Enquanto a IA completa em segundo plano, o que você já mexeu em acordes ou "quando usar" fica como você deixou; o resto chega da IA.
+- A sua nota (1 a 5) passou a ser salva no cadastro (`/api/salvar`, `minha_nota`). Ficha feita à mão vai direto para a ficha depois de salvar.
+
