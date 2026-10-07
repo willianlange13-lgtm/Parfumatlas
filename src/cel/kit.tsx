@@ -85,8 +85,8 @@ export function Topo({ titulo, voltar, direita, grande }: { titulo: string; volt
 /** Título grande das abas (Coleção, Buscar, Novidades). */
 export function TituloAba({ titulo, children }: { titulo: string; children?: ReactNode }) {
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 8, height: 56, flexShrink: 0 }}>
-      <h1 style={{ margin: 0, fontSize: 28, fontFamily: "var(--marca)", fontWeight: 500, letterSpacing: "-.02em" }}>{titulo}</h1>
+    <div style={{ display: "flex", alignItems: "flex-end", gap: 8, minHeight: 64, marginTop: 10, flexShrink: 0 }}>
+      <h1 className="titulo-poster" style={{ margin: 0, fontSize: 52, fontFamily: "var(--marca)", fontWeight: 600, letterSpacing: "-.05em", lineHeight: 0.9 }}>{titulo}</h1>
       <span style={{ flexGrow: 1 }} />
       {children}
     </div>

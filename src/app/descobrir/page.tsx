@@ -1,4 +1,4 @@
-import { SoComputador } from "@/cel/SoComputador";
+import { CelDescobrir } from "@/cel/CelDescobrir";
 import { connection } from "next/server";
 import DesDescobrir from "@/desenho/DesDescobrir";
 import { montarDescobrir } from "@/montar/descobrir";
@@ -14,7 +14,9 @@ export default async function Descobrir({ searchParams }: PageProps<"/descobrir"
       <div className="so-computador">
         <DesDescobrir v={v} />
       </div>
-      <SoComputador titulo="Descobrir" texto="A escola de perfumes, a árvore das famílias, a linha do tempo e o mapa das casas ficam no site do computador." />
+      <div className="so-celular">
+        <CelDescobrir v={v} />
+      </div>
     </>
   );
 }

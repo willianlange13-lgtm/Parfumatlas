@@ -1,4 +1,4 @@
-import { SoComputador } from "@/cel/SoComputador";
+import { CelDNA } from "@/cel/CelDNA";
 import { connection } from "next/server";
 import DesDNA from "@/desenho/DesDNA";
 import { montarDNA } from "@/montar/dna";
@@ -13,7 +13,9 @@ export default async function DNA() {
       <div className="so-computador">
         <DesDNA v={v} />
       </div>
-      <SoComputador titulo="DNA olfativo" texto="O radar do seu gosto, a evolução da coleção e as lacunas ficam no site do computador, onde cabem os gráficos." />
+      <div className="so-celular">
+        <CelDNA v={v} />
+      </div>
     </>
   );
 }
