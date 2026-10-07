@@ -1,4 +1,6 @@
 "use client";
+import "@/desenho/sommelier.css";
+import "./cel-sommelier.css";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { Icone } from "@/components/Icone";
@@ -28,7 +30,7 @@ function Entrada({ v }: { v: VSom }) {
           {v.rapidas.map((r) => <button key={r.t} type="button" onClick={r.pick} className="c-pill" style={{ height: 34, borderRadius: "var(--r-ctl)", fontSize: 12.5, border: "1px solid var(--line-2)", background: "rgba(11,17,15,.8)" }}>{r.t}</button>)}
         </div>
       )}
-      <form onSubmit={v.enviar} className="c-campo" style={{ height: 52, borderRadius: "var(--r-ctl)", background: "#141B18", border: "1px solid var(--line-2)" }}>
+      <form onSubmit={v.enviar} className="c-campo" style={{ height: 56, borderRadius: "var(--r-pill)", background: "var(--vidro)", border: "1px solid var(--line-2)", backdropFilter: "blur(16px)" }}>
         <input name="q" placeholder={v.vozRotulo === "Parar de ouvir" ? "Ouvindo…" : "Pergunte ou toque no microfone"} aria-label="Mensagem para o sommelier" autoComplete="off" enterKeyHint="send" />
         <button type="button" className="c-circ" style={{ width: 36, height: 36, background: "var(--chip-2)" }} onClick={v.escolherFoto} aria-label="Foto do look"><Icone nome="camera" tamanho={16} /></button>
         <button type="button" className="c-circ" style={{ width: 40, height: 40, background: v.vozRotulo === "Parar de ouvir" ? OURO : "var(--btn)", color: "var(--on-btn)" }} onClick={v.falar} aria-label={v.vozRotulo}><Icone nome="mic" tamanho={17} /></button>
@@ -89,9 +91,14 @@ export function CelSommelier({ v }: { v: VSom }) {
       <div className="c-tela sem-barra" style={{ paddingBottom: 150 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10, height: 60, flexShrink: 0 }}>
           <Circ icone="voltar" href="/" tamanho={36} rotulo="Voltar" />
-          <span style={{ fontSize: 26, fontFamily: "var(--marca)", fontWeight: 500, letterSpacing: "-.01em", flexGrow: 1 }}>Sommelier</span>
+          <span style={{ fontSize: 22, fontFamily: "var(--marca)", fontWeight: 600, letterSpacing: "-.02em", flexGrow: 1 }}>Sommelier</span>
           <Circ icone="chat" tamanho={40} rotulo="Conversas" onClick={() => setHistorico(true)} />
           <button type="button" className="c-pill on" style={{ height: 40, borderRadius: "var(--r-ctl)", fontSize: 14 }} onClick={v.nova}>+ Nova</button>
+        </div>
+        <div className="cs-hero">
+          <span className="so-orbe" aria-hidden="true" />
+          <h1>O que vamos<br /><em>usar hoje?</em></h1>
+          <p>Pergunte, mande a foto do look ou toque no microfone.</p>
         </div>
         <Card fundo="destaque" pad="14px 16px">
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
