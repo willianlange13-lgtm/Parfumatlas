@@ -81,7 +81,7 @@ export function dna(colecao: Entrada[]) {
     { nome: `${abertura.find((e) => e.nome === lider[0])?.nome ?? ordem[0].nome} dominante`, cor: OURO },
     notas[0] ? { nome: `Fundo de ${notas[0].nome.toLowerCase()}`, cor: corDoAcorde("Baunilha") } : null,
     v("Amadeirado") >= 40 ? { nome: "Madeira de apoio", cor: corDoAcorde("Amadeirado") } : null,
-    v("Floral") < 25 ? { nome: "Quase sem floral", cor: "#8E99AD" } : null,
+    v("Floral") < 25 ? { nome: "Quase sem floral", cor: "#8FA399" } : null,
   ].filter(Boolean) as { nome: string; cor: string }[];
 
   const media = (f: (p: Perfume) => number) => itens.reduce((s, e) => s + f(e.perfume), 0) / n;

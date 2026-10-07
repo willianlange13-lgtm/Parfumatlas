@@ -1,7 +1,7 @@
 /**
  * Territórios olfativos (docs/DECISOES.md §18): a família do perfume "contamina" a interface com uma
  * atmosfera sutil. As cores entram como luz ambiente, brilhos, barras, bordas especiais e no DNA —
- * nunca como card inteiro pintado. Base preta continua sendo a marca.
+ * nunca como card inteiro pintado. A base verde-noite do Atlas Vivo continua sendo a marca.
  */
 export type Territorio = { nome: string; a: string; b: string; glow: string };
 
@@ -15,7 +15,7 @@ const T: Record<string, Territorio> = {
   madeira: { nome: "castanho", a: "#a88462", b: "#3f5a48", glow: "rgba(168,132,98,.14)" },        // amadeirado
   chipre: { nome: "musgo", a: "#9a9a6a", b: "#5d6b4a", glow: "rgba(154,154,106,.14)" },           // chipre
   oud: { nome: "bronze", a: "#b08a52", b: "#2f4a3a", glow: "rgba(176,138,82,.16)" },              // oud
-  neutro: { nome: "prata", a: "#c9d1de", b: "#d8b970", glow: "rgba(201,209,222,.10)" },
+  neutro: { nome: "papoula", a: "#FF8A5C", b: "#8FB5A2", glow: "rgba(255,107,61,.10)" },
 };
 
 const sem = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();

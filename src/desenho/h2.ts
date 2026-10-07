@@ -1,12 +1,9 @@
 /** Funções de desenho compartilhadas pelas pranchas (porte do h2.js do desenho). */
 import base from "@/data/desenho/InicioPreto.json";
 
-export const OURO = "#D8B970";
-/**
- * Tokens das pranchas do computador. O acento (amber) e o texto de título (amberTxt) usam o mesmo dourado
- * do app do celular (OURO e --ouro-txt), em vez do prata original do desenho: decisão do Willian (out/2026).
- */
-export const t = { ...(base.t as unknown as Record<string, string>), amber: OURO, amberTxt: "#E0C78C" } as unknown as Record<string, string> & { sup: string[]; fam: string[]; saz: string[] };
+export const OURO = "#FF6B3D";
+/** Tokens das pranchas do computador: o acento (amber) é a papoula do Atlas Vivo, igual ao celular (docs/DECISOES.md §28). */
+export const t = { ...(base.t as unknown as Record<string, string>), amber: OURO, amberTxt: "#FFA07E" } as unknown as Record<string, string> & { sup: string[]; fam: string[]; saz: string[] };
 
 export const P = (x: number) => (+x).toFixed(1);
 export const hexA = (h: string, a: number) => `rgba(${parseInt(h.slice(1, 3), 16)},${parseInt(h.slice(3, 5), 16)},${parseInt(h.slice(5, 7), 16)},${a})`;
@@ -17,7 +14,7 @@ export function arc(cx: number, cy: number, r: number, a0: number, a1: number) {
   return `M ${P(x0)} ${P(y0)} A ${r} ${r} 0 ${a1 - a0 > Math.PI ? 1 : 0} 1 ${P(x1)} ${P(y1)}`;
 }
 
-export const EIXOS: [string, string][] = [["Cítrico", "#DCECFD"], ["Frutado", "#D8B970"], ["Aromático", "#B4BDCC"], ["Aquático", "#C9D1DE"], ["Oriental", "#9099AC"], ["Amadeirado", "#7F8AA0"], ["Âmbar", "#6E7A90"], ["Gourmand", "#A3ADBE"]];
+export const EIXOS: [string, string][] = [["Cítrico", "#F2D06B"], ["Frutado", "#FF8A5C"], ["Aromático", "#7FB59A"], ["Aquático", "#6FA9C4"], ["Oriental", "#C98B5A"], ["Amadeirado", "#B08E6A"], ["Âmbar", "#E0A04A"], ["Gourmand", "#C9946A"]];
 export const EC = EIXOS.map((e) => e[1]);
 export const FAMCOR: Record<string, string> = Object.fromEntries(EIXOS);
 

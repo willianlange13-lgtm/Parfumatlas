@@ -5,7 +5,7 @@ import { CelColecao } from "@/cel/CelColecao";
 import type { DadosColecao } from "@/montar/colecao";
 import { territorio } from "@/lib/territorio";
 
-const ACOR: Record<string, string> = { Frutado: "#D8B970", Amadeirado: "#7F8AA0", Baunilha: "#A3ADBE", Especiado: "#6E7A90", Âmbar: "#9099AC", Aquático: "#C9D1DE", Cítrico: "#DCECFD" };
+const ACOR: Record<string, string> = { Frutado: "#FF6B3D", Amadeirado: "#7A9184", Baunilha: "#9DB2A7", Especiado: "#6A8175", Âmbar: "#8AA094", Aquático: "#C9D6CF", Cítrico: "#E6EFEA" };
 const GN: [string, string][] = [["acorde", "Acorde"], ["familia", "Família"], ["marca", "Marca"], ["genero", "Gênero"], ["az", "A–Z"]];
 const SIT: [string, string][] = [["tenho", "Tenho"], ["tive", "Tive"], ["quero", "Quero"], ["assinatura", "Assinatura"]];
 type Item = DadosColecao["itens"][number];
@@ -16,7 +16,7 @@ export function agrupar(itens: Item[], modo: string) {
   itens.forEach((p) => { const k = chave[modo](p); mapa.set(k, [...(mapa.get(k) ?? []), p]); });
   const ks = [...mapa.keys()];
   if (modo === "az" || modo === "marca") ks.sort(); else ks.sort((a, b) => mapa.get(b)!.length - mapa.get(a)!.length || a.localeCompare(b));
-  return ks.map((k) => ({ nome: k, n: `${mapa.get(k)!.length} ${mapa.get(k)!.length === 1 ? "perfume" : "perfumes"}`, cor: modo === "acorde" ? ACOR[k] ?? "#9099AC" : modo === "familia" ? territorio(k).a : "#C9D1DE", itens: mapa.get(k)! }));
+  return ks.map((k) => ({ nome: k, n: `${mapa.get(k)!.length} ${mapa.get(k)!.length === 1 ? "perfume" : "perfumes"}`, cor: modo === "acorde" ? ACOR[k] ?? "#8AA094" : modo === "familia" ? territorio(k).a : "#C9D6CF", itens: mapa.get(k)! }));
 }
 
 export function ColecaoCliente({ d }: { d: DadosColecao }) {

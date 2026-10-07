@@ -82,7 +82,7 @@ export function CelBuscar({ lista, modoInicial }: { lista: ItemBusca[]; modoInic
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}><Rot>{titulo}</Rot><span style={{ fontSize: 12, color: "var(--ink-3)" }}>{buscandoAcervo ? "procurando…" : "sem pesquisa paga"}</span></div>
       {doAcervo.map((a, i) => (
         <Link key={`${a.nome}|${a.casa}`} href={hrefCand({ nome: a.nome, casa: a.casa, concentracao: "", por: "Do acervo", pct: a.pct, link: a.link })} prefetch={false} style={{ display: "flex", alignItems: "center", gap: 12, padding: "11px 0", borderTop: i ? "1px solid var(--line)" : "none" }}>
-          <Mini nome={a.nome} casa={a.casa} acorde="" forma="ret" tampa="#141417" foto={a.imagem ?? undefined} oficial={Boolean(a.imagem)} w={46} h={52} />
+          <Mini nome={a.nome} casa={a.casa} acorde="" forma="ret" tampa="#141B18" foto={a.imagem ?? undefined} oficial={Boolean(a.imagem)} w={46} h={52} />
           <div style={{ flexGrow: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 3 }}>
             <span style={{ fontSize: 15, fontWeight: 500, lineHeight: 1.2 }}>{a.nome}</span>
             <span style={{ fontFamily: MONO, fontSize: 9.5, letterSpacing: ".08em", color: "var(--ink-3)", textTransform: "uppercase" }}>{a.casa}</span>
@@ -201,7 +201,7 @@ export function CelBuscar({ lista, modoInicial }: { lista: ItemBusca[]; modoInic
             <>
               <Card fundo="destaque" pad={16}>
                 <div style={{ display: "flex", gap: 14 }}>
-                  <span style={{ width: 46, height: 46, borderRadius: "var(--r-ctl)", background: "rgba(216,185,112,.16)", color: OURO, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Icone nome="camera" tamanho={20} /></span>
+                  <span style={{ width: 46, height: 46, borderRadius: "var(--r-ctl)", background: "rgba(255,107,61,.16)", color: OURO, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Icone nome="camera" tamanho={20} /></span>
                   <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                     <span style={{ fontSize: 17, fontWeight: 500 }}>Modo compra</span>
                     <span style={{ fontSize: 13, lineHeight: 1.45, color: "var(--ink-2)" }}>Aponte a câmera para o frasco na loja. Mostra se você já tem, o que tem de parecido e se combina com o seu gosto.</span>

@@ -11,7 +11,7 @@ const CHAVE_FILTRO = ["ocasiao", "sentir", "origem"] as const;
 
 export function SommelierCliente({ base, iniciais, perfumeId, pergunta, voz, conversaId: c0, falarRespostas = true }: { base: Base; iniciais: Msg[]; perfumeId?: string; pergunta?: string; voz?: boolean; conversaId?: string; falarRespostas?: boolean }) {
   // mesmo dourado do celular no acento e nos títulos (src/desenho/h2.ts)
-  const t: Record<string, string> = { ...(base.t as Record<string, string>), amber: "#D8B970", amberTxt: "#E0C78C" };
+  const t: Record<string, string> = { ...(base.t as Record<string, string>), amber: "#FF6B3D", amberTxt: "#FFA07E" };
   const [msgs, setMsgs] = useState<Msg[]>(iniciais);
   const [pensando, setPensando] = useState(false);
   const [ouvindo, setOuvindo] = useState(false);

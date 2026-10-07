@@ -9,14 +9,14 @@ import base from "@/data/desenho/FichaAzulPreto.json";
 import { arc, circ, glifo, hexA, P, t } from "@/desenho/h2";
 import type { Entrada, Perfume } from "@/lib/tipos";
 
-const PALETA = ["#D8B970", "#DCECFD", "#9099AC", "#B4BDCC", "#7F8AA0", "#A3ADBE", "#6E7A90", "#C9D1DE"];
+const PALETA = ["#FF6B3D", "#E6EFEA", "#8AA094", "#AFC2B8", "#7A9184", "#9DB2A7", "#6A8175", "#C9D6CF"];
 const dominio = (u?: string | null) => { try { return u ? new URL(u).hostname.replace(/^www\./, "") : ""; } catch { return ""; } };
 const idade = (a: number) => (a <= 0 ? "lançamento deste ano" : a === 1 ? "há 1 ano" : `há ${a} anos`);
 const hm = (h: number) => { let hh = Math.floor(h), mm = Math.round((h - hh) * 60); if (mm === 60) { hh++; mm = 0; } return `${hh}h${mm < 10 ? "0" : ""}${mm}`; };
 
 function notaCor(n: string, cor: string) {
   const r = refNota(n);
-  return { nome: n, d: r.icone, cor, bg: r.foto ? "#FFFFFF" : hexA(cor, 0.14), borda: hexA(cor, 0.45), img: r.foto ?? "", semImg: !r.foto, foto: r.foto ? "#FFFFFF" : `radial-gradient(circle at 35% 30%, ${hexA(cor, 0.95)} 0%, ${hexA(cor, 0.55)} 45%, #050506 100%)` };
+  return { nome: n, d: r.icone, cor, bg: r.foto ? "#FFFFFF" : hexA(cor, 0.14), borda: hexA(cor, 0.45), img: r.foto ?? "", semImg: !r.foto, foto: r.foto ? "#FFFFFF" : `radial-gradient(circle at 35% 30%, ${hexA(cor, 0.95)} 0%, ${hexA(cor, 0.55)} 45%, #0B110F 100%)` };
 }
 
 /** "Abre em mandarina e hortelã, passa por manjericão e termina em figo e ambroxan." */
@@ -80,7 +80,7 @@ export async function montarFicha(id: string) {
   while (AC.length < 3) AC.push({ nome: "—", valor: 10 });
   // território olfativo: a família do perfume tinge a ficha (luz, DNA, medidores), docs/DECISOES.md §18
   const terr = territorio(p.familia, p.acordes);
-  const cores = AC.map((a, i) => (i === 0 ? terr.a : corDoAcorde(a.nome) === "#9099AC" ? PALETA[(i + 1) % PALETA.length] : corDoAcorde(a.nome)));
+  const cores = AC.map((a, i) => (i === 0 ? terr.a : corDoAcorde(a.nome) === "#8AA094" ? PALETA[(i + 1) % PALETA.length] : corDoAcorde(a.nome)));
   const n = AC.length;
   const eixos = AC.map((a, i) => { const an = (i * 2 * Math.PI) / n - Math.PI / 2; return { x: P(250 + Math.cos(an) * 232), y: P(250 + Math.sin(an) * 226), nome: a.nome.toUpperCase(), v: a.valor, cor: cores[i] }; });
 
@@ -162,7 +162,7 @@ export async function montarFicha(id: string) {
     jaListado.add(norm(pr.nome));
     const achado = todos.find((x) => norm(x.nome) === norm(pr.nome) && (!pr.casa || norm(x.casa) === norm(pr.casa)));
     const tem = achado ? meus.some((m) => m.perfumeId === achado.id) : false;
-    const base: Perfume = achado ?? { id: "", nome: pr.nome, casa: pr.casa, perfumistas: [], familia: "", acorde: p.acorde, notas: { saida: [], coracao: [], fundo: [] }, acordes: [], forma: "ret", tampa: "#141417" };
+    const base: Perfume = achado ?? { id: "", nome: pr.nome, casa: pr.casa, perfumistas: [], familia: "", acorde: p.acorde, notas: { saida: [], coracao: [], fundo: [] }, acordes: [], forma: "ret", tampa: "#141B18" };
     const item = { ...sem(base, pr.pct, [pr.tipo === "inspirou" ? "o original" : pr.tipo === "clone" ? (origPesq ? `clone do ${origPesq.nome}` : "inspirado nele") : "parecido", dominio(pr.fonte)].filter(Boolean).join(" · "), tem ? "Na sua coleção" : pr.tipo === "inspirou" ? "Original" : "", t.ink, t.sup[1]), href: achado ? `/colecao/${achado.id}` : `/buscar/resultado?nome=${encodeURIComponent(pr.nome)}&casa=${encodeURIComponent(pr.casa)}` };
     if (pr.tipo !== "parecido") colunas[0].itens.push(item);
     else if (tem) colunas[1].itens.push(item);

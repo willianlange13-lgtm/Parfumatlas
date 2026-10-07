@@ -29,7 +29,7 @@ export default function Entrar() {
           <button type="button" onClick={() => setVer(!ver)} style={{ background: "none", border: "none", color: "var(--ink-3)", fontSize: 12.5, padding: "0 8px" }}>{ver ? "Ocultar" : "Mostrar"}</button>
         </label>
         <label style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 14, color: "var(--ink-2)", cursor: "pointer" }}>
-          <input name="manter" type="checkbox" defaultChecked style={{ width: 18, height: 18, accentColor: "#D8B970" }} />
+          <input name="manter" type="checkbox" defaultChecked style={{ width: 18, height: 18, accentColor: "#FF6B3D" }} />
           Manter conectado neste aparelho
         </label>
         <button className="btn" type="submit" disabled={entrando}>{entrando ? "Entrando…" : "Entrar"}</button>

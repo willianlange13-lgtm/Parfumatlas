@@ -1,21 +1,21 @@
-// Prata em escala e ouro champanhe só para o item principal.
-export const OURO = "#D8B970";
+// Atlas Vivo: cada acorde tem um matiz próprio (dado, não enfeite); a papoula é o acento da interface.
+export const OURO = "#FF6B3D";
 export const ACORDES: Record<string, string> = {
-  Frutado: "#D8B970",
-  Amadeirado: "#7F8AA0",
-  Baunilha: "#A3ADBE",
-  Gourmand: "#A3ADBE",
-  Especiado: "#6E7A90",
-  Âmbar: "#9099AC",
-  Oriental: "#A3ADBE",
-  Aquático: "#C9D1DE",
-  Cítrico: "#DCECFD",
-  Aromático: "#B4BDCC",
-  Floral: "#8E99AD",
-  Couro: "#6E7A90",
-  Verde: "#B4BDCC",
+  Frutado: "#FF8A5C",
+  Amadeirado: "#B08E6A",
+  Baunilha: "#EBCB98",
+  Gourmand: "#C9946A",
+  Especiado: "#D9663F",
+  Âmbar: "#E0A04A",
+  Oriental: "#C98B5A",
+  Aquático: "#6FA9C4",
+  Cítrico: "#F2D06B",
+  Aromático: "#7FB59A",
+  Floral: "#E58FA0",
+  Couro: "#8C6B55",
+  Verde: "#94B86E",
 };
-export const corDoAcorde = (a?: string | null) => (a && ACORDES[a]) || "#9099AC";
+export const corDoAcorde = (a?: string | null) => (a && ACORDES[a]) || "#8AA094";
 export function hexA(h: string, a: number) {
   return `rgba(${parseInt(h.slice(1, 3), 16)},${parseInt(h.slice(3, 5), 16)},${parseInt(h.slice(5, 7), 16)},${a})`;
 }

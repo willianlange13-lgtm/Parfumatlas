@@ -11,15 +11,15 @@ const FORMAS: Record<Forma, [number, number, number, number]> = {
 type Props = { nome: string; casa: string; acorde?: string | null; forma?: Forma; tampa?: string; escala?: number };
 
 /** Frasco desenhado, usado enquanto não há foto real do perfume. */
-export function Frasco({ nome, casa, acorde, forma = "ret", tampa = "#141417", escala = 1 }: Props) {
+export function Frasco({ nome, casa, acorde, forma = "ret", tampa = "#141B18", escala = 1 }: Props) {
   const cor = corDoAcorde(acorde);
   const [w, h, r, c] = FORMAS[forma];
   const k = escala;
   const curto = nome.length > 13 ? nome.split(" ").slice(0, 2).join(" ") : nome;
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }} aria-hidden="true">
-      <div style={{ width: w * c * k, height: 24 * k, borderRadius: 3, background: tampa, boxShadow: "inset 0 0 0 1px rgba(255,255,255,.14)" }} />
-      <div style={{ width: w * 0.22 * k, height: Math.max(3, 6 * k), background: "#8E99AD" }} />
+      <div style={{ width: w * c * k, height: 24 * k, borderRadius: 3, background: tampa, boxShadow: "inset 0 0 0 1px rgba(242,238,227,.14)" }} />
+      <div style={{ width: w * 0.22 * k, height: Math.max(3, 6 * k), background: "#8FA399" }} />
       <div
         style={{
           width: w * k, height: h * k, borderRadius: r * k,
@@ -28,7 +28,7 @@ export function Frasco({ nome, casa, acorde, forma = "ret", tampa = "#141417", e
           display: "flex", alignItems: "center", justifyContent: "center",
         }}
       >
-        <span style={{ width: (w - 14) * k, height: Math.min(40 * k, h * 0.42 * k), borderRadius: "50%", background: "#F4F7FC", color: "#0A0A0C", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", lineHeight: 1.05 }}>
+        <span style={{ width: (w - 14) * k, height: Math.min(40 * k, h * 0.42 * k), borderRadius: "50%", background: "#F6F4EE", color: "#0A0A0C", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", lineHeight: 1.05 }}>
           <span style={{ fontSize: 6 * k, letterSpacing: ".14em" }}>{casa.split(" ")[0].toUpperCase().slice(0, 8)}</span>
           <span style={{ fontSize: 9 * k, fontWeight: 600 }}>{curto}</span>
         </span>

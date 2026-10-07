@@ -68,7 +68,7 @@ O que não encontrar fica vazio. Se a casa não lançou nada no período, devolv
       familia: familiaAtlas(acordes.map((a) => a.nome).join(" "), acordes[0]?.nome), acorde: acordes[0]?.nome ?? "Amadeirado",
       genero: "", pais: "", descricao: (x.descricao ?? "").split(/\s+/).slice(0, 15).join(" "),
       notas: { saida: notasPT(x.saida ?? []), coracao: notasPT(x.coracao ?? []), fundo: notasPT(x.fundo ?? []) }, acordes,
-      imagem: fotoDoLink(x.fragrantica), forma: "ret", tampa: "#141417",
+      imagem: fotoDoLink(x.fragrantica), forma: "ret", tampa: "#141B18",
     };
     // não duplica: se a ficha já existe (mesma casa e nome), só liga o lançamento
     const { data: ja } = await sb.from("perfumes").select("id").ilike("nome", p.nome).ilike("casa", p.casa).limit(1).maybeSingle();

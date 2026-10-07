@@ -1,6 +1,14 @@
 import type { Metadata, Viewport } from "next";
+import { Bricolage_Grotesque, Geist, Geist_Mono, Pinyon_Script } from "next/font/google";
 import "./globals.css";
 import { Navegacao } from "@/components/Navegacao";
+
+// Atlas Vivo (docs/DECISOES.md §28): Bricolage nos títulos, Geist no texto, Geist Mono nas etiquetas,
+// Pinyon só na assinatura do colecionador.
+const titulo = Bricolage_Grotesque({ subsets: ["latin"], variable: "--f-titulo", axes: ["opsz", "wdth"] });
+const texto = Geist({ subsets: ["latin"], variable: "--f-texto" });
+const mono = Geist_Mono({ subsets: ["latin"], variable: "--f-mono" });
+const assinatura = Pinyon_Script({ subsets: ["latin"], weight: "400", variable: "--f-assinatura" });
 
 export const metadata: Metadata = {
   title: { default: "Parfum Atlas", template: "%s · Parfum Atlas" },
@@ -10,7 +18,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#050506",
+  themeColor: "#0B110F",
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
@@ -18,17 +26,14 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="pt-BR">
+    <html lang="pt-BR" suppressHydrationWarning className={`${titulo.variable} ${texto.variable} ${mono.variable} ${assinatura.variable}`}>
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        {/* eslint-disable-next-line @next/next/no-page-custom-font */}
         {/* no computador, o desenho (1440 px) ocupa a largura toda da tela */}
         <script dangerouslySetInnerHTML={{ __html: "(function(){function f(){var w=document.documentElement.clientWidth;document.documentElement.style.setProperty('--zoom',w>900?Math.min(1.8,Math.max(0.62,w/1440)).toFixed(4):'1')}f();addEventListener('resize',f)})()" }} />
-        <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Montserrat:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Pinyon+Script&display=swap" rel="stylesheet" />
       </head>
       <body>
-        <div className="brilho" />
+        <div className="brilho" aria-hidden="true" />
+        <div className="grao" aria-hidden="true" />
         <Navegacao />
         <main style={{ position: "relative", zIndex: 1 }}>{children}</main>
       </body>

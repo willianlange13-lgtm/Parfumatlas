@@ -5,7 +5,7 @@ import { corDoAcorde } from "@/lib/cores";
 import base from "@/data/desenho/LancamentosPreto.json";
 import { circ, hexA, P, t as t0 } from "@/desenho/h2";
 
-const OURO = "#D8B970";
+const OURO = "#FF6B3D";
 const F: Record<string, [number, number, string]> = { alto: [58, 100, "9px"], ret: [74, 84, "11px"], redondo: [88, 78, "40px"], largo: [96, 70, "12px"] };
 const NICHO = new Set(["Creed", "Ex Nihilo", "Xerjoff", "Parfums de Marly", "Maison Francis Kurkdjian", "Tom Ford", "Kilian", "Frédéric Malle"]);
 const ARABE = new Set(["Lattafa", "Armaf", "Afnan"]);
@@ -45,7 +45,7 @@ export async function montarLancamentos(filtro = "voce", limite = 80) {
   acervo.lancamentos.filter((l) => casasMinhas.has(l.perfume.casa)).forEach((l) => porCasa.set(l.perfume.casa, [...(porCasa.get(l.perfume.casa) ?? []), l.perfume.nome]));
 
   const dp = d?.perfume;
-  const cor = dp ? corDoAcorde(dp.acorde) : "#9099AC";
+  const cor = dp ? corDoAcorde(dp.acorde) : "#8AA094";
   return {
     ...base,
     t,
@@ -59,7 +59,7 @@ export async function montarLancamentos(filtro = "voce", limite = 80) {
           tampa: dp.tampa, vidro: `linear-gradient(115deg, rgba(255,255,255,.35) 0%, ${hexA(cor, 0.35)} 40%, ${hexA(cor, 0.7)} 100%)`,
           comparar: ligado ? `/comparar?a=${dp.id}&b=${ligado.id}` : `/comparar?a=${dp.id}`, som: `/sommelier?perfume=${dp.id}`,
         }
-      : { id: "", nome: "Nenhum lançamento", rot: "", linha: "", porque: acervo.lancamentos.length ? "Nada novo neste filtro." : "Ainda sem lançamentos. A busca automática roda toda segunda; em Ajustes › Notificações dá para buscar agora.", pct: 0, tampa: "#141417", vidro: "transparent", comparar: "#", som: "/sommelier" },
+      : { id: "", nome: "Nenhum lançamento", rot: "", linha: "", porque: acervo.lancamentos.length ? "Nada novo neste filtro." : "Ainda sem lançamentos. A busca automática roda toda segunda; em Ajustes › Notificações dá para buscar agora.", pct: 0, tampa: "#141B18", vidro: "transparent", comparar: "#", som: "/sommelier" },
     destaque: dp
       ? {
           notas: [...dp.notas.saida.slice(0, 2), ...dp.notas.coracao.slice(0, 1), ...dp.notas.fundo.slice(0, 1)].map((n) => { const r = refNota(n); return { nome: n, d: r.icone, cor: t.amber, bg: r.foto ? "#FFFFFF" : hexA(t.amber, 0.14), borda: hexA(t.amber, 0.45), img: r.foto ?? "", semImg: !r.foto }; }),

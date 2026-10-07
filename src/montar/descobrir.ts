@@ -37,13 +37,13 @@ export async function montarDescobrir(notaPedida?: string) {
   const licoesIA = escola?.slice(0, 4).map((l, i) => ({
     n: i === 0 && l.semana === semanaAtual() ? "DA SEMANA" : l.semana.replace(/^\d{4}-S/, "SEMANA "),
     titulo: l.titulo, txt: l.txt, exercicio: l.exercicio, ex: l.perfumes.join(", ") || "—", semana: l.semana, feita: l.feita,
-    status: l.feita ? "✓ Concluída" : `${l.min} min`, stCor: l.feita ? t.sup[0] : i === 0 ? t.sup[1] : t.ink3, bg: l.feita ? t.chip : "rgba(255,255,255,.04)", borda: i === 0 && !l.feita ? "var(--ouro-linha)" : l.feita ? t.line2 : t.line,
+    status: l.feita ? "✓ Concluída" : `${l.min} min`, stCor: l.feita ? t.sup[0] : i === 0 ? t.sup[1] : t.ink3, bg: l.feita ? t.chip : "rgba(242,238,227,.04)", borda: i === 0 && !l.feita ? "var(--ouro-linha)" : l.feita ? t.line2 : t.line,
   }));
   const gerando = escola !== null && !escola.some((l) => l.semana === semanaAtual()) && itens.length > 0;
   const licoes = licoesIA ?? LICOES.slice(0, 4).map((l, i) => {
     const ex = itens.filter((e) => l.familia && (e.perfume.familia.toLowerCase().includes(l.familia.toLowerCase()) || e.perfume.acordes.some((a) => a.nome.toLowerCase() === l.familia.toLowerCase()) || e.perfume.notas.coracao.concat(e.perfume.notas.fundo).some((n) => n.toLowerCase() === l.familia.toLowerCase()))).map((e) => e.perfume.nome).slice(0, 2);
     const feita = i < LICOES_CONCLUIDAS;
-    return { n: `LIÇÃO ${l.n}`, titulo: l.titulo, txt: l.txt, exercicio: "", semana: "", feita, ex: ex.join(", ") || "—", status: feita ? "✓ Concluída" : i === LICOES_CONCLUIDAS ? "Próxima" : `${l.min} min`, stCor: feita ? t.sup[0] : i === LICOES_CONCLUIDAS ? t.sup[1] : t.ink3, bg: feita ? t.chip : "rgba(255,255,255,.04)", borda: feita ? t.line2 : t.line };
+    return { n: `LIÇÃO ${l.n}`, titulo: l.titulo, txt: l.txt, exercicio: "", semana: "", feita, ex: ex.join(", ") || "—", status: feita ? "✓ Concluída" : i === LICOES_CONCLUIDAS ? "Próxima" : `${l.min} min`, stCor: feita ? t.sup[0] : i === LICOES_CONCLUIDAS ? t.sup[1] : t.ink3, bg: feita ? t.chip : "rgba(242,238,227,.04)", borda: feita ? t.line2 : t.line };
   });
 
   // enciclopédia
@@ -103,7 +103,7 @@ export async function montarDescobrir(notaPedida?: string) {
     tempoTxt: antigo ? `Sua coleção é ${depois2014 > anosLanc.length / 2 ? "recente" : "clássica"}: ${depois2014} dos ${anosLanc.length} frascos saíram depois de 2014. O mais antigo é o ${antigo.perfume.nome}, de ${antigo.perfume.ano}.${nTive ? ` Os ${nTive} apagados são frascos que você já teve.` : ""}` : "",
     mapa: {
       grade: base.mapa.grade,
-      pts: [...porCidade.entries()].map(([cidade, c]) => { const [dx, dy] = desloc[cidade] ?? [18, -12]; return { cidade, n: `${c.n} ${c.n === 1 ? "PERFUME" : "PERFUMES"}`, x: P(c.x), y: P(c.y), r: 24 + c.n * 10, halo: "radial-gradient(circle, rgba(201,209,222,.35) 0%, rgba(201,209,222,0) 70%)", lx: P(c.x + dx), ly: P(c.y + dy) }; }),
+      pts: [...porCidade.entries()].map(([cidade, c]) => { const [dx, dy] = desloc[cidade] ?? [18, -12]; return { cidade, n: `${c.n} ${c.n === 1 ? "PERFUME" : "PERFUMES"}`, x: P(c.x), y: P(c.y), r: 24 + c.n * 10, halo: "radial-gradient(circle, rgba(201,214,207,.35) 0%, rgba(201,214,207,0) 70%)", lx: P(c.x + dx), ly: P(c.y + dy) }; }),
       paises: [...porPais.entries()].sort((a, b) => b[1].n - a[1].n).map(([nome, p]) => ({ nome, n: String(p.n), casas: [...p.casas.entries()].map(([casa, ps]) => (p.casas.size === 1 && ps.length > 1 ? `${casa} (${ps.join(" e ")})` : casa)).join(", ") })),
     },
   };
