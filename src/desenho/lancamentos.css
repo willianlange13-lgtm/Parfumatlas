@@ -1,0 +1,15 @@
+/* Lançamentos do computador (Atlas Vivo). */
+.dl-topo { display: flex; align-items: flex-end; gap: 28px; padding: 24px 0 12px; }
+.dl-n { font-family: var(--marca); font-size: 240px; font-weight: 700; letter-spacing: -0.06em; line-height: 0.78; color: transparent; -webkit-text-stroke: 2px var(--acento); animation: palavra 1.1s var(--ease) both; }
+.dl-topo > div { display: flex; flex-direction: column; gap: 16px; padding-bottom: 8px; }
+.dl-topo h1 { margin: 0; font-family: var(--marca); font-size: 76px; font-weight: 600; letter-spacing: -0.045em; line-height: 0.92; max-width: 19ch; }
+.dl-destaque { position: relative; border-radius: 44px !important; overflow: hidden; background: radial-gradient(ellipse 40% 80% at 15% 60%, color-mix(in oklab, var(--acento) 22%, transparent), transparent 70%), var(--surface) !important; box-shadow: var(--sombra); min-height: 460px; }
+.dl-destaque > div:first-child { height: 400px !important; }
+.dl-destaque > div:first-child img { animation: flutua 7s ease-in-out infinite; }
+.dl-nome { margin: 0; font-family: var(--marca); font-size: 64px; font-weight: 600; letter-spacing: -0.045em; line-height: 0.92; }
+.dl-destaque svg path:last-of-type { stroke-dasharray: 1000; animation: desenha 1.8s var(--ease) both .3s; --comp: 1000; }
+.dl-cards article { border-radius: 36px !important; transition: transform .6s var(--ease), border-color .3s, box-shadow .6s var(--ease); }
+.dl-cards article:hover { transform: translateY(-8px); border-color: var(--ouro-linha) !important; box-shadow: 0 34px 60px -34px rgba(0, 0, 0, 0.9); }
+.dl-card-nome { font-family: var(--marca); font-size: 26px; font-weight: 600; letter-spacing: -0.03em; line-height: 1.05; }
+.dl-card-pct { font-family: var(--marca); font-size: 40px; font-weight: 600; letter-spacing: -0.04em; line-height: 1; }
+.dl-destaque div:has(> a[style*="r-pill"]), .dl-destaque div:has(> form) { flex-wrap: wrap; }
