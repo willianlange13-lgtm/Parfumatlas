@@ -5,10 +5,10 @@ import { corDoAcorde } from "@/lib/cores";
 import base from "@/data/desenho/DNAPreto.json";
 import { glifo, hexA, P, t } from "@/desenho/h2";
 
-const EIXO_COR: Record<string, string> = { Cítrico: "#E6EFEA", Frutado: "#FF6B3D", Aromático: "#AFC2B8", Aquático: "#C9D6CF", Floral: "#8FA399", Amadeirado: "#7A9184", Âmbar: "#8AA094", Gourmand: "#9DB2A7" };
-const NCOR: Record<string, string> = { fruta: "#FF6B3D", baga: "#8AA094", citrico: "#E6EFEA", flor: "#FF6B3D", folha: "#AFC2B8", madeira: "#7A9184", gota: "#C9D6CF", especiaria: "#6A8175", resina: "#6A8175", baunilha: "#9DB2A7", nuvem: "#9DB2A7" };
+const EIXO_COR: Record<string, string> = { Cítrico: "#E6EFEA", Frutado: "#7FE3C4", Aromático: "#AFC2B8", Aquático: "#C9D6CF", Floral: "#8FA399", Amadeirado: "#7A9184", Âmbar: "#8AA094", Gourmand: "#9DB2A7" };
+const NCOR: Record<string, string> = { fruta: "#7FE3C4", baga: "#8AA094", citrico: "#E6EFEA", flor: "#7FE3C4", folha: "#AFC2B8", madeira: "#7A9184", gota: "#C9D6CF", especiaria: "#6A8175", resina: "#6A8175", baunilha: "#9DB2A7", nuvem: "#9DB2A7" };
 const PLURAL: Record<string, string> = { Frutado: "frutados", Amadeirado: "amadeirados", Cítrico: "cítricos", Aquático: "aquáticos", Especiado: "especiados", Âmbar: "âmbares", Baunilha: "gourmands" };
-const CORF: Record<string, string> = { Frutado: "#FF6B3D", Amadeirado: "#7A9184", Cítrico: "#E8EDF5", Aquático: "#C9D6CF", Especiado: "#6A8175", Âmbar: "#8AA094", Baunilha: "#AFC2B8" };
+const CORF: Record<string, string> = { Frutado: "#7FE3C4", Amadeirado: "#7A9184", Cítrico: "#E8EDF5", Aquático: "#C9D6CF", Especiado: "#6A8175", Âmbar: "#8AA094", Baunilha: "#AFC2B8" };
 
 export async function montarDNA() {
   const acervo = await carregarAcervo();

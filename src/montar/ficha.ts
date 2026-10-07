@@ -9,7 +9,7 @@ import base from "@/data/desenho/FichaAzulPreto.json";
 import { arc, circ, glifo, hexA, P, t } from "@/desenho/h2";
 import type { Entrada, Perfume } from "@/lib/tipos";
 
-const PALETA = ["#FF6B3D", "#E6EFEA", "#8AA094", "#AFC2B8", "#7A9184", "#9DB2A7", "#6A8175", "#C9D6CF"];
+const PALETA = ["#7FE3C4", "#E6EFEA", "#8AA094", "#AFC2B8", "#7A9184", "#9DB2A7", "#6A8175", "#C9D6CF"];
 const dominio = (u?: string | null) => { try { return u ? new URL(u).hostname.replace(/^www\./, "") : ""; } catch { return ""; } };
 const idade = (a: number) => (a <= 0 ? "lançamento deste ano" : a === 1 ? "há 1 ano" : `há ${a} anos`);
 const hm = (h: number) => { let hh = Math.floor(h), mm = Math.round((h - hh) * 60); if (mm === 60) { hh++; mm = 0; } return `${hh}h${mm < 10 ? "0" : ""}${mm}`; };

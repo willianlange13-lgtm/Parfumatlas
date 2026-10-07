@@ -1,8 +1,12 @@
+/* Início do celular, Atlas Vivo (docs/DECISOES.md §28). */
 import Link from "next/link";
+import type { CSSProperties } from "react";
+import { Icone } from "@/components/Icone";
 import { ICONE_CLIMA } from "@/desenho/h2";
 import { corDoAcorde } from "@/lib/cores";
-import { Btn, Card, Demo, Linha, Mini, MONO, NomeSub, NotaChip, OURO, PalcoC, Rolar, Rot, Secao } from "./kit";
+import { Demo, NotaChip, PalcoC } from "./kit";
 import type { montarInicio } from "@/montar/inicio";
+import "./cel-inicio.css";
 
 type D = Awaited<ReturnType<typeof montarInicio>>;
 const n3 = (n: number) => String(n).padStart(3, "0");
@@ -11,111 +15,114 @@ export function CelInicio({ v, usado }: { v: D; usado?: string }) {
   const c = v.cel;
   const d = c.dia;
   const p = d?.e.perfume;
+  const terr = p ? corDoAcorde(p.acorde) : "var(--acento)";
   return (
-    <div className="c-tela">
-      <div style={{ display: "flex", flexDirection: "column", gap: 4, flexShrink: 0, marginTop: 6 }}>
-        <div style={{ fontSize: 28, fontFamily: "var(--marca)", fontWeight: 500, letterSpacing: "-.01em", lineHeight: 1.1 }}>{c.saudacao}, Willian</div>
-        <div style={{ fontSize: 14, color: "var(--ink-3)" }}>{[c.data, c.cidade].filter(Boolean).join(" · ")}</div>
-      </div>
+    <div className="c-tela ci">
+      <header className="ci-ola">
+        <span>{[c.data, c.cidade].filter(Boolean).join(" · ")}</span>
+        <h1>{c.saudacao},<br /><em>Willian.</em></h1>
+      </header>
 
       {d && p ? (
-        <Card fundo="destaque">
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <Rot>Perfume do dia</Rot>
-            <span style={{ display: "flex", alignItems: "center", gap: 6, padding: "5px 10px", borderRadius: 12, background: "var(--chip)", fontSize: 12 }}>
-              <svg viewBox="0 0 24 24" style={{ width: 14, height: 14, fill: "none", stroke: OURO, strokeWidth: 1.6 }}><path d={ICONE_CLIMA.sol} /></svg>
+        <section className="ci-dia" style={{ ["--terr" as string]: terr } as CSSProperties}>
+          <div className="ci-dia-topo">
+            <span className="c-rot">Perfume do dia</span>
+            <span className="ci-clima">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d={ICONE_CLIMA.sol} /></svg>
               {d.temp}° · {d.ar.replace("ar ", "")}
             </span>
           </div>
-          <Link href={`/colecao/${d.e.perfumeId}`} style={{ display: "flex", gap: 14, alignItems: "stretch" }}>
-            <div style={{ width: 128, flexShrink: 0 }}>
-              <PalcoC nome={p.nome} casa={p.casa} acorde={p.acorde} forma={p.forma} tampa={p.tampa} foto={d.e.foto ?? p.imagem} oficial={!d.e.foto && Boolean(p.imagem)} altura={170} k={0.9} raio={18} />
-            </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 8, minWidth: 0, paddingTop: 4 }}>
-              <div style={{ fontSize: 26, fontFamily: "var(--marca)", fontWeight: 500, letterSpacing: "-.01em", lineHeight: 1 }}>{p.nome}</div>
-              <div style={{ fontFamily: MONO, fontSize: 10.5, letterSpacing: ".1em", color: "var(--ink-3)" }}>{`${p.casa} · ${p.familia}`.toUpperCase()}</div>
-              <div style={{ fontSize: 13.5, lineHeight: 1.5, color: "var(--ink-2)" }}>{d.curto}</div>
-            </div>
+          <Link href={`/colecao/${d.e.perfumeId}`} className="ci-dia-palco">
+            <PalcoC nome={p.nome} casa={p.casa} acorde={p.acorde} forma={p.forma} tampa={p.tampa} foto={d.e.foto ?? p.imagem} oficial={!d.e.foto && Boolean(p.imagem)} altura={280} k={1.3} raio={24} transparente semBorda />
           </Link>
-          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-            {d.notas.map((n) => <NotaChip key={n} nome={n} tam={24} fs={12.5} />)}
-          </div>
-          <form action="/api/usar" method="post" style={{ display: "flex", gap: 8 }}>
+          <h2>{p.nome}</h2>
+          <div className="ci-casa">{`${p.casa} · ${p.familia}`.toUpperCase()}</div>
+          <p>{d.curto}</p>
+          <div className="ci-notas">{d.notas.map((n) => <NotaChip key={n} nome={n} tam={24} fs={12.5} />)}</div>
+          <form action="/api/usar" method="post" className="ci-acoes">
             <input type="hidden" name="id" value={d.e.id} />
-            <Btn type="submit" altura={44} style={{ flexGrow: 1 }}>{usado === d.e.id ? "✓ Usado hoje" : "Usar hoje"}</Btn>
-            <Btn sec altura={44} href={v.dia.outra}>Outra</Btn>
+            <button type="submit" className="c-btn" style={{ height: 52, flexGrow: 1 }}>{usado === d.e.id ? "✓ Usado hoje" : "Usar hoje"}</button>
+            <Link href={v.dia.outra} className="c-btn sec" style={{ height: 52 }}>Outra</Link>
           </form>
-        </Card>
+        </section>
       ) : (
-        <Card fundo="destaque">
-          <Rot>Perfume do dia</Rot>
-          <div style={{ fontSize: 15, color: "var(--ink-2)" }}>Cadastre o primeiro frasco e o Atlas passa a sugerir um perfume por dia, pelo clima.</div>
-          <Btn href="/adicionar?modo=foto">Adicionar perfume</Btn>
-        </Card>
+        <section className="ci-dia">
+          <span className="c-rot">Perfume do dia</span>
+          <h2>Seu primeiro frasco</h2>
+          <p>Cadastre o primeiro perfume e o Atlas passa a sugerir um por dia, pelo clima.</p>
+          <Link href="/adicionar?modo=foto" className="c-btn" style={{ height: 52 }}>Adicionar perfume</Link>
+        </section>
       )}
 
-      <Link href={`/curiosidade?nota=${encodeURIComponent(c.cur.nota)}`}>
-        <Card fundo="vinho" pad="14px 16px">
-          <div style={{ display: "flex", gap: 14, alignItems: "center" }}>
-            <NotaChip nome={c.cur.nota} tam={58} rotulo={false} />
-            <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-              <Rot>Curiosidade do dia</Rot>
-              <div style={{ fontSize: 16, fontWeight: 500, lineHeight: 1.25 }}>{c.cur.titulo}</div>
-              <div style={{ fontSize: 12.5, color: "var(--ink-3)" }}>{c.cur.onde}</div>
-            </div>
-          </div>
-        </Card>
+      <Link href={`/curiosidade?nota=${encodeURIComponent(c.cur.nota)}`} className="ci-cur">
+        {v.cur.foto ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={v.cur.foto} alt={c.cur.nota} />
+        ) : null}
+        <div>
+          <span className="c-rot">Curiosidade do dia</span>
+          <h3>{c.cur.titulo}</h3>
+          <span className="ci-cur-onde">{c.cur.onde} <Icone nome="seta" tamanho={14} /></span>
+        </div>
       </Link>
 
-      <Secao
-        titulo="A semana pelo clima"
-        dir={<span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><span style={{ width: 6, height: 6, borderRadius: 3, background: OURO }} />esquecido</span>}
-      />
-      <Rolar>
-        {c.semana.map((s, i) => (
-          <Link key={i} href={s.e ? `/colecao/${s.e.perfumeId}` : "/colecao"} style={{ width: 70, flexShrink: 0, borderRadius: 18, padding: "12px 6px", background: i === 0 ? "var(--chip-2)" : "transparent", border: `1px solid ${i === 0 ? "var(--line-2)" : "var(--line)"}`, display: "flex", flexDirection: "column", alignItems: "center", gap: 7, textAlign: "center" }}>
-            <span style={{ fontFamily: MONO, fontSize: 10, letterSpacing: ".1em", color: "var(--ink-3)" }}>{s.dia}</span>
-            <svg viewBox="0 0 24 24" style={{ width: 20, height: 20, fill: "none", stroke: s.icone === "sol" ? OURO : "var(--prata)", strokeWidth: 1.5 }}><path d={ICONE_CLIMA[s.icone]} /></svg>
-            <span style={{ fontSize: 17, fontWeight: 500 }}>{s.temp}°</span>
-            <span style={{ fontSize: 11, lineHeight: 1.25, color: "var(--ink-2)", minHeight: 28 }}>{s.e?.perfume.nome.replace("Acqua di Giò Profondo", "Acqua di Giò") ?? "—"}</span>
-            <span style={{ width: 6, height: 6, borderRadius: 3, background: s.esquecido ? OURO : "transparent" }} />
-          </Link>
-        ))}
-      </Rolar>
-
-      {c.esquecidos.length > 0 && (
-        <Card pad={16} gap={4}>
-          <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 10, marginBottom: 6 }}>
-            <Rot>Esquecidos</Rot>
-            <span style={{ fontSize: 12, color: "var(--ink-3)" }}>há mais tempo sem sair do armário</span>
-          </div>
-          {c.esquecidos.map((e, i) => (
-            <Linha key={e.id} borda={i > 0} href={`/colecao/${e.perfumeId}`} esq={<Mini nome={e.perfume.nome} casa={e.perfume.casa} acorde={e.perfume.acorde} forma={e.perfume.forma} tampa={e.perfume.tampa} foto={e.foto ?? e.perfume.imagem} oficial={!e.foto && Boolean(e.perfume.imagem)} />}
-              dir={<div style={{ textAlign: "right", lineHeight: 1 }}><div style={{ fontSize: 22, color: OURO }}>{e.dias}</div><div style={{ fontFamily: MONO, fontSize: 9, color: "var(--ink-3)", marginTop: 3 }}>DIAS</div></div>}>
-              <NomeSub nome={e.perfume.nome} sub={`${e.perfume.casa} · ${e.perfume.acorde}`} />
-            </Linha>
+      <section className="ci-bloco">
+        <h2 className="ci-h2">A semana pelo clima</h2>
+        <div className="c-rolar ci-semana">
+          {c.semana.map((s, i) => (
+            <Link key={i} href={s.e ? `/colecao/${s.e.perfumeId}` : "/colecao"} className={`ci-diaseq ${i === 0 ? "hoje" : ""}`}>
+              <span className="ci-diaseq-dia">{i === 0 ? "HOJE" : s.dia}</span>
+              <span className="ci-diaseq-temp">{s.temp}°</span>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d={ICONE_CLIMA[s.icone]} /></svg>
+              <span className="ci-diaseq-nome">{s.e?.perfume.nome ?? "—"}</span>
+              {s.esquecido ? <span className="ci-tag">Esquecido</span> : null}
+            </Link>
           ))}
-        </Card>
-      )}
+        </div>
+      </section>
+
+      <section className="ci-numeros">
+        {v.numeros.map((n, i) => (
+          <div key={i}>
+            <b>{n.v}</b>
+            <span>{n.c}</span>
+          </div>
+        ))}
+      </section>
 
       {c.ultimas.length > 0 && (
-        <>
-          <Secao titulo="Últimas entradas" dir={<Link href="/colecao">Ver todas →</Link>} />
-          <Rolar gap={10}>
+        <section className="ci-bloco">
+          <div className="ci-cab">
+            <h2 className="ci-h2">Últimas entradas</h2>
+            <Link href="/colecao" className="ci-link">Ver todas <Icone nome="seta" tamanho={14} /></Link>
+          </div>
+          <div className="c-rolar ci-prateleira">
             {c.ultimas.map((e) => (
-              <Link key={e.id} href={`/colecao/${e.perfumeId}`} style={{ width: 132, flexShrink: 0, display: "flex", flexDirection: "column", gap: 8 }}>
-                <PalcoC nome={e.perfume.nome} casa={e.perfume.casa} acorde={e.perfume.acorde} forma={e.perfume.forma} tampa={e.perfume.tampa} foto={e.foto ?? e.perfume.imagem} oficial={!e.foto && Boolean(e.perfume.imagem)} altura={118} k={0.6} raio={16}>
-                  <span style={{ position: "absolute", left: 9, top: 8, fontFamily: MONO, fontSize: 9.5, color: "var(--ink-3)" }}>Nº {n3(e.numero)}</span>
+              <Link key={e.id} href={`/colecao/${e.perfumeId}`} className="ci-frasco">
+                <PalcoC nome={e.perfume.nome} casa={e.perfume.casa} acorde={e.perfume.acorde} forma={e.perfume.forma} tampa={e.perfume.tampa} foto={e.foto ?? e.perfume.imagem} oficial={!e.foto && Boolean(e.perfume.imagem)} altura={190} k={0.95} raio={22}>
+                  <span className="ci-num">Nº {n3(e.numero)}</span>
                 </PalcoC>
-                <div style={{ display: "flex", flexDirection: "column", gap: 3, padding: "0 2px" }}>
-                  <span style={{ fontSize: 13.5, fontWeight: 500, lineHeight: 1.2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{e.perfume.nome}</span>
-                  <span style={{ fontFamily: MONO, fontSize: 9, letterSpacing: ".08em", color: "var(--ink-3)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{e.perfume.casa.toUpperCase()}</span>
-                  <span style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11, color: "var(--ink-2)" }}><span style={{ width: 6, height: 6, borderRadius: 3, background: corDoAcorde(e.perfume.acorde) }} />{e.perfume.acorde}</span>
-                </div>
+                <strong>{e.perfume.nome}</strong>
+                <span className="ci-acorde"><i style={{ background: corDoAcorde(e.perfume.acorde) }} />{e.perfume.acorde}</span>
               </Link>
             ))}
-          </Rolar>
-        </>
+          </div>
+        </section>
+      )}
+
+      {c.esquecidos.length > 0 && (
+        <section className="ci-bloco">
+          <h2 className="ci-h2">Há mais tempo no armário</h2>
+          <div className="c-rolar ci-esquecidos">
+            {c.esquecidos.map((e) => (
+              <Link key={e.id} href={`/colecao/${e.perfumeId}`} className="ci-esquecido">
+                <b>{e.dias}<small>dias</small></b>
+                <strong>{e.perfume.nome}</strong>
+                <span>{e.perfume.casa}</span>
+              </Link>
+            ))}
+          </div>
+        </section>
       )}
 
       {v.demo && <Demo>Clima, datas e sugestões ilustrativos</Demo>}

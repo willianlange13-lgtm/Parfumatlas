@@ -33,7 +33,7 @@ export function CelNovidades({ v, limite }: { v: V; limite: number }) {
               <FrascoMedidas bw={74} bh={84} br="34px" capW={34} tampa={d.tampa} vidro={d.vidro} rot={d.rot} nome={d.nome} k={0.85} foto={d.foto} />
             </Link>
             <div style={{ display: "flex", flexDirection: "column", gap: 6, minWidth: 0 }}>
-              <span style={{ alignSelf: "flex-start", padding: "3px 8px", borderRadius: 6, background: OURO, color: "#1A0904", fontSize: 10.5, fontWeight: 600 }}>MAIS AFINIDADE</span>
+              <span style={{ alignSelf: "flex-start", padding: "3px 8px", borderRadius: 6, background: OURO, color: "#04140F", fontSize: 10.5, fontWeight: 600 }}>MAIS AFINIDADE</span>
               <span style={{ fontFamily: MONO, fontSize: 9.5, letterSpacing: ".1em", color: "var(--ink-3)" }}>{d.linha}</span>
               <span style={{ fontSize: 22, fontFamily: "var(--marca)", fontWeight: 500, lineHeight: 1.1 }}>{d.nome}</span>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>

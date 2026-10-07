@@ -5,7 +5,7 @@ import { CelColecao } from "@/cel/CelColecao";
 import type { DadosColecao } from "@/montar/colecao";
 import { territorio } from "@/lib/territorio";
 
-const ACOR: Record<string, string> = { Frutado: "#FF6B3D", Amadeirado: "#7A9184", Baunilha: "#9DB2A7", Especiado: "#6A8175", Âmbar: "#8AA094", Aquático: "#C9D6CF", Cítrico: "#E6EFEA" };
+const ACOR: Record<string, string> = { Frutado: "#7FE3C4", Amadeirado: "#7A9184", Baunilha: "#9DB2A7", Especiado: "#6A8175", Âmbar: "#8AA094", Aquático: "#C9D6CF", Cítrico: "#E6EFEA" };
 const GN: [string, string][] = [["acorde", "Acorde"], ["familia", "Família"], ["marca", "Marca"], ["genero", "Gênero"], ["az", "A–Z"]];
 const SIT: [string, string][] = [["tenho", "Tenho"], ["tive", "Tive"], ["quero", "Quero"], ["assinatura", "Assinatura"]];
 type Item = DadosColecao["itens"][number];

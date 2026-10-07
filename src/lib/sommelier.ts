@@ -19,7 +19,7 @@ export type Resposta = {
   titulo?: string;
 };
 
-const OURO = "#FF6B3D";
+const OURO = "#7FE3C4";
 const FORM: Record<string, [number, number, string]> = { alto: [22, 42, "5px"], ret: [30, 36, "6px"], redondo: [36, 32, "16px"], largo: [38, 30, "7px"] };
 
 /** Converte a resposta no formato das telas (cards com frasco). */

@@ -1,14 +1,224 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* Gerado a partir da prancha do desenho. Não editar à mão. */
-import { Fragment } from "react";
-import { css } from "./css";
+/* Início do computador, Atlas Vivo (docs/DECISOES.md §28). Escrito à mão: não é mais gerado da prancha. */
+import Link from "next/link";
+import type { CSSProperties } from "react";
+import { Icone } from "@/components/Icone";
+import { Camadas, PalcoC } from "@/cel/kit";
+import { corDoAcorde } from "@/lib/cores";
+import type { montarInicio } from "@/montar/inicio";
+import "./inicio.css";
 
-export default function DesInicio({ v }: { v: any }) {
-  const { t, sol, anel, dia, semana, numeros, esquecidos, ultimas, pilares, vitrine, cur, previsao, resgata, demo } = v;
-  return (<><div style={{ width: "1440px", minHeight: "2480px", boxSizing: "border-box", background: t.bg, color: t.ink, fontFamily: "var(--sans)", position: "relative", overflow: "hidden" }}><div style={{ position: "absolute", left: "700px", top: "-200px", width: "980px", height: "980px", borderRadius: "490px", background: `radial-gradient(circle, ${t.glowA} 0%, rgba(0,0,0,0) 62%)` }}></div><div style={{ position: "absolute", left: "-300px", top: "-260px", width: "760px", height: "760px", borderRadius: "380px", background: `radial-gradient(circle, ${t.glowW} 0%, rgba(0,0,0,0) 65%)` }}></div><svg aria-hidden="true" viewBox="0 0 200 200" style={{ position: "absolute", left: "-170px", top: "150px", width: "640px", height: "640px", opacity: ".07", pointerEvents: "none" }}><g style={{ fill: "none", stroke: t.ink, strokeWidth: ".35" }}><circle cx="100" cy="100" r="96"></circle><circle cx="100" cy="100" r="70"></circle><circle cx="100" cy="100" r="40" style={{ strokeDasharray: "1.5 2.5" }}></circle><path d="M100 2 V198 M2 100 H198 M31 31 L169 169 M169 31 L31 169"></path></g><path d="M100 8 L108 100 L100 192 L92 100 Z M8 100 L100 92 L192 100 L100 108 Z" style={{ fill: t.ink, fillOpacity: ".5" }}></path></svg><main style={{ position: "relative", padding: "8px 64px 0", display: "flex", flexDirection: "column", gap: "24px" }}><section style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) 660px", gap: "48px", alignItems: "center", minHeight: "640px", padding: "16px 0" }}><div style={{ display: "flex", flexDirection: "column", gap: "0" }}><div style={{ display: "inline-flex", alignSelf: "flex-start", alignItems: "center", gap: "10px", padding: "8px 16px", borderRadius: "var(--r-pill)", background: t.chip, border: `1px solid ${t.line}`, fontSize: "13px", color: t.ink2 }}>Arquivo pessoal de fragrâncias</div><h1 className="palavras" style={{ margin: "26px 0 0", fontFamily: "var(--marca)", fontSize: "88px", fontWeight: "600", letterSpacing: "-.035em", lineHeight: ".95" }}><span style={{ ["--i" as string]: 0 }}>Explore&nbsp;</span><span style={{ ["--i" as string]: 1 }}>o&nbsp;</span><span style={{ ["--i" as string]: 2 }}>mundo&nbsp;</span><br /><span style={{ ["--i" as string]: 3, color: t.amber }}>pelo&nbsp;</span><span style={{ ["--i" as string]: 4, color: t.amber }}>perfume.&nbsp;</span></h1><p style={{ margin: "30px 0 0", fontSize: "18px", lineHeight: "1.6", color: t.ink2, maxWidth: "430px" }}>Cada perfume, uma entrada. Cada entrada, uma memória.</p><div style={{ display: "flex", gap: "12px", marginTop: "32px" }}><a href="/colecao" className="btn" style={{ height: "56px", padding: "0 30px", border: "none", borderRadius: "var(--r-pill)", background: t.btn, color: t.onBtn, fontFamily: "var(--sans)", fontSize: "15px", fontWeight: "600", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "10px", textDecoration: "none" }}>Explorar coleção →</a><a href="/sommelier" className="btn ghost" style={{ height: "56px", padding: "0 26px", border: `1px solid ${t.line2}`, borderRadius: "var(--r-pill)", background: "transparent", color: t.ink, fontFamily: "var(--sans)", fontSize: "15px", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "10px", textDecoration: "none" }}><svg viewBox="0 0 24 24" style={{ width: "18px", height: "18px", fill: "none", stroke: "currentColor", strokeWidth: "1.6" }}><rect x="9" y="3" width="6" height="12" rx="3"></rect><path d="M5 11 a7 7 0 0 0 14 0 M12 18 V21"></path></svg>Falar com o sommelier</a></div></div><div style={{ position: "relative", height: "580px", borderRadius: "var(--r-ed)", border: "1px solid var(--ouro-linha)", overflow: "hidden" }}><Vitrine hero={vitrine[0]} t={t} /></div></section><section style={{ display: "grid", gridTemplateColumns: "repeat(12, minmax(0, 1fr))", gap: "24px" }}><article style={{ gridColumn: "span 7", borderRadius: "var(--r-ed)", background: `radial-gradient(ellipse 60% 90% at 0% 50%, ${dia.glow ?? "rgba(0,0,0,0)"} 0%, rgba(0,0,0,0) 70%), ${t.surface}`, border: `1px solid ${t.line}`, padding: "30px 30px", display: "grid", gridTemplateColumns: "150px minmax(0, 1fr)", gap: "28px", alignItems: "center" }}><div style={{ position: "relative", height: "210px", borderRadius: "var(--r-ed)", background: dia.fundo, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end", paddingBottom: "20px", boxSizing: "border-box", overflow: dia.oficial === false ? "hidden" : "visible" }}>{(dia.foto) ? (<img src={dia.foto} alt={dia.nome ?? ""} style={{ position: dia.oficial === false ? "static" : "absolute", bottom: "18px", left: "50%", transform: dia.oficial === false ? "none" : "translateX(-50%)", width: dia.oficial === false ? "100%" : "auto", height: dia.oficial === false ? "100%" : "128%", maxWidth: dia.oficial === false ? "100%" : "120%", objectPosition: "center bottom", objectFit: dia.oficial === false ? "cover" : "contain", borderRadius: "10px", background: "transparent", filter: dia.oficial === false ? "none" : "drop-shadow(0 12px 14px rgba(0,0,0,.5)) drop-shadow(0 2px 3px rgba(0,0,0,.35))" }} />) : (<><div style={{ width: "46px", height: "30px", borderRadius: "3px", background: dia.tampa }}></div><div style={{ width: "16px", height: "7px", background: "#8FA399" }}></div><div style={{ width: "100px", height: "96px", borderRadius: "48px", background: dia.vidro, border: `1px solid ${t.line2}`, display: "flex", alignItems: "center", justifyContent: "center" }}><span style={{ width: "62px", height: "38px", borderRadius: "50%", background: "#F6F4EE", color: "#0B110F", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", fontSize: "6px", letterSpacing: ".14em" }}>{dia.rot}<b style={{ fontSize: "9px", letterSpacing: ".04em", marginTop: "2px" }}>{dia.nome}</b></span></div></>)}</div><div style={{ display: "flex", flexDirection: "column", gap: "12px" }}><div style={{ display: "flex", alignItems: "center", gap: "10px" }}><h2 style={{ margin: "0", fontFamily: "var(--mono)", fontSize: "12px", fontWeight: "400", letterSpacing: ".14em", color: t.amberTxt }}>PERFUME DO DIA</h2><div style={{ flexGrow: "1" }}></div><span style={{ display: "flex", alignItems: "center", gap: "8px", padding: "6px 12px", borderRadius: "14px", background: t.chip, fontSize: "13px" }}><svg viewBox="0 0 24 24" style={{ width: "16px", height: "16px", fill: "none", stroke: t.amber, strokeWidth: "1.6" }}><path d={sol}></path></svg>{dia.clima}</span></div><div style={{ fontSize: "28px", fontWeight: "500", letterSpacing: "-.02em", lineHeight: "1" }}>{dia.nome}</div><div style={{ fontSize: "16px", lineHeight: "1.55", color: t.ink2 }}>{dia.porque}</div><div style={{ display: "flex", gap: "10px", marginTop: "4px" }}><form action="/api/usar" method="post" style={{ display: "contents" }}><input type="hidden" name="id" defaultValue={dia.id} /><button type="submit" style={{ height: "44px", padding: "0 22px", borderRadius: "var(--r-ctl)", background: "transparent", color: t.ink, border: `1px solid ${t.line2}`, fontFamily: "var(--sans)", fontSize: "14px", fontWeight: "600", cursor: "pointer" }}>Usar hoje</button></form><a href={dia.outra} style={{ height: "44px", padding: "0 18px", border: `1px solid ${t.line2}`, borderRadius: "var(--r-ctl)", background: "transparent", color: t.ink, fontFamily: "var(--sans)", fontSize: "14px", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "10px", textDecoration: "none" }}>Outra sugestão</a><a href={dia.href} style={{ height: "44px", padding: "0 18px", border: `1px solid ${t.line2}`, borderRadius: "var(--r-ctl)", background: "transparent", color: t.ink, fontFamily: "var(--sans)", fontSize: "14px", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: "10px", textDecoration: "none" }}>Ver ficha</a></div></div></article><article style={{ gridColumn: "span 5", borderRadius: "var(--r-ed)", background: t.tileWine, border: `1px solid ${t.line}`, padding: "30px 30px", display: "flex", flexDirection: "column", gap: "14px" }}><h2 style={{ margin: "0", fontFamily: "var(--mono)", fontSize: "12px", fontWeight: "400", letterSpacing: ".14em", color: t.wineTxt }}>CURIOSIDADE DO DIA</h2><div style={{ display: "flex", alignItems: "center", gap: "18px" }}><span style={{ width: "88px", height: "88px", borderRadius: "44px", overflow: "hidden", background: "#FFFFFF", flexShrink: "0", boxShadow: `0 0 0 3px ${t.bgWine}, 0 0 0 4px ${t.line2}` }}><img src={cur.foto} alt={cur.nota} style={{ width: "100%", height: "100%", objectFit: "cover" }} /></span><div style={{ fontSize: "22px", fontWeight: "500", letterSpacing: "-.01em", lineHeight: "1.2" }}>{cur.titulo}</div></div><p style={{ margin: "0", fontSize: "15.5px", lineHeight: "1.6", color: t.ink2 }}>{cur.texto}</p><a href={cur.href} style={{ alignSelf: "flex-start", marginTop: "auto", fontSize: "14px", color: t.ink, textDecoration: "none", borderBottom: `1px solid ${t.amber}`, paddingBottom: "2px" }}>{cur.link}</a></article><article style={{ gridColumn: "span 12", borderRadius: "var(--r-ed)", background: t.surface, border: `1px solid ${t.line}`, padding: "30px 30px", display: "flex", flexDirection: "column", gap: "20px" }}><div style={{ display: "flex", alignItems: "baseline", gap: "16px" }}><h2 style={{ margin: "0", fontFamily: "var(--mono)", fontSize: "12px", fontWeight: "400", letterSpacing: ".14em", color: t.amberTxt }}>A SEMANA PELO CLIMA</h2><span style={{ fontSize: "14px", color: t.ink3 }}>{previsao}</span><div style={{ flexGrow: "1" }}></div><span style={{ fontSize: "14px", color: t.ink2 }}>{resgata}</span></div><div style={{ display: "grid", gridTemplateColumns: "repeat(7, minmax(0, 1fr))", gap: "14px" }}>{(semana ?? []).map((d: any, _i5: number) => (<Fragment key={_i5}><div style={{ borderRadius: "var(--r-ed)", background: d.bg, border: `1px solid ${d.borda}`, padding: "18px 14px", display: "flex", flexDirection: "column", alignItems: "center", gap: "10px" }}><span style={{ fontFamily: "var(--mono)", fontSize: "12px", letterSpacing: ".08em", color: t.ink2 }}>{d.dia}</span><svg viewBox="0 0 24 24" style={{ width: "30px", height: "30px", fill: "none", stroke: d.cor, strokeWidth: "1.4", strokeLinecap: "round", strokeLinejoin: "round" }}><path d={d.icone}></path></svg><span style={{ fontSize: "22px", fontWeight: "500" }}>{d.temp}°</span><div style={{ width: "100%", height: "1px", background: t.line }}></div><div style={{ display: "flex", flexDirection: "column", alignItems: "center", height: "70px", justifyContent: "flex-end" }}>{(d.foto) ? (<img src={d.foto} alt={d.nome ?? ""} style={{ width: d.oficial === false ? "100%" : "auto", height: d.oficial === false ? "100%" : "84%", maxWidth: d.oficial === false ? "100%" : "90%", objectPosition: "center bottom", objectFit: d.oficial === false ? "cover" : "contain", borderRadius: "10px", background: "transparent", filter: d.oficial === false ? "none" : "drop-shadow(0 12px 14px rgba(0,0,0,.5)) drop-shadow(0 2px 3px rgba(0,0,0,.35))" }} />) : (<><div style={{ width: `${d.capW}px`, height: "9px", borderRadius: "2px", background: d.tampa }}></div><div style={{ width: "7px", height: "3px", background: "#8FA399" }}></div><div style={{ width: `${d.bw}px`, height: `${d.bh}px`, borderRadius: d.br, background: d.vidro, border: `1px solid ${t.line2}` }}></div></>)}</div><span style={{ fontSize: "14px", fontWeight: "500", textAlign: "center", lineHeight: "1.2" }}>{d.nome}</span>{(d.tag) ? (<><span style={{ padding: "3px 9px", borderRadius: "10px", background: t.chip, fontSize: "11px", color: t.sup[1] }}>{d.tag}</span></>) : null}</div></Fragment>))}</div></article><article style={{ gridColumn: "span 5", borderRadius: "var(--r-ed)", background: t.tileFeature, border: "1px solid var(--ouro-linha)", padding: "34px 32px", display: "flex", flexDirection: "column", gap: "14px" }}><h2 style={{ margin: "0", fontFamily: "var(--mono)", fontSize: "12px", fontWeight: "400", letterSpacing: ".14em", color: t.amberTxt }}>MINHA COLEÇÃO</h2><div style={{ fontSize: "30px", fontWeight: "500", letterSpacing: "-.02em", lineHeight: "1.1" }}>Cada frasco<br />tem uma história</div><span style={{ width: "56px", height: "1px", background: t.amber, margin: "6px 0" }}></span><p style={{ margin: "0", fontSize: "15.5px", lineHeight: "1.65", color: t.ink2 }}>Mais do que perfumes, guardo experiências, momentos e emoções que eles me proporcionam. Bem-vindo ao meu atlas pessoal.</p><div style={{ fontFamily: "'Pinyon Script', cursive", fontSize: "34px", lineHeight: "1", color: t.ink, marginTop: "10px" }}>Willian Lange Gomes</div><div style={{ fontFamily: "var(--mono)", fontSize: "11px", letterSpacing: ".24em", color: t.amberTxt }}>COLECIONADOR</div></article><div style={{ gridColumn: "span 7", display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "16px" }}>{(numeros ?? []).map((s: any, _i4: number) => (<Fragment key={_i4}><div style={{ borderTop: `1px solid ${t.line2}`, padding: "18px 4px 8px", display: "flex", gap: "14px", alignItems: "flex-start" }}><span style={{ width: "22px", height: "22px", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: "0", marginTop: "2px" }}><svg viewBox="0 0 24 24" style={{ width: "18px", height: "18px", fill: "none", stroke: t.amber, strokeWidth: "1.3", strokeLinecap: "round", strokeLinejoin: "round" }}><path d={s.d}></path></svg></span><div style={{ display: "flex", flexDirection: "column", gap: "4px" }}><span style={{ fontFamily: "var(--mono)", fontSize: "11px", letterSpacing: ".12em", color: t.ink3 }}>{s.l}</span><span style={{ fontSize: "60px", fontWeight: "500", letterSpacing: "-.04em", lineHeight: ".95" }}>{s.v}</span><span style={{ fontSize: "13.5px", color: t.ink2 }}>{s.c}</span></div></div></Fragment>))}</div><article style={{ gridColumn: "span 5", borderRadius: "var(--r-ed)", background: t.surface, border: `1px solid ${t.line}`, padding: "30px 28px", display: "flex", flexDirection: "column", gap: "8px" }}><div style={{ display: "flex", alignItems: "baseline", gap: "10px" }}><h2 style={{ margin: "0", fontFamily: "var(--mono)", fontSize: "12px", fontWeight: "400", letterSpacing: ".14em", color: t.amberTxt }}>ESQUECIDOS</h2><span style={{ fontSize: "13px", color: t.ink3 }}>há mais tempo sem sair do armário</span></div>{(esquecidos ?? []).map((e: any, _i4: number) => (<Fragment key={_i4}><div style={{ display: "grid", gridTemplateColumns: "56px minmax(0, 1fr) auto", gap: "16px", alignItems: "center", padding: "12px 0", borderTop: `1px solid ${t.line}` }}><div style={{ width: "56px", height: "72px", borderRadius: "12px", background: e.fundo, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end", paddingBottom: "7px", boxSizing: "border-box" }}>{(e.foto) ? (<img src={e.foto} alt={e.nome ?? ""} style={{ width: e.oficial === false ? "100%" : "auto", height: e.oficial === false ? "100%" : "84%", maxWidth: e.oficial === false ? "100%" : "90%", objectPosition: "center bottom", objectFit: e.oficial === false ? "cover" : "contain", borderRadius: "10px", background: "transparent", filter: e.oficial === false ? "none" : "drop-shadow(0 12px 14px rgba(0,0,0,.5)) drop-shadow(0 2px 3px rgba(0,0,0,.35))" }} />) : (<><div style={{ width: `${e.capW}px`, height: "9px", borderRadius: "2px", background: e.tampa }}></div><div style={{ width: "7px", height: "3px", background: "#8FA399" }}></div><div style={{ width: `${e.bw}px`, height: `${e.bh}px`, borderRadius: e.br, background: e.vidro, border: `1px solid ${t.line2}` }}></div></>)}</div><div style={{ display: "flex", flexDirection: "column", gap: "3px" }}><span style={{ fontSize: "17px", fontWeight: "500" }}>{e.nome}</span><span style={{ fontSize: "13px", color: t.ink3 }}>{e.marca} · {e.fam}</span></div><div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "2px" }}><span style={{ fontSize: "24px", fontWeight: "500", color: t.sup[1] }}>{e.dias}</span><span style={{ fontFamily: "var(--mono)", fontSize: "10.5px", color: t.ink3 }}>DIAS</span></div></div></Fragment>))}</article><article style={{ gridColumn: "span 7", borderRadius: "var(--r-ed)", background: t.bg, border: `1px solid ${t.line2}`, padding: "30px 28px", display: "flex", flexDirection: "column", gap: "16px" }}><div style={{ display: "flex", alignItems: "baseline", gap: "10px" }}><h2 style={{ margin: "0", fontFamily: "var(--mono)", fontSize: "12px", fontWeight: "400", letterSpacing: ".14em", color: t.amberTxt }}>ÚLTIMAS ENTRADAS</h2><div style={{ flexGrow: "1" }}></div><a href="/colecao" style={{ fontSize: "14px", color: t.ink2, textDecoration: "none" }}>Ver todas →</a></div><div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: "14px" }}>{(ultimas ?? []).map((u: any, _i5: number) => (<Fragment key={_i5}><div style={{ borderRadius: "var(--r-ed)", background: t.surface, border: `1px solid ${t.line}`, overflow: "hidden", display: "flex", flexDirection: "column" }}><div style={{ position: "relative", height: "140px", background: u.fundo, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end", paddingBottom: "14px", boxSizing: "border-box" }}><span style={{ position: "absolute", left: "10px", top: "10px", fontFamily: "var(--mono)", fontSize: "9.5px", letterSpacing: ".1em", color: t.ink3 }}>Nº {u.num}</span>{(u.foto) ? (<img src={u.foto} alt={u.nome ?? ""} style={{ width: u.oficial === false ? "100%" : "auto", height: u.oficial === false ? "100%" : "84%", maxWidth: u.oficial === false ? "100%" : "90%", objectPosition: "center bottom", objectFit: u.oficial === false ? "cover" : "contain", borderRadius: "10px", background: "transparent", filter: u.oficial === false ? "none" : "drop-shadow(0 12px 14px rgba(0,0,0,.5)) drop-shadow(0 2px 3px rgba(0,0,0,.35))" }} />) : (<><div style={{ width: `${u.capW2}px`, height: "14px", borderRadius: "2px", background: u.tampa }}></div><div style={{ width: "10px", height: "4px", background: "#8FA399" }}></div><div style={{ width: `${u.bw2}px`, height: `${u.bh2}px`, borderRadius: u.br, background: u.vidro, border: `1px solid ${t.line2}`, display: "flex", alignItems: "center", justifyContent: "center" }}><span style={{ width: `${u.lw}px`, height: "22px", borderRadius: "50%", background: "#F6F4EE", color: "#0B110F", fontSize: "6.5px", fontWeight: "600", letterSpacing: ".08em", display: "flex", alignItems: "center", justifyContent: "center" }}>{u.rot}</span></div></>)}</div><div style={{ padding: "12px 14px 14px", display: "flex", flexDirection: "column", gap: "4px" }}><span style={{ fontSize: "15px", fontWeight: "500", lineHeight: "1.2" }}>{u.nome}</span><span style={{ fontFamily: "var(--mono)", fontSize: "10px", letterSpacing: ".08em", color: t.ink3 }}>{u.marcaUp}</span><span style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "12px", color: t.ink2, marginTop: "4px" }}><span style={{ width: "7px", height: "7px", borderRadius: "4px", background: u.cor }}></span>{u.fam}</span><span style={{ fontFamily: "var(--mono)", fontSize: "10.5px", color: t.ink3, paddingTop: "8px", marginTop: "4px", borderTop: `1px solid ${t.line}` }}>{u.data}</span></div></div></Fragment>))}</div></article></section>{(demo) ? (<><span style={{ alignSelf: "flex-end", padding: "6px 12px", border: `1px dashed ${t.line2}`, borderRadius: "14px", fontFamily: "var(--mono)", fontSize: "12px", color: t.ink3 }}>CLIMA, DATAS E SUGESTÕES ILUSTRATIVOS</span></>) : null}</main><footer style={{ position: "relative", marginTop: "40px", background: t.surface, borderTop: `1px solid ${t.line}`, display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", padding: "0 40px" }}>{(pilares ?? []).map((p: any, _i2: number) => (<Fragment key={_i2}><div style={{ padding: "34px 26px", display: "flex", gap: "16px", alignItems: "flex-start", borderRight: `1px solid ${t.line}` }}><svg viewBox="0 0 24 24" style={{ width: "28px", height: "28px", fill: "none", stroke: t.amber, strokeWidth: "1.1", flexShrink: "0" }}><path d={p.d}></path></svg><div style={{ display: "flex", flexDirection: "column", gap: "6px" }}><span style={{ fontFamily: "var(--mono)", fontSize: "11px", letterSpacing: ".2em", color: t.ink }}>{p.t}</span><span style={{ fontSize: "14px", lineHeight: "1.5", color: t.ink3 }}>{p.x}</span></div></div></Fragment>))}</footer></div></>);
+type V = Awaited<ReturnType<typeof montarInicio>>;
+const n3 = (n: number) => String(n).padStart(3, "0");
+const i = (n: number) => ({ ["--i" as string]: n }) as CSSProperties;
+
+/** Título que chega palavra por palavra. */
+function Palavras({ texto, de = 0 }: { texto: string; de?: number }) {
+  return <>{texto.split(" ").map((w, k) => <span key={k} style={i(de + k)}>{w}&nbsp;</span>)}</>;
 }
 
-/** Um destaque da vitrine do topo (docs/DECISOES.md §21). */
-function Vitrine({ hero, t }: { hero: any; t: any }) {
-  return (<div style={{ position: "absolute", inset: "0", height: "580px", background: t.tileFeature, overflow: "hidden" }}>{(hero.selo) ? (<span style={{ position: "absolute", left: "28px", top: "24px", zIndex: 2, padding: "5px 11px", borderRadius: "14px", border: hero.tipo === "tenho" ? `1px solid ${t.line2}` : "1px solid var(--ouro-linha)", background: hero.tipo === "tenho" ? "transparent" : "rgba(255,107,61,.12)", fontFamily: "var(--mono)", fontSize: "10.5px", letterSpacing: ".16em", color: hero.tipo === "tenho" ? t.ink2 : t.amberTxt }}>{hero.selo}</span>) : null}{/* vitrine: foco de luz de cima, chão com reflexo curto, frasco à esquerda e os dados ao lado (docs/DECISOES.md §17) */}<div style={{ position: "absolute", left: "30px", top: "-140px", width: "340px", height: "640px", background: `radial-gradient(ellipse 48% 62% at 50% 0%, ${hero.luz} 0%, ${hero.luz2} 46%, rgba(0,0,0,0) 76%)`, pointerEvents: "none" }}></div><div style={{ position: "absolute", left: "60px", bottom: "128px", width: "280px", height: "46px", borderRadius: "50%", background: `radial-gradient(ellipse at center, ${hero.chao} 0%, ${hero.chao2} 50%, rgba(0,0,0,0) 74%)`, pointerEvents: "none" }}></div><div style={{ position: "absolute", left: "40px", top: "56px", bottom: "150px", width: "320px", display: "flex", alignItems: "flex-end", justifyContent: "center" }}>{(hero.foto) ? (<div style={{ position: "relative", display: "flex", flexDirection: "column", alignItems: "center" }}><img className="flutua" src={hero.foto} alt={hero.nome ?? ""} style={{ maxWidth: "220px", maxHeight: "330px", objectFit: "contain", filter: "brightness(.97) drop-shadow(0 26px 28px rgba(0,0,0,.65)) drop-shadow(0 3px 4px rgba(0,0,0,.45))" }} /><div aria-hidden="true" style={{ position: "absolute", top: "100%", left: "0", right: "0", height: "56px", overflow: "hidden", display: "flex", justifyContent: "center", pointerEvents: "none" }}><img src={hero.foto} alt="" style={{ maxWidth: "220px", maxHeight: "330px", objectFit: "contain", transform: "scaleY(-1)", transformOrigin: "top", marginTop: "2px", opacity: ".09", filter: "blur(.6px)", WebkitMaskImage: "linear-gradient(to top, rgba(0,0,0,1), rgba(0,0,0,0) 18%)", maskImage: "linear-gradient(to top, rgba(0,0,0,1), rgba(0,0,0,0) 18%)" }} /></div></div>) : (<div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}><div style={{ width: "92px", height: "74px", borderRadius: "5px", background: "linear-gradient(100deg, #33333A, #0B110F 60%, #222228)", boxShadow: "0 8px 22px rgba(0,0,0,.5)" }}></div><div style={{ width: "50px", height: "16px", background: "linear-gradient(100deg, #8FA399, #4A5470)" }}></div><div style={{ position: "relative", width: "168px", height: "280px", borderRadius: "8px", background: "linear-gradient(105deg, rgba(220,236,253,.45) 0%, rgba(52,85,159,.6) 40%, rgba(10,20,51,.95) 100%)", boxShadow: "0 30px 70px rgba(0,0,0,.6), inset 2px 0 0 rgba(242,238,227,.25)", display: "flex", alignItems: "center", justifyContent: "center" }}><div style={{ position: "absolute", left: "14px", top: "16px", width: "18px", height: "240px", borderRadius: "9px", background: "linear-gradient(180deg, rgba(255,255,255,.35), rgba(242,238,227,0))" }}></div><div style={{ width: "118px", padding: "18px 8px", textAlign: "center", background: "rgba(11,17,15,.78)", border: "1px solid rgba(201,214,207,.45)", display: "flex", flexDirection: "column", gap: "6px" }}><span style={{ fontFamily: "var(--mono)", fontSize: "8px", letterSpacing: ".28em", color: t.amber }}>{hero.casaUp}</span><span style={{ fontSize: "18px", fontWeight: "500", letterSpacing: ".14em", lineHeight: "1.15" }}>{hero.l1}<br />{hero.l2}</span><span style={{ fontFamily: "var(--mono)", fontSize: "6.5px", letterSpacing: ".22em", color: t.ink3 }}>{hero.conc}</span></div></div></div>)}</div><div style={{ position: "absolute", left: "390px", right: "40px", top: "0", bottom: "110px", display: "flex", flexDirection: "column", justifyContent: "center", gap: "14px" }}><span style={{ fontFamily: "var(--mono)", fontSize: "11px", letterSpacing: ".26em", color: t.amberTxt }}>{hero.casaUp}</span><span style={{ fontFamily: "var(--marca)", fontSize: "50px", fontWeight: "500", lineHeight: "1", letterSpacing: "-.015em", color: t.ink }}>{hero.nome}</span>{(hero.conc) ? (<span style={{ fontFamily: "var(--mono)", fontSize: "11px", letterSpacing: ".18em", color: t.ink3 }}>{hero.conc}</span>) : null}<div style={{ width: "44px", height: "1px", background: t.amber, opacity: ".75", margin: "4px 0 2px" }}></div>{(hero.notas) ? (<span style={{ fontSize: "16px", lineHeight: "1.45", color: t.ink2 }}>{hero.notas}</span>) : null}<div style={{ display: "flex", gap: "8px", flexWrap: "wrap", alignItems: "center" }}>{(hero.familia) ? (<span style={{ padding: "5px 12px", borderRadius: "14px", border: `1px solid ${t.line2}`, fontSize: "12.5px", color: t.ink2 }}>{hero.familia}</span>) : null}{(hero.dura) ? (<span style={{ padding: "5px 12px", borderRadius: "14px", border: `1px solid ${t.line2}`, fontSize: "12.5px", color: t.ink2 }}>{hero.dura}</span>) : null}</div>{(hero.href) ? (<a href={hero.href} style={{ marginTop: "6px", alignSelf: "flex-start", color: t.ink, fontSize: "14px", textDecoration: "none", borderBottom: `1px solid ${t.amber}`, paddingBottom: "2px" }}>Ver ficha →</a>) : null}</div><div style={{ position: "absolute", left: "40px", right: "40px", bottom: "34px", paddingTop: "18px", borderTop: `1px solid ${t.line}`, fontFamily: "var(--mono)", fontSize: "11px", letterSpacing: ".1em", color: t.ink3, display: "flex", justifyContent: "space-between", gap: "16px" }}><span>{hero.entrada}</span>{(hero.coord) ? (<span style={{ color: hero.terrA }}>{hero.coord}</span>) : null}</div></div>);
+export default function DesInicio({ v }: { v: V }) {
+  const h = v.vitrine[0];
+  const c = v.cel;
+  const d = c.dia;
+  const p = d?.e.perfume;
+  const temps = c.semana.map((s) => s.temp);
+  const tMin = Math.min(...temps) - 2, tMax = Math.max(...temps) + 2;
+  const yT = (t: number) => 70 - ((t - tMin) / Math.max(1, tMax - tMin)) * 56;
+  const curva = c.semana.map((s, k) => `${k === 0 ? "M" : "L"} ${k * 100 + 50} ${yT(s.temp).toFixed(1)}`).join(" ");
+
+  return (
+    <div className="vivo" style={{ ["--luz" as string]: h.terrA } as CSSProperties}>
+      {/* ---------- palco: o perfume em destaque ocupa a tela ---------- */}
+      <section className="vivo-palco">
+        <div className="vivo-palco-luz" aria-hidden="true" />
+        <div className="vivo-anel" aria-hidden="true"><Camadas camadas={v.anel} tam={760} op={0.12} /></div>
+        <div className="vivo-letreiro" aria-hidden="true">
+          <div>{Array.from({ length: 4 }, (_, k) => <span key={k}>{h.nome}&nbsp;·&nbsp;</span>)}</div>
+        </div>
+
+        <div className="vivo-palco-txt">
+          <div className="vivo-saudacao">{c.saudacao}, Willian <span>·</span> {c.data}</div>
+          {h.selo ? <span className="vivo-selo">{h.selo}</span> : null}
+          {h.casaUp ? <div className="vivo-casa">{h.casaUp}{h.conc ? ` · ${h.conc}` : ""}</div> : null}
+          <h1 className="vivo-h1 palavras"><Palavras texto={h.nome} /></h1>
+          {h.notas ? <p className="vivo-notas">{h.notas}</p> : null}
+          <div className="vivo-chips">
+            {h.familia ? <span className="chip-vivo"><i style={{ background: h.terrA }} />{h.familia}</span> : null}
+            {h.dura ? <span className="chip-vivo">{h.dura}</span> : null}
+          </div>
+          <div className="vivo-acoes">
+            {h.href ? <Link href={h.href} className="btn vivo-btn">Ver ficha <Icone nome="seta" tamanho={18} /></Link> : null}
+            <Link href="/sommelier" className="btn ghost vivo-btn"><Icone nome="mic" tamanho={18} />Falar com o sommelier</Link>
+          </div>
+        </div>
+
+        <div className="vivo-frasco">
+          <div className="vivo-chao" aria-hidden="true" />
+          {h.foto ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img className="flutua" src={h.foto} alt={h.nome} />
+          ) : (
+            <div className="flutua vivo-frasco-vazio"><Icone nome="colecao" tamanho={120} traco={0.8} /></div>
+          )}
+        </div>
+
+        <div className="vivo-rodape-palco">
+          <span>{h.entrada}</span>
+          <span>{h.coord}</span>
+        </div>
+      </section>
+
+      <main className="vivo-corpo">
+        {/* ---------- frase do dia ---------- */}
+        <p className="vivo-frase">
+          Hoje faz <em>{d?.temp ?? "—"} °C</em> em {c.cidade || "sua cidade"}{d ? <>, {d.ar}.</> : "."} {p ? <>O Atlas sugere <em>{p.nome}</em>.</> : <>Cadastre um frasco para receber sugestões.</>}
+        </p>
+
+        {/* ---------- hoje: perfume do dia + curiosidade (bento) ---------- */}
+        <section className="vivo-hoje">
+          <article className="vivo-dia" style={{ ["--terr" as string]: p ? corDoAcorde(p.acorde) : "var(--acento)" } as CSSProperties}>
+            {d && p ? (
+              <>
+                <Link href={`/colecao/${d.e.perfumeId}`} className="vivo-dia-palco">
+                  <PalcoC nome={p.nome} casa={p.casa} acorde={p.acorde} forma={p.forma} tampa={p.tampa} foto={d.e.foto ?? p.imagem} oficial={!d.e.foto && Boolean(p.imagem)} altura={380} k={1.7} raio={24} semBorda />
+                </Link>
+                <div className="vivo-dia-txt">
+                  <span className="rotulo">Perfume do dia</span>
+                  <h2>{p.nome}</h2>
+                  <div className="vivo-casa">{`${p.casa} · ${p.familia}`.toUpperCase()}</div>
+                  <p>{"porque" in v.dia ? v.dia.porque : d.curto}</p>
+                  <form action="/api/usar" method="post" className="vivo-acoes">
+                    <input type="hidden" name="id" defaultValue={d.e.id} />
+                    <button type="submit" className="btn">Usar hoje</button>
+                    <Link href={v.dia.outra} className="btn ghost">Outra sugestão</Link>
+                  </form>
+                </div>
+              </>
+            ) : (
+              <div className="vivo-dia-txt">
+                <span className="rotulo">Perfume do dia</span>
+                <h2>Seu primeiro frasco</h2>
+                <p>Cadastre o primeiro perfume e o Atlas passa a sugerir um por dia, pelo clima.</p>
+                <div className="vivo-acoes"><Link href="/adicionar" className="btn">Adicionar perfume</Link></div>
+              </div>
+            )}
+          </article>
+
+          <Link href={v.cur.href} className="vivo-cur">
+            {v.cur.foto ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={v.cur.foto} alt={v.cur.nota} />
+            ) : null}
+            <div className="vivo-cur-txt">
+              <span className="rotulo">Curiosidade do dia</span>
+              <h3>{v.cur.titulo}</h3>
+              <p>{v.cur.texto}</p>
+              <span className="vivo-link">{v.cur.link} <Icone nome="seta" tamanho={16} /></span>
+            </div>
+          </Link>
+        </section>
+
+        {/* ---------- a semana pelo clima: curva de temperatura + um frasco por dia ---------- */}
+        <section className="vivo-semana">
+          <header>
+            <h2 className="vivo-h2">A semana pelo clima</h2>
+            <span>{v.previsao}{v.resgata ? <> · <b>{v.resgata}</b></> : null}</span>
+          </header>
+          <div className="vivo-semana-grade">
+            <svg className="vivo-curva" viewBox="0 0 700 80" preserveAspectRatio="none" aria-hidden="true">
+              <defs>
+                <linearGradient id="curva" x1="0" x2="1">
+                  <stop offset="0" stopColor="var(--acento)" />
+                  <stop offset="1" stopColor="var(--musgo)" />
+                </linearGradient>
+              </defs>
+              <path className="desenha" d={curva} pathLength={1} style={{ ["--comp" as string]: 1 } as CSSProperties} fill="none" stroke="url(#curva)" strokeWidth="2" vectorEffect="non-scaling-stroke" />
+            </svg>
+            {c.semana.map((s, k) => (
+              <Link key={k} href={s.e ? `/colecao/${s.e.perfumeId}` : "/colecao"} className={`vivo-diaseq ${k === 0 ? "hoje" : ""}`}>
+                <span className="vivo-diaseq-dia">{k === 0 ? "HOJE" : s.dia}</span>
+                <span className="vivo-diaseq-temp">{s.temp}°</span>
+                <div className="vivo-diaseq-frasco">
+                  {s.e ? <PalcoC nome={s.e.perfume.nome} casa={s.e.perfume.casa} acorde={s.e.perfume.acorde} forma={s.e.perfume.forma} tampa={s.e.perfume.tampa} foto={s.e.foto ?? s.e.perfume.imagem} oficial={!s.e.foto && Boolean(s.e.perfume.imagem)} altura={130} k={0.62} raio={20} transparente semBorda /> : <div className="vivo-diaseq-vazio" />}
+                </div>
+                <span className="vivo-diaseq-nome">{s.e?.perfume.nome ?? "—"}</span>
+                {s.esquecido ? <span className="vivo-tag">Esquecido</span> : null}
+              </Link>
+            ))}
+          </div>
+        </section>
+
+        {/* ---------- índice da coleção: algarismos grandes, sem cartões ---------- */}
+        <section className="vivo-indice">
+          <div className="vivo-indice-txt">
+            <h2 className="vivo-h2 grande">Cada frasco tem uma história.</h2>
+            <p>Mais do que perfumes, guardo experiências, momentos e emoções que eles me proporcionam. Bem-vindo ao meu atlas pessoal.</p>
+            <div className="vivo-assinatura">Willian Lange Gomes</div>
+            <Link href="/colecao" className="btn ghost">Explorar a coleção <Icone nome="seta" tamanho={18} /></Link>
+          </div>
+          <dl className="vivo-numeros">
+            {v.numeros.map((n, k) => (
+              <div key={k} style={i(k)}>
+                <dt>{n.l}</dt>
+                <dd>{n.v}</dd>
+                <span>{n.c}</span>
+              </div>
+            ))}
+          </dl>
+        </section>
+
+        {/* ---------- prateleira: últimas entradas ---------- */}
+        {c.ultimas.length > 0 && (
+          <section className="vivo-prateleira">
+            <header>
+              <h2 className="vivo-h2">Últimas entradas</h2>
+              <Link href="/colecao" className="vivo-link">Ver todas <Icone nome="seta" tamanho={16} /></Link>
+            </header>
+            <div className="vivo-prateleira-trilho">
+              {c.ultimas.map((e) => (
+                <Link key={e.id} href={`/colecao/${e.perfumeId}`} className="vivo-frasco-card">
+                  <PalcoC nome={e.perfume.nome} casa={e.perfume.casa} acorde={e.perfume.acorde} forma={e.perfume.forma} tampa={e.perfume.tampa} foto={e.foto ?? e.perfume.imagem} oficial={!e.foto && Boolean(e.perfume.imagem)} altura={260} k={1.2} raio={24}>
+                    <span className="vivo-num">Nº {n3(e.numero)}</span>
+                  </PalcoC>
+                  <strong>{e.perfume.nome}</strong>
+                  <span className="vivo-casa">{e.perfume.casa.toUpperCase()}</span>
+                  <span className="vivo-acorde"><i style={{ background: corDoAcorde(e.perfume.acorde) }} />{e.perfume.acorde}</span>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* ---------- esquecidos: contadores grandes ---------- */}
+        {c.esquecidos.length > 0 && (
+          <section className="vivo-esquecidos">
+            <h2 className="vivo-h2">Há mais tempo no armário</h2>
+            <div className="vivo-esquecidos-grade">
+              {c.esquecidos.map((e) => (
+                <Link key={e.id} href={`/colecao/${e.perfumeId}`} className="vivo-esquecido">
+                  <div className="vivo-esquecido-n"><b>{e.dias}</b><span>dias</span></div>
+                  <div className="vivo-esquecido-frasco">
+                    <PalcoC nome={e.perfume.nome} casa={e.perfume.casa} acorde={e.perfume.acorde} forma={e.perfume.forma} tampa={e.perfume.tampa} foto={e.foto ?? e.perfume.imagem} oficial={!e.foto && Boolean(e.perfume.imagem)} altura={120} k={0.6} raio={20} transparente semBorda />
+                  </div>
+                  <div className="vivo-esquecido-txt"><strong>{e.perfume.nome}</strong><span>{e.perfume.casa} · {e.perfume.acorde}</span></div>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {v.demo ? <span className="tracejado" style={{ alignSelf: "flex-end" }}>CLIMA, DATAS E SUGESTÕES ILUSTRATIVOS</span> : null}
+      </main>
+
+      <footer className="vivo-pilares">
+        {v.pilares.map((pl, k) => (
+          <div key={k}>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d={pl.d} /></svg>
+            <strong>{pl.t}</strong>
+            <span>{pl.x}</span>
+          </div>
+        ))}
+      </footer>
+    </div>
+  );
 }
