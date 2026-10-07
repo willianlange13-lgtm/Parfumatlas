@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { clienteServico } from "@/lib/supabase/servico";
+import { pedidoDaAlexa } from "@/lib/alexa-assinatura";
 import { lerAcervo } from "@/lib/dados";
 import { obterClima } from "@/lib/clima";
 import { afinidade, graficoClima, naColecao, perfumeDoDia } from "@/lib/analise";
@@ -11,7 +12,11 @@ const normal = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLower
 
 /** Skill da Alexa (pt-BR). Uso pessoal: responde pela coleção do ATLAS_USER_ID. */
 export async function POST(request: NextRequest) {
-  const b = (await request.json()) as Pedido;
+  const corpo = await request.text();
+  // só a Alexa de verdade: assinatura conferida com o certificado da Amazon (o ID da skill não é segredo)
+  if (!(await pedidoDaAlexa(corpo, request.headers))) return NextResponse.json({ erro: "assinatura inválida" }, { status: 401 });
+  let b: Pedido;
+  try { b = JSON.parse(corpo) as Pedido; } catch { return NextResponse.json({ erro: "pedido inválido" }, { status: 400 }); }
   const app = b.context?.System?.application?.applicationId ?? b.session?.application?.applicationId;
   if (!process.env.ALEXA_SKILL_ID || app !== process.env.ALEXA_SKILL_ID) return NextResponse.json({ erro: "skill desconhecida" }, { status: 401 });
   if (b.request.timestamp && Math.abs(Date.now() - new Date(b.request.timestamp).getTime()) > 150_000) return NextResponse.json({ erro: "pedido antigo" }, { status: 400 });

@@ -21,7 +21,8 @@ async function rodar() {
 }
 
 export async function GET(request: NextRequest) {
-  if (process.env.CRON_SECRET && request.headers.get("authorization") !== `Bearer ${process.env.CRON_SECRET}`) {
+  // o segredo é obrigatório: sem ele a rota ficaria aberta para qualquer pessoa (usa a chave de serviço)
+  if (!process.env.CRON_SECRET || request.headers.get("authorization") !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ erro: "não autorizado" }, { status: 401 });
   }
   return rodar();
