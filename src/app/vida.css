@@ -84,3 +84,9 @@ html.vida .c-tela > *, html.vida .so-computador main > *, html.vida .surge > * {
   body::before, body::after { animation: none; }
   :is(.titulo-poster, .vivo-h1, .dc-h1, .dd-topo h1, .ds-topo h1, .dl-topo h1, .df-titulo h1, .ci-ola h1, .cc-cab h1, .cs-hero h1, .cd-topo h1, .cdes-topo h1, .cad-tit, .en-tit h1, .ne h1, .so-titulo):not(.palavras), .palavras span { animation: none !important; background-position: 50% 0; }
 }
+
+/* ---------- celular: o conteúdo some num degradê antes de passar por baixo da doca ---------- */
+@media (max-width: 900px) {
+  .barra-app { background: rgba(20, 30, 26, 0.92) !important; }
+  .barra-app::after { content: ""; position: absolute; z-index: -1; left: -14px; right: -14px; top: -48px; bottom: calc(-12px - env(safe-area-inset-bottom)); pointer-events: none; background: linear-gradient(180deg, rgba(11, 17, 15, 0) 0%, rgba(11, 17, 15, 0.85) 45%, #0b110f 100%); }
+}
