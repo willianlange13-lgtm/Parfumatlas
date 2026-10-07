@@ -245,7 +245,6 @@ p { text-wrap: pretty; }
 @keyframes folha-sobe { from { transform: translateY(100%); } to { transform: none; } }
 @keyframes veu-entra { from { opacity: 0; } to { opacity: 1; } }
 @keyframes palavra { from { opacity: 0; transform: translateY(0.45em) rotate(2deg); filter: blur(8px); } to { opacity: 1; transform: none; filter: blur(0); } }
-@keyframes flutua { 0%, 100% { transform: translateY(0) rotate(-0.6deg); } 50% { transform: translateY(-10px) rotate(0.6deg); } }
 @keyframes desenha { from { stroke-dashoffset: var(--comp, 1200); } to { stroke-dashoffset: 0; } }
 @keyframes gira { to { transform: rotate(360deg); } }
 
@@ -258,8 +257,6 @@ p { text-wrap: pretty; }
 
 /* título que chega palavra por palavra (componente <Palavras>) */
 .palavras > span { display: inline-block; animation: palavra .9s var(--ease) both; animation-delay: calc(var(--i, 0) * 70ms + 120ms); padding-bottom: 0.08em; }
-/* frasco do destaque flutuando no palco */
-.flutua { animation: flutua 7s ease-in-out infinite; }
 /* traços que se desenham (radar do DNA, gráficos) */
 .desenha { stroke-dasharray: var(--comp, 1200); animation: desenha 1.6s var(--ease) both .2s; }
 /* cartões revelados ao rolar (onde o navegador suporta) */
@@ -277,7 +274,7 @@ p { text-wrap: pretty; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 1ms !important; animation-delay: 0ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; }
-  .brilho, .flutua, .dna-respira { animation: none !important; }
+  .brilho, .dna-respira { animation: none !important; }
   ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
 }
 

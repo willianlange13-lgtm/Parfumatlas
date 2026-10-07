@@ -56,9 +56,9 @@ export default function DesInicio({ v }: { v: V }) {
           <div className="vivo-chao" aria-hidden="true" />
           {h.foto ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img className="flutua" src={h.foto} alt={h.nome} />
+            <img src={h.foto} alt={h.nome} />
           ) : (
-            <div className="flutua vivo-frasco-vazio"><Icone nome="colecao" tamanho={120} traco={0.8} /></div>
+            <div className="vivo-frasco-vazio"><Icone nome="colecao" tamanho={120} traco={0.8} /></div>
           )}
         </div>
 

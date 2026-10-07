@@ -15,7 +15,6 @@
 .ci-clima { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 11px; border-radius: var(--r-pill); background: var(--chip); font-size: 12px; }
 .ci-clima svg { width: 14px; height: 14px; fill: none; stroke: var(--acento); stroke-width: 1.6; }
 .ci-dia-palco { display: block; margin: -4px -8px 0; }
-.ci-dia-palco img { animation: flutua 7s ease-in-out infinite; }
 .ci-dia h2 { margin: 0; font-family: var(--marca); font-size: 38px; font-weight: 600; letter-spacing: -0.035em; line-height: 0.95; }
 .ci-casa { font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.12em; color: var(--ink-3); }
 .ci-dia p { margin: 2px 0 0; font-size: 14.5px; line-height: 1.55; color: var(--ink-2); }
