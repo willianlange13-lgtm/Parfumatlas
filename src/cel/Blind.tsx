@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { Btn, Card, MONO, OURO, Rot, Topo } from "./kit";
+import { Btn, Card, Cartaz, MONO, OURO, Rot, Topo } from "./kit";
 
 type P = { id: string; nome: string; casa: string };
 
@@ -23,6 +23,7 @@ export function Blind({ lista, inicial }: { lista: P[]; inicial: string[] }) {
   return (
     <div className="c-tela sem-barra" style={{ maxWidth: 620, margin: "0 auto" }}>
       <Topo titulo="Blind test" voltar />
+      <Cartaz a="Prove sem" b="ver o rótulo." />
       {etapa === "escolher" && (
         <>
           <Card fundo="destaque" pad={16}>

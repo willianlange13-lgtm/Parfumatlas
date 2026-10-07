@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, Geist, Geist_Mono, Pinyon_Script } from "next/font/google";
 import "./globals.css";
 import { Navegacao } from "@/components/Navegacao";
+import { iniciais, obterConfig } from "@/lib/config";
 
 // Atlas Vivo (docs/DECISOES.md §28): Bricolage nos títulos, Geist no texto, Geist Mono nas etiquetas,
 // Pinyon só na assinatura do colecionador.
@@ -24,7 +25,8 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const cfg = await obterConfig().catch(() => null);
   return (
     <html lang="pt-BR" suppressHydrationWarning className={`${titulo.variable} ${texto.variable} ${mono.variable} ${assinatura.variable}`}>
       <head>
@@ -34,7 +36,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body>
         <div className="brilho" aria-hidden="true" />
         <div className="grao" aria-hidden="true" />
-        <Navegacao />
+        <Navegacao iniciais={cfg ? iniciais(cfg.nome) : undefined} />
         <main style={{ position: "relative", zIndex: 1 }}>{children}</main>
       </body>
     </html>

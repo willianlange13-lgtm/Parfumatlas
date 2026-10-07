@@ -83,6 +83,18 @@ export function Topo({ titulo, voltar, direita, grande }: { titulo: string; volt
 
 
 /** Título grande das abas (Coleção, Buscar, Novidades). */
+/** Título de cartaz das telas internas: primeira linha clara, segunda em menta (Atlas Vivo). */
+export function Cartaz({ a, b, rot }: { a: string; b: string; rot?: string }) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 6, flexShrink: 0 }}>
+      {rot ? <Rot>{rot}</Rot> : null}
+      <h1 className="titulo-poster" style={{ margin: 0, fontFamily: "var(--marca)", fontSize: 44, fontWeight: 600, letterSpacing: "-.045em", lineHeight: 0.95 }}>
+        {a}<br /><span style={{ color: "var(--acento)" }}>{b}</span>
+      </h1>
+    </div>
+  );
+}
+
 export function TituloAba({ titulo, children }: { titulo: string; children?: ReactNode }) {
   return (
     <div style={{ display: "flex", alignItems: "flex-end", gap: 8, minHeight: 64, marginTop: 10, flexShrink: 0 }}>

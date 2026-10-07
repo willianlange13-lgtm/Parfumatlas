@@ -1,6 +1,5 @@
 import { carregarAcervo } from "@/lib/dados";
 import { classe, diasDesde } from "@/lib/analise";
-import base from "@/data/desenho/AtlasAzulPreto.json";
 import { circ, P, t } from "@/desenho/h2";
 import { itemVitrine, rotuloRelacao } from "./vitrine";
 
@@ -33,7 +32,6 @@ export async function montarColecao() {
     resumo: c.resumo,
     contagem: { tenho: conta("tenho"), tive: conta("tive"), quero: conta("quero"), assinatura: conta("assinatura") },
     itens,
-    _base: base.secoes.length,
   };
 }
 export type DadosColecao = Awaited<ReturnType<typeof montarColecao>>;

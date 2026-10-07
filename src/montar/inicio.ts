@@ -1,4 +1,5 @@
 import { carregarAcervo } from "@/lib/dados";
+import { obterConfig } from "@/lib/config";
 import { obterClima, descricaoAr } from "@/lib/clima";
 import { adequacao, afinidade, diasDesde, dna, esquecidos, naColecao, semana } from "@/lib/analise";
 import { CURIOSIDADES, CASAS, nota } from "@/data/referencia";
@@ -33,6 +34,8 @@ function luzDe(e: { perfume: Perfume } | null) {
 }
 
 export async function montarInicio(outra = 0) {
+  const cfg = await obterConfig();
+  const primeiroNome = cfg.nome.split(" ")[0] || "você";
   // aba Início: o frasco aparece recortado, com luz e sombra; no resto do sistema ele é o rótulo (docs/DECISOES.md §27)
   const bruto = await carregarAcervo();
   const rec = <T extends { imagem?: string | null }>(p: T): T => ({ ...p, imagem: recorte(p.imagem) });
@@ -132,6 +135,8 @@ export async function montarInicio(outra = 0) {
       dia: escolhido ? { e: escolhido, curto: `${quente ? (umid < 45 ? "Calor seco" : "Calor úmido") : temp >= 20 ? "Tempo ameno" : "Frio"} pede ${quente ? "algo luminoso" : temp >= 20 ? "algo com mais corpo" : "um fundo quente"}.${duracao(escolhido) ? ` ${duracao(escolhido)!.curto}` : ""}${dias >= 10 ? ` Está há ${dias} dias parado.` : ""}`, notas: [escolhido.perfume.notas.saida[0], escolhido.perfume.notas.coracao[0]].filter(Boolean), temp, ar: descricaoAr(umid), dias } : null,
       cur: { nota: c.nota, titulo: c.titulo, texto: c.texto, onde: comNota.length ? `Está no ${comNota.slice(0, 2).join(" e no ")}` : "Ainda não está na sua coleção" },
       saudacao: saudacao(),
+      nome: primeiroNome,
+      assinatura: cfg.nome,
       data: new Intl.DateTimeFormat("pt-BR", { weekday: "long", day: "numeric", month: "long", timeZone: "America/Campo_Grande" }).format(new Date()).replace(/^./, (x) => x.toUpperCase()).replace("-feira", ""),
       cidade: clima.cidade,
       semana: clima.dias.map((dd, i) => ({ dia: dd.rotulo, temp: dd.temp, icone: dd.icone, e: sem[i]?.entrada ?? null, esquecido: Boolean(sem[i]?.esquecido) })),

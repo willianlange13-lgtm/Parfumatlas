@@ -20,7 +20,7 @@ export function CelInicio({ v, usado }: { v: D; usado?: string }) {
     <div className="c-tela ci">
       <header className="ci-ola">
         <span>{[c.data, c.cidade].filter(Boolean).join(" · ")}</span>
-        <h1>{c.saudacao},<br /><em>Willian.</em></h1>
+        <h1>{c.saudacao},<br /><em>{c.nome}.</em></h1>
       </header>
 
       {d && p ? (

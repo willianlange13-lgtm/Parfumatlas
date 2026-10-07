@@ -3,7 +3,7 @@ import { connection } from "next/server";
 import { carregarAcervo } from "@/lib/dados";
 import { glifo, EC } from "@/desenho/h2";
 import { hm, naColecao, similaridade, vetor } from "@/lib/analise";
-import { Btn, Camadas, Card, MONO, OURO, PalcoC, Rot, Topo } from "@/cel/kit";
+import { Btn, Camadas, Card, Cartaz, MONO, OURO, PalcoC, Rot, Topo } from "@/cel/kit";
 import type { Perfume } from "@/lib/tipos";
 import { dnaMini } from "@/lib/dna-mini";
 import { territorio } from "@/lib/territorio";
@@ -44,6 +44,7 @@ export default async function Comparar({ searchParams }: PageProps<"/comparar">)
     <div className="so-celular">
     <div className="c-tela sem-barra tela-tecnica" style={{ maxWidth: 620, margin: "0 auto" }}>
       <Topo titulo="Comparar" voltar />
+      <Cartaz rot={`${sim}% de semelhança`} a={a.nome} b={`× ${b.nome}`} />
       <div className="c-grade2">
         {[a, b].map((p) => (
           <Link key={p.id} href={`/colecao/${p.id}`} style={{ display: "flex", flexDirection: "column", gap: 8 }}>

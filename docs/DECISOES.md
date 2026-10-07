@@ -424,3 +424,9 @@ Pedido do Willian: direção nova e ousada, com personalidade e animação, sem 
 
 - O DNA e o Descobrir deixaram de mostrar "abra no computador": têm versões próprias no celular (`src/cel/CelDNA.tsx`, `CelDescobrir.tsx`). DNA: título do gosto, radar com os eixos, traços, cifras, notas em bolhas, caráter, estações e lacunas em rolagem lateral. Descobrir: lições em rolagem lateral, nota em foco, linha do tempo em lista por ano e países de origem.
 - `TituloAba` (Buscar, Novidades) ficou em tamanho de cartaz.
+
+### §28.11 Telas internas, nome pelas Configurações e limpeza (out/2026)
+
+- Componente `Cartaz` (`src/cel/kit.tsx`): título de cartaz em duas linhas (a segunda em menta) nas telas internas do celular. Configurações ("Seu Atlas, do seu jeito."), Editar ("Ajuste a sua ficha."), Blind test ("Prove sem ver o rótulo."), Curiosidade (nome da nota) e Comparar (os dois perfumes, com a semelhança).
+- O nome deixou de estar escrito no código: saudação e assinatura do Início vêm de `configuracoes.nome` (`obterConfig`), e as iniciais do topo usam a mesma regra das Configurações (duas primeiras palavras). O texto do prompt do Sommelier ainda cita o nome; fica como está.
+- Coleção e DNA não usam mais os JSON das pranchas (`AtlasAzulPreto.json` e `DNAPreto.json` saíram). As outras telas ainda tiram textos e dados padrão dos seus JSON.

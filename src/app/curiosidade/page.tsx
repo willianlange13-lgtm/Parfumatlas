@@ -3,7 +3,7 @@ import { connection } from "next/server";
 import { carregarAcervo } from "@/lib/dados";
 import { naColecao } from "@/lib/analise";
 import { CURIOSIDADES, ENCICLOPEDIA, nota as refNota } from "@/data/referencia";
-import { Card, NotaChip, Rot, Topo } from "@/cel/kit";
+import { Card, Cartaz, NotaChip, Rot, Topo } from "@/cel/kit";
 
 export const metadata = { title: "Curiosidade" };
 
@@ -24,6 +24,7 @@ export default async function Curiosidade({ searchParams }: PageProps<"/curiosid
   return (
     <div className="c-tela sem-barra" style={{ maxWidth: 560, margin: "0 auto" }}>
       <Topo titulo="Curiosidade" voltar />
+      <Cartaz rot="Curiosidade" a={nome} b="de perto." />
       <Card fundo="vinho">
         <Rot>Curiosidade do dia</Rot>
         <div style={{ display: "flex", gap: 14, alignItems: "center" }}>

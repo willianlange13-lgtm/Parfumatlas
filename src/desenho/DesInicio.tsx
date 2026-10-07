@@ -37,7 +37,7 @@ export default function DesInicio({ v }: { v: V }) {
         </div>
 
         <div className="vivo-palco-txt">
-          <div className="vivo-saudacao">{c.saudacao}, Willian <span>·</span> {c.data}</div>
+          <div className="vivo-saudacao">{c.saudacao}, {c.nome} <span>·</span> {c.data}</div>
           {h.selo ? <span className="vivo-selo">{h.selo}</span> : null}
           {h.casaUp ? <div className="vivo-casa">{h.casaUp}{h.conc ? ` · ${h.conc}` : ""}</div> : null}
           <h1 className="vivo-h1 palavras"><Palavras texto={h.nome} /></h1>
@@ -153,7 +153,7 @@ export default function DesInicio({ v }: { v: V }) {
           <div className="vivo-indice-txt">
             <h2 className="vivo-h2 grande">Cada frasco tem uma história.</h2>
             <p>Mais do que perfumes, guardo experiências, momentos e emoções que eles me proporcionam. Bem-vindo ao meu atlas pessoal.</p>
-            <div className="vivo-assinatura">Willian Lange Gomes</div>
+            <div className="vivo-assinatura">{c.assinatura}</div>
             <Link href="/colecao" className="btn ghost">Explorar a coleção <Icone nome="seta" tamanho={18} /></Link>
           </div>
           <dl className="vivo-numeros">

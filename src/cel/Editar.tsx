@@ -5,7 +5,7 @@ import { Icone } from "@/components/Icone";
 import { Frasco } from "@/components/Frasco";
 import type { Perfume, Votos } from "@/lib/tipos";
 import { ACORDES, CONCENTRACOES, FAMILIAS, GENEROS, NIVEIS_FIXACAO, NIVEIS_PROJECAO, acordePrincipal, familiaAtlas, mesmoAcorde } from "@/lib/normalizar";
-import { Card, MONO, NotaChip, OURO, Rot } from "./kit";
+import { Card, Cartaz, MONO, NotaChip, OURO, Rot } from "./kit";
 import { reduzirFoto } from "./voz";
 
 type E = { situacao: string; anotacao: string; foto: string | null; minhaFixacao: number | null; minhaProjecao: number | null; minhaNota: number | null };
@@ -87,8 +87,10 @@ export function Editar({ p: p0, e: e0, podeSalvar }: { p: Perfume; e: E; podeSal
       <div className="c-topo">
         <button type="button" onClick={() => router.back()} style={{ background: "none", border: "none", color: "var(--ink-2)", fontSize: 14 }}>Cancelar</button>
         <span className="c-topo-tit">Editar perfume</span>
+
         <button type="button" onClick={salvar} disabled={ocupado} style={{ background: "none", border: "none", color: OURO, fontSize: 14, fontWeight: 600 }}>{ocupado ? "Salvando…" : "Salvar"}</button>
       </div>
+      <Cartaz a="Ajuste" b="a sua ficha." />
       {erro && <span style={{ color: "var(--erro)", fontSize: 13.5 }}>{erro}</span>}
       <input id="editar-foto" type="file" accept="image/*" capture="environment" hidden onChange={trocarFoto} />
       <div style={{ display: "flex", gap: 14, alignItems: "center", flexShrink: 0 }}>
