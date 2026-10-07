@@ -406,3 +406,9 @@ Pedido do Willian: direção nova e ousada, com personalidade e animação, sem 
 
 - `/api/avisos` e o GET de `/api/lancamentos/buscar` exigem sempre o `CRON_SECRET` (antes, sem a variável na Vercel, a rota ficava aberta e usava a chave de serviço). A Vercel manda o segredo sozinha no agendador quando `CRON_SECRET` está configurado.
 - `/api/alexa` confere a assinatura de cada pedido (`src/lib/alexa-assinatura.ts`): URL da cadeia em s3.amazonaws.com/echo.api, certificado válido para echo-api.amazon.com, cadeia até uma raiz confiável e assinatura `Signature-256` (ou `Signature`) sobre o corpo exato. O ID da skill sozinho não é segredo.
+
+### §28.9 Entrar, 404 e Adicionar (out/2026)
+
+- Entrar: cartaz com "Parfum Atlas" correndo em letras vazadas e a esfera menta; formulário em cápsula de vidro com "Bem-vindo de volta." (a esfera `.so-orbe` passou para `globals.css`).
+- 404 próprio (`src/app/not-found.tsx`): "404" vazado em menta, "Esta página não está no seu mapa." e botões para o início e a coleção.
+- Adicionar no celular: título de cartaz "Foto, link, nome ou voz." e linha de leitura percorrendo o visor da câmera.
