@@ -1,0 +1,77 @@
+/* DNA do computador (Atlas Vivo). Desenhado para 1440 px. */
+.dd { position: relative; width: 1440px; margin: 0 auto; padding: 40px 72px 96px; display: flex; flex-direction: column; gap: 88px; background-image: linear-gradient(rgba(242,238,227,.025) 1px, transparent 1px), linear-gradient(90deg, rgba(242,238,227,.025) 1px, transparent 1px); background-size: 32px 32px; }
+.dd-bloco header { display: flex; align-items: baseline; justify-content: space-between; gap: 24px; margin-bottom: 28px; }
+.dd-bloco h2 { margin: 0; font-family: var(--marca); font-size: 40px; font-weight: 600; letter-spacing: -0.03em; line-height: 1; }
+.dd-bloco header span { max-width: 52ch; font-size: 15px; color: var(--ink-3); text-align: right; }
+.dd-bloco p { margin: 18px 0 0; font-size: 15px; line-height: 1.6; color: var(--ink-2); }
+
+/* topo */
+.dd-topo { display: grid; grid-template-columns: 1fr 600px; gap: 32px; align-items: center; min-height: 640px; }
+.dd-topo-txt { display: flex; flex-direction: column; gap: 22px; }
+.dd-topo h1 { margin: 0; font-family: var(--marca); font-size: 104px; font-weight: 600; letter-spacing: -0.05em; line-height: 0.9; }
+.dd-topo h1 em { font-style: normal; color: var(--acento); }
+.dd-topo-txt p { margin: 0; font-size: 19px; line-height: 1.55; color: var(--ink-2); max-width: 40ch; }
+.dd-tracos { display: flex; gap: 8px; flex-wrap: wrap; }
+.dd-tracos span { display: inline-flex; align-items: center; gap: 8px; height: 38px; padding: 0 16px; border-radius: var(--r-pill); border: 1px solid var(--line-2); font-size: 14px; }
+.dd-tracos i { width: 9px; height: 9px; border-radius: 50%; }
+
+.dd-radar { position: relative; width: 600px; height: 600px; }
+.dd-radar-luz { position: absolute; inset: 60px; border-radius: 50%; background: radial-gradient(circle, color-mix(in oklab, var(--acento) 16%, transparent), transparent 68%); }
+.dd-radar-giro { position: absolute; left: 40px; top: 40px; }
+.dd-eixo { position: absolute; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; gap: 2px; font-family: var(--mono); font-size: 11px; letter-spacing: 0.1em; color: var(--ink-3); white-space: nowrap; }
+.dd-eixo b { font-family: var(--marca); font-size: 20px; font-weight: 600; letter-spacing: -0.02em; }
+
+/* cifras */
+.dd-cifras { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); margin-top: -40px; }
+.dd-cifras > div { display: flex; flex-direction: column; gap: 6px; padding: 32px 0 32px 34px; border-left: 1px solid var(--line); }
+.dd-cifras > div:first-child { border-left: none; padding-left: 0; }
+.dd-cifras span { font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em; color: var(--ink-3); }
+.dd-cifras b { font-family: var(--marca); font-size: 76px; font-weight: 600; letter-spacing: -0.05em; line-height: 0.95; }
+.dd-cifras small { font-size: 14px; color: var(--ink-3); }
+
+/* notas em bolhas */
+.dd-notas { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 28px 34px; }
+.dd-nota { display: flex; flex-direction: column; align-items: center; gap: 8px; animation: surge .8s var(--ease) both; animation-delay: calc(var(--i) * 50ms); }
+.dd-nota-bola { width: var(--tam); height: var(--tam); border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 3px var(--bg), 0 0 0 4px color-mix(in oklab, var(--cor) 60%, transparent), 0 20px 40px -20px var(--cor); transition: transform .5s var(--ease-mola); }
+.dd-nota:hover .dd-nota-bola { transform: scale(1.08) rotate(-4deg); }
+.dd-nota-bola img { width: 100%; height: 100%; object-fit: cover; }
+.dd-nota-bola svg { width: 40%; height: 40%; fill: none; stroke: var(--cor); stroke-width: 1.4; }
+.dd-nota strong { font-size: 14.5px; font-weight: 600; }
+.dd-nota small { font-family: var(--mono); font-size: 10.5px; color: var(--ink-3); }
+
+/* caráter + estações */
+.dd-duplo { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.dd-duplo > .dd-bloco { padding: 34px; border-radius: 36px; background: var(--surface); border: 1px solid var(--line); box-shadow: var(--sombra); }
+.dd-duplo h2 { font-size: 30px; }
+.dd-escala { display: grid; grid-template-columns: 90px 1fr 90px; align-items: center; gap: 16px; padding: 12px 0; font-size: 15px; }
+.dd-escala span:last-child { text-align: right; }
+.dd-escala-trilho { position: relative; height: 2px; background: linear-gradient(90deg, var(--line-2), var(--line), var(--line-2)); }
+.dd-escala-trilho i { position: absolute; top: 50%; width: 18px; height: 18px; margin: -9px 0 0 -9px; border-radius: 50%; background: var(--btn); box-shadow: 0 0 0 5px color-mix(in oklab, var(--acento) 18%, transparent); animation: dd-desliza 1.2s var(--ease) both .3s; }
+@keyframes dd-desliza { from { left: 50%; opacity: 0; } }
+.dd-estacoes-grade { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.dd-estacoes-grade > div { display: flex; flex-direction: column; gap: 4px; }
+.dd-estacoes-grade b { font-family: var(--marca); font-size: 56px; font-weight: 600; letter-spacing: -0.05em; line-height: 1; }
+.dd-estacoes-grade span { font-size: 14px; color: var(--ink-2); }
+.dd-blocos { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 8px; }
+.dd-blocos i { width: 10px; height: 10px; border-radius: 3px; }
+
+/* fluxo */
+.dd-fluxo-graf { position: relative; height: 300px; padding-right: 160px; }
+.dd-fluxo-graf svg { width: 100%; height: 260px; border-radius: 24px; overflow: hidden; }
+.dd-fluxo-graf path { animation: veu-entra 1s var(--ease) both; animation-delay: calc(var(--i) * 90ms); }
+.dd-fluxo-rot { position: absolute; right: 0; transform: translateY(-50%); font-size: 14px; font-weight: 500; }
+.dd-fluxo-rot b { font-family: var(--mono); font-size: 12px; font-weight: 500; }
+.dd-fluxo-anos { position: absolute; left: 0; right: 160px; bottom: 0; height: 24px; }
+.dd-fluxo-anos span { position: absolute; transform: translateX(-50%); font-family: var(--mono); font-size: 11px; color: var(--ink-3); }
+
+/* lacunas */
+.dd-lacunas { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+.dd-lacuna { position: relative; display: flex; flex-direction: column; gap: 6px; padding: 18px; border-radius: 32px; border: 1px dashed color-mix(in oklab, var(--cor) 55%, transparent); background: radial-gradient(ellipse 70% 50% at 50% 45%, color-mix(in oklab, var(--cor) 18%, transparent), transparent 72%); transition: transform .5s var(--ease), border-style .2s; }
+.dd-lacuna:hover { transform: translateY(-6px); border-style: solid; }
+.dd-falta { align-self: flex-start; padding: 4px 11px; border-radius: var(--r-pill); background: color-mix(in oklab, var(--cor) 20%, transparent); color: var(--ink); font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.12em; }
+.dd-lacuna strong { font-size: 17px; font-weight: 600; }
+.dd-lacuna small { font-size: 13px; color: var(--ink-3); }
+
+@supports (animation-timeline: view()) {
+  .so-computador .dd > section:not(.dd-topo) { animation: surge linear both; animation-timeline: view(); animation-range: entry 0% entry 45%; }
+}

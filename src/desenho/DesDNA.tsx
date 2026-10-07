@@ -1,9 +1,132 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* Gerado a partir da prancha do desenho. Não editar à mão. */
-import { Fragment } from "react";
-import { css } from "./css";
+/* DNA olfativo do computador, Atlas Vivo (docs/DECISOES.md §28.5). Escrito à mão: não é mais gerado da prancha. */
+import Link from "next/link";
+import type { CSSProperties } from "react";
+import { Camadas, PalcoC } from "@/cel/kit";
+import type { montarDNA } from "@/montar/dna";
+import "./dna.css";
 
-export default function DesDNA({ v }: { v: any }) {
-  const { t, fluxo, glifo, eixos, tracos, cifras, notas, carater, lacunas, estacoes, verao, legenda, anos, tit, caraterTxt, estacoesTxt, gostoTxt, demo } = v;
-  return (<><div style={{ width: "1440px", minHeight: "100vh", boxSizing: "border-box", background: t.bg, backgroundImage: "linear-gradient(rgba(201,214,207,.035) 1px, transparent 1px), linear-gradient(90deg, rgba(201,214,207,.035) 1px, transparent 1px), linear-gradient(rgba(201,214,207,.018) 1px, transparent 1px), linear-gradient(90deg, rgba(201,214,207,.018) 1px, transparent 1px)", backgroundSize: "120px 120px, 120px 120px, 24px 24px, 24px 24px", color: t.ink, fontFamily: "var(--sans)", position: "relative", overflow: "hidden" }}><div style={{ position: "absolute", left: "760px", top: "-180px", width: "860px", height: "860px", borderRadius: "430px", background: `radial-gradient(circle, ${t.glowA} 0%, rgba(0,0,0,0) 62%)` }}></div><div style={{ position: "absolute", left: "-260px", top: "-200px", width: "700px", height: "700px", borderRadius: "350px", background: `radial-gradient(circle, ${t.glowW} 0%, rgba(0,0,0,0) 65%)` }}></div><main style={{ position: "relative", padding: "20px 64px 80px", display: "flex", flexDirection: "column", gap: "24px" }}><section style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) 560px", gap: "40px", alignItems: "center", minHeight: "560px" }}><div style={{ display: "flex", flexDirection: "column", gap: "18px" }}><div style={{ display: "flex", alignItems: "center", gap: "12px" }}><span style={{ fontFamily: "var(--mono)", fontSize: "12px", letterSpacing: ".14em", color: t.amberTxt }}>SEU DNA OLFATIVO</span>{(demo) ? (<><span style={{ padding: "5px 11px", border: `1px dashed ${t.line2}`, borderRadius: "12px", fontFamily: "var(--mono)", fontSize: "10.5px", color: t.ink3 }}>DADOS ILUSTRATIVOS</span></>) : null}</div><h1 className="titulo-poster" style={{ margin: "0", fontFamily: "var(--marca)", fontSize: "83px", fontWeight: "600", letterSpacing: "-.04em", lineHeight: ".95" }}>{tit.a}<br />{tit.b}</h1><p style={{ margin: "0", fontSize: "17px", lineHeight: "1.6", color: t.ink2, maxWidth: "560px" }}>{tit.texto}</p><div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>{(tracos ?? []).map((tr: any, _i5: number) => (<Fragment key={_i5}><span style={{ display: "flex", alignItems: "center", gap: "8px", padding: "8px 14px", borderRadius: "18px", background: tr.bg, fontSize: "14px", fontWeight: "500" }}><span style={{ width: "9px", height: "9px", borderRadius: "5px", background: tr.cor }}></span>{tr.nome}</span></Fragment>))}</div><div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: "14px", marginTop: "8px", maxWidth: "600px" }}>{(cifras ?? []).map((c: any, _i5: number) => (<Fragment key={_i5}><div style={{ borderRadius: "var(--r-ed)", background: t.surface, border: `1px solid ${t.line}`, padding: "16px 18px", display: "flex", flexDirection: "column", gap: "6px" }}><span style={{ fontFamily: "var(--mono)", fontSize: "10.5px", letterSpacing: ".1em", color: t.ink3 }}>{c.l}</span><span style={{ fontSize: "28px", fontWeight: "500", lineHeight: "1" }}>{c.v}</span><span style={{ fontSize: "12.5px", color: t.ink3 }}>{c.c}</span></div></Fragment>))}</div></div><div style={{ position: "relative", width: "560px", height: "560px" }}>{(glifo ?? []).map((L: any, _i4: number) => (<Fragment key={_i4}><svg viewBox="-12 -12 344 344" style={{ position: "absolute", left: "60px", top: "60px", width: "440px", height: "440px", overflow: "visible" }}><path d={L.d} style={css(L.st)}></path></svg></Fragment>))}{(eixos ?? []).map((e: any, _i4: number) => (<Fragment key={_i4}><div style={{ position: "absolute", left: `${e.x}px`, top: `${e.y}px`, transform: "translate(-50%, -50%)", fontFamily: "var(--mono)", fontSize: "11px", letterSpacing: ".06em", color: t.ink3, textAlign: "center", whiteSpace: "nowrap" }}>{e.nome}<br /><span style={{ color: e.cor, fontSize: "13px" }}>{e.v}%</span></div></Fragment>))}</div></section><section style={{ display: "grid", gridTemplateColumns: "repeat(12, minmax(0, 1fr))", gap: "24px" }}><article style={{ gridColumn: "span 7", borderRadius: "var(--r-ed)", background: t.surface, border: `1px solid ${t.line}`, padding: "30px 28px", display: "flex", flexDirection: "column", gap: "10px" }}><div style={{ display: "flex", alignItems: "baseline", gap: "12px", marginBottom: "6px" }}><h2 style={{ margin: "0", fontFamily: "var(--mono)", fontSize: "12px", fontWeight: "400", letterSpacing: ".14em", color: t.amberTxt }}>NOTAS QUE MAIS SE REPETEM</h2><span style={{ fontSize: "14px", color: t.ink3 }}>em quantos frascos cada uma aparece</span></div>{(notas ?? []).map((n: any, _i4: number) => (<Fragment key={_i4}><div style={{ display: "grid", gridTemplateColumns: "40px 150px minmax(0, 1fr) 70px", gap: "14px", alignItems: "center" }}><span style={{ width: "40px", height: "40px", borderRadius: "20px", overflow: "hidden", background: n.bg, border: `1px solid ${n.borda}`, display: "flex", alignItems: "center", justifyContent: "center" }}>{(n.img) ? (<><img src={n.img} alt={n.nome} style={{ width: "100%", height: "100%", objectFit: "cover" }} /></>) : null}{(n.semImg) ? (<><svg viewBox="0 0 24 24" style={{ width: "19px", height: "19px", fill: "none", stroke: n.cor, strokeWidth: "1.4", strokeLinecap: "round", strokeLinejoin: "round" }}><path d={n.d}></path></svg></>) : null}</span><span style={{ fontSize: "15px", fontWeight: "500" }}>{n.nome}</span><div style={{ height: "10px", borderRadius: "5px", background: t.chip2 }}><div style={{ height: "10px", borderRadius: "5px", width: `${n.pct}%`, background: n.cor }}></div></div><span style={{ textAlign: "right", fontFamily: "var(--mono)", fontSize: "12.5px", color: t.ink2 }}>{n.qtd} frascos</span></div></Fragment>))}</article><article style={{ gridColumn: "span 5", borderRadius: "var(--r-ed)", background: t.tileWine, border: `1px solid ${t.line}`, padding: "30px 28px", display: "flex", flexDirection: "column", gap: "18px" }}><h2 style={{ margin: "0", fontFamily: "var(--mono)", fontSize: "12px", fontWeight: "400", letterSpacing: ".14em", color: t.wineTxt }}>CARÁTER DA COLEÇÃO</h2>{(carater ?? []).map((c: any, _i4: number) => (<Fragment key={_i4}><div style={{ display: "flex", flexDirection: "column", gap: "8px" }}><div style={{ display: "flex", justifyContent: "space-between", fontSize: "13.5px" }}><span style={{ color: c.ce }}>{c.a}</span><span style={{ color: c.cd }}>{c.b}</span></div><div style={{ position: "relative", height: "6px", borderRadius: "3px", background: t.chip2 }}><div style={{ position: "absolute", left: "50%", top: "-4px", width: "1px", height: "14px", background: t.line2 }}></div><div style={{ position: "absolute", left: `${c.v}%`, top: "50%", width: "18px", height: "18px", transform: "translate(-50%, -50%)", borderRadius: "9px", background: t.amber, boxShadow: `0 0 0 4px ${t.bgWine}` }}></div></div></div></Fragment>))}<div style={{ marginTop: "auto", paddingTop: "14px", borderTop: `1px solid ${t.line}`, fontSize: "14px", lineHeight: "1.55", color: t.ink2 }}>{caraterTxt}</div></article><article style={{ gridColumn: "span 7", borderRadius: "var(--r-ed)", background: t.tileFeature, border: "1px solid var(--ouro-linha)", padding: "30px 28px", display: "flex", flexDirection: "column", gap: "14px" }}><div style={{ display: "flex", alignItems: "baseline", gap: "12px" }}><h2 style={{ margin: "0", fontFamily: "var(--mono)", fontSize: "12px", fontWeight: "400", letterSpacing: ".14em", color: t.amberTxt }}>LACUNAS DA COLEÇÃO</h2><span style={{ fontSize: "14px", color: t.ink2 }}>o que falta e um perfume para começar</span></div><div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "14px" }}>{(lacunas ?? []).map((l: any, _i5: number) => (<Fragment key={_i5}><div style={{ borderRadius: "var(--r-ed)", background: t.chip, border: `1px solid ${t.line}`, padding: "18px", display: "grid", gridTemplateColumns: "56px minmax(0, 1fr)", gap: "14px", alignItems: "center" }}><div style={{ width: "56px", height: "72px", borderRadius: "12px", background: l.fundo, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end", paddingBottom: "8px", boxSizing: "border-box" }}>{(l.foto) ? (<img src={l.foto} alt={l.nome ?? ""} style={{ width: l.oficial === false ? "100%" : "auto", height: l.oficial === false ? "100%" : "84%", maxWidth: l.oficial === false ? "100%" : "90%", objectPosition: "center bottom", objectFit: l.oficial === false ? "cover" : "contain", borderRadius: "10px", background: "transparent", filter: l.oficial === false ? "none" : "drop-shadow(0 12px 14px rgba(0,0,0,.5)) drop-shadow(0 2px 3px rgba(0,0,0,.35))" }} />) : (<><div style={{ width: "16px", height: "8px", borderRadius: "2px", background: l.tampa }}></div><div style={{ width: "6px", height: "3px", background: "#8FA399" }}></div><div style={{ width: "30px", height: "36px", borderRadius: "6px", background: l.vidro, border: `1px solid ${t.line2}` }}></div></>)}</div><div style={{ display: "flex", flexDirection: "column", gap: "4px" }}><span style={{ display: "flex", alignItems: "center", gap: "8px", fontFamily: "var(--mono)", fontSize: "11px", letterSpacing: ".08em", color: t.ink3 }}><span style={{ width: "8px", height: "8px", borderRadius: "4px", background: l.cor }}></span>{l.falta}</span><span style={{ fontSize: "16px", fontWeight: "500", lineHeight: "1.2" }}>{l.nome}</span><span style={{ fontSize: "12.5px", color: t.ink2 }}>{l.casa} · {l.por}</span></div></div></Fragment>))}</div></article><article style={{ gridColumn: "span 5", borderRadius: "var(--r-ed)", background: t.surface, border: `1px solid ${t.line}`, padding: "30px 28px", display: "flex", flexDirection: "column", gap: "16px" }}><h2 style={{ margin: "0", fontFamily: "var(--mono)", fontSize: "12px", fontWeight: "400", letterSpacing: ".14em", color: t.amberTxt }}>COBERTURA DAS ESTAÇÕES</h2>{(estacoes ?? []).map((e: any, _i4: number) => (<Fragment key={_i4}><div style={{ display: "grid", gridTemplateColumns: "96px minmax(0, 1fr) 80px", gap: "12px", alignItems: "center", fontSize: "14px" }}><span>{e.nome}</span><div style={{ display: "flex", gap: "3px" }}>{(e.blocos ?? []).map((b: any, _i7: number) => (<Fragment key={_i7}><span style={{ flexGrow: "1", height: "16px", borderRadius: "3px", background: b }}></span></Fragment>))}</div><span style={{ textAlign: "right", fontFamily: "var(--mono)", fontSize: "12px", color: t.ink2 }}>{e.n} frascos</span></div></Fragment>))}<div style={{ marginTop: "auto", paddingTop: "14px", borderTop: `1px solid ${t.line}`, fontSize: "14px", lineHeight: "1.55", color: t.ink2 }}>{estacoesTxt}</div></article><article style={{ gridColumn: "span 12", borderRadius: "var(--r-ed)", background: t.surface, border: `1px solid ${t.line}`, padding: "30px 28px", display: "flex", flexDirection: "column", gap: "14px" }}><div style={{ display: "flex", alignItems: "baseline", gap: "12px" }}><h2 style={{ margin: "0", fontFamily: "var(--mono)", fontSize: "12px", fontWeight: "400", letterSpacing: ".14em", color: t.amberTxt }}>COMO SEU GOSTO MUDOU</h2><span style={{ fontSize: "14px", color: t.ink2 }}>como a composição da coleção foi mudando, ano a ano</span></div><div style={{ position: "relative", width: "1256px", height: "270px" }}>{(fluxo.camadas ?? []).map((c: any, _i5: number) => (<Fragment key={_i5}><svg viewBox="0 0 1256 270" style={{ position: "absolute", left: "0", top: "0", width: "1256px", height: "270px" }}><path d={c.d} style={{ fill: c.cor, fillOpacity: c.op, stroke: t.surface, strokeWidth: "1.5" }}></path></svg></Fragment>))}{(fluxo.anos ?? []).map((a: any, _i5: number) => (<Fragment key={_i5}><div style={{ position: "absolute", left: `${a.x}px`, top: "0", width: "1px", height: "236px", background: "rgba(242,238,227,.10)" }}></div><div style={{ position: "absolute", left: `${a.x}px`, top: "246px", transform: "translateX(-50%)", fontFamily: "var(--mono)", fontSize: "11.5px", color: t.ink2, whiteSpace: "nowrap" }}>{a.t}</div></Fragment>))}{(fluxo.rotulos ?? []).map((r: any, _i5: number) => (<Fragment key={_i5}><div style={{ position: "absolute", left: "1052px", top: `${r.y}px`, transform: "translateY(-50%)", display: "flex", alignItems: "center", gap: "8px", fontSize: "13px", whiteSpace: "nowrap" }}><span style={{ width: "8px", height: "8px", borderRadius: "4px", background: r.cor }}></span><span style={{ color: t.ink }}>{r.nome}</span><span style={{ fontFamily: "var(--mono)", fontSize: "11.5px", color: t.ink3 }}>{r.pct}%</span></div></Fragment>))}</div><div style={{ fontSize: "14px", color: t.ink2 }}>{gostoTxt}</div></article></section></main></div></>);
+type V = Awaited<ReturnType<typeof montarDNA>>;
+const i = (n: number) => ({ ["--i" as string]: n }) as CSSProperties;
+
+function Palavras({ texto, de = 0 }: { texto: string; de?: number }) {
+  return <>{texto.split(" ").map((w, k) => <span key={k} style={i(de + k)}>{w}&nbsp;</span>)}</>;
+}
+
+export default function DesDNA({ v }: { v: V }) {
+  const totalA = v.tit.a.split(" ").length;
+  return (
+    <div className="dd">
+      {/* ---------- topo: título do seu gosto + radar grande ---------- */}
+      <section className="dd-topo">
+        <div className="dd-topo-txt">
+          <span className="rotulo">Seu DNA olfativo{v.demo ? " · dados ilustrativos" : ""}</span>
+          <h1 className="palavras"><Palavras texto={v.tit.a} /><br /><em><Palavras texto={v.tit.b} de={totalA} /></em></h1>
+          <p>{v.tit.texto}</p>
+          <div className="dd-tracos">
+            {v.tracos.map((t) => <span key={t.nome}><i style={{ background: t.cor }} />{t.nome}</span>)}
+          </div>
+        </div>
+        <div className="dd-radar">
+          <div className="dd-radar-luz" aria-hidden="true" />
+          <div className="dd-radar-giro dna-respira"><Camadas camadas={v.glifo} tam={520} /></div>
+          {v.eixos.map((e, k) => (
+            <span key={k} className="dd-eixo" style={{ left: `${(+e.x / 560) * 100}%`, top: `${(+e.y / 560) * 100}%` }}>
+              {e.nome}<b style={{ color: e.cor }}>{e.v}%</b>
+            </span>
+          ))}
+        </div>
+      </section>
+
+      {/* ---------- cifras: três números grandes, sem cartões ---------- */}
+      <section className="dd-cifras">
+        {v.cifras.map((c, k) => (
+          <div key={k}>
+            <span>{c.l}</span>
+            <b>{c.v}</b>
+            <small>{c.c}</small>
+          </div>
+        ))}
+      </section>
+
+      {/* ---------- notas: constelação de bolhas pelo número de frascos ---------- */}
+      <section className="dd-bloco">
+        <header><h2>As notas que voltam</h2><span>em quantos frascos cada uma aparece</span></header>
+        <div className="dd-notas">
+          {v.notas.map((n, k) => (
+            <div key={n.nome} className="dd-nota" style={{ ["--tam" as string]: `${48 + n.pct * 0.7}px`, ["--cor" as string]: n.cor, ...i(k) } as CSSProperties}>
+              <span className="dd-nota-bola" style={{ background: n.img ? "#fff" : n.bg }}>
+                {n.img ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={n.img} alt={n.nome} />
+                ) : (
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d={n.d} /></svg>
+                )}
+              </span>
+              <strong>{n.nome}</strong>
+              <small>{n.qtd} frascos</small>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ---------- caráter + estações lado a lado ---------- */}
+      <section className="dd-duplo">
+        <div className="dd-bloco dd-carater">
+          <header><h2>Caráter da coleção</h2></header>
+          {v.carater.map((c) => (
+            <div key={c.a} className="dd-escala">
+              <span style={{ color: c.ce }}>{c.a}</span>
+              <div className="dd-escala-trilho"><i style={{ left: `${c.v}%` }} /></div>
+              <span style={{ color: c.cd }}>{c.b}</span>
+            </div>
+          ))}
+          <p>{v.caraterTxt}</p>
+        </div>
+        <div className="dd-bloco dd-estacoes">
+          <header><h2>Em cada estação</h2></header>
+          <div className="dd-estacoes-grade">
+            {v.estacoes.map((e) => (
+              <div key={e.nome}>
+                <b>{e.n}</b>
+                <span>{e.nome}</span>
+                <div className="dd-blocos">{e.blocos.map((cor, k) => <i key={k} style={{ background: cor }} />)}</div>
+              </div>
+            ))}
+          </div>
+          <p>{v.estacoesTxt}</p>
+        </div>
+      </section>
+
+      {/* ---------- gosto ao longo do tempo ---------- */}
+      <section className="dd-bloco dd-fluxo">
+        <header><h2>Como o seu gosto mudou</h2><span>{v.gostoTxt}</span></header>
+        <div className="dd-fluxo-graf">
+          <svg viewBox="0 0 1000 240" preserveAspectRatio="none" aria-hidden="true">
+            {v.fluxo.camadas.map((c, k) => <path key={k} d={c.d} fill={c.cor} fillOpacity={0.75 * c.op} style={i(k)} />)}
+          </svg>
+          {v.fluxo.rotulos.map((r) => (
+            <span key={r.nome} className="dd-fluxo-rot" style={{ top: `${(+r.y / 240) * 100}%`, color: r.cor }}>{r.nome} <b>{r.pct}%</b></span>
+          ))}
+          <div className="dd-fluxo-anos">{v.fluxo.anos.map((a) => <span key={a.t} style={{ left: `${(+a.x / 1000) * 100}%` }}>{a.t}</span>)}</div>
+        </div>
+      </section>
+
+      {/* ---------- lacunas: o que falta no seu mapa ---------- */}
+      {v.lacunas.length > 0 && (
+        <section className="dd-bloco">
+          <header><h2>O que falta no seu mapa</h2><span>um perfume para cada lacuna</span></header>
+          <div className="dd-lacunas">
+            {v.lacunas.map((l) => (
+              <Link key={l.falta} href={l.href} className="dd-lacuna" style={{ ["--cor" as string]: l.cor } as CSSProperties}>
+                <span className="dd-falta">{l.falta}</span>
+                <PalcoC nome={l.nome} casa={l.casa} acorde="" tampa={l.tampa} foto={l.foto} oficial={Boolean(l.foto)} altura={200} k={1} raio={24} transparente semBorda />
+                <strong>{l.nome}</strong>
+                <small>{l.casa} · {l.por}</small>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+    </div>
+  );
 }
