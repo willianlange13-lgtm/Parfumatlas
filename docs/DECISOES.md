@@ -387,3 +387,7 @@ Pedido do Willian: direção nova e ousada, com personalidade e animação, sem 
 - `src/desenho/DesDNA.tsx` + `dna.css`, escrito à mão: título do gosto em duas linhas (a segunda em menta) entrando palavra por palavra e o radar grande respirando à direita, com os eixos na cor de cada família; três cifras como algarismos grandes sem cartões; notas que voltam como bolhas do tamanho da frequência; caráter em escalas com marcador deslizante e estações com contagem grande; gráfico do gosto em largura total; lacunas como cartões tracejados na cor do que falta.
 - As cores de eixos, notas e lacunas em `src/montar/dna.ts` passaram a usar a paleta das famílias (`FAMCOR` / `corDoAcorde`).
 - No celular o DNA continua sendo um aviso para abrir no computador (os gráficos precisam de espaço).
+
+### §28.6 Descobrir recomposto (out/2026)
+
+- `src/desenho/DesDescobrir.tsx` virou código legível, mantido à mão (`descobrir.css`). Topo com título de cartaz em duas linhas ("Aprender com / a própria coleção.", a segunda em menta) e dois números grandes (progresso da escola, notas da coleção); títulos de seção grandes; linha do tempo e mapa das casas saem da caixa e ocupam a largura como pranchas abertas. No celular continua o aviso para abrir no computador.
