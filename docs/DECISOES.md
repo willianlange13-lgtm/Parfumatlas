@@ -396,3 +396,8 @@ Pedido do Willian: direção nova e ousada, com personalidade e animação, sem 
 
 - Computador (`src/desenho/DesSommelier.tsx` legível + `sommelier.css`): a bússola virou uma esfera menta que respira e emite uma onda; título "Sommelier" grande; coluna da conversa com luz menta no topo e cantos de 40 px; campo de mensagem em cápsula de vidro presa ao rodapé da conversa.
 - Celular (`cel-sommelier.css`): abertura com a esfera e "O que vamos usar hoje?" em tamanho de cartaz; campo em cápsula de vidro.
+
+### §28.8 Lançamentos recompostos (out/2026)
+
+- Computador (`src/desenho/DesLancamentos.tsx` legível + `lancamentos.css`): número de novidades em contorno menta gigante ao lado da frase em tamanho de cartaz; destaque em palco com luz menta, frasco flutuando, nome grande e anel de afinidade que se desenha; cartões com nome e porcentagem grandes, sobem no hover.
+- Celular (`CelNovidades`): mesmo número em contorno ao lado da frase, nome do destaque e porcentagens maiores.
