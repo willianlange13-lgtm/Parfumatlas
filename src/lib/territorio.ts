@@ -15,7 +15,7 @@ const T: Record<string, Territorio> = {
   madeira: { nome: "castanho", a: "#a88462", b: "#3f5a48", glow: "rgba(168,132,98,.14)" },        // amadeirado
   chipre: { nome: "musgo", a: "#9a9a6a", b: "#5d6b4a", glow: "rgba(154,154,106,.14)" },           // chipre
   oud: { nome: "bronze", a: "#b08a52", b: "#2f4a3a", glow: "rgba(176,138,82,.16)" },              // oud
-  neutro: { nome: "papoula", a: "#FF8A5C", b: "#8FB5A2", glow: "rgba(255,107,61,.10)" },
+  neutro: { nome: "menta", a: "#F2949A", b: "#8FB5A2", glow: "rgba(127,227,196,.10)" },
 };
 
 const sem = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();

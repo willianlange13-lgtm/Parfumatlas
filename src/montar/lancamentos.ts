@@ -5,7 +5,7 @@ import { corDoAcorde } from "@/lib/cores";
 import base from "@/data/desenho/LancamentosPreto.json";
 import { circ, hexA, P, t as t0 } from "@/desenho/h2";
 
-const OURO = "#FF6B3D";
+const OURO = "#7FE3C4";
 const F: Record<string, [number, number, string]> = { alto: [58, 100, "9px"], ret: [74, 84, "11px"], redondo: [88, 78, "40px"], largo: [96, 70, "12px"] };
 const NICHO = new Set(["Creed", "Ex Nihilo", "Xerjoff", "Parfums de Marly", "Maison Francis Kurkdjian", "Tom Ford", "Kilian", "Frédéric Malle"]);
 const ARABE = new Set(["Lattafa", "Armaf", "Afnan"]);

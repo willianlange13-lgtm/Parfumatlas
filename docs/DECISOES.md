@@ -340,11 +340,24 @@ Briefing do Willian: o desktop estava linear demais (preto + prata + cinza + dou
 
 Pedido do Willian: direção nova e ousada, com personalidade e animação, sem visual quadrado. Substitui as escolhas de cor e letra da §18 (os territórios olfativos, a ordem das fases e o rótulo de papel da §27 continuam).
 
-- **Atmosfera:** estufa à noite. Fundo verde quase preto (`#0B110F`), texto cor de osso (`#F2EEE3`), um único acento: papoula (`#FF6B3D`). O musgo (`#8FB5A2`) aparece só como luz secundária e em dados. Só tema escuro: é a identidade da marca.
+- **Atmosfera:** estufa à noite. Fundo verde quase preto (`#0B110F`), texto cor de osso (`#F2EEE3`), um único acento: menta (`#7FE3C4`). O musgo (`#8FB5A2`) aparece só como luz secundária e em dados. Só tema escuro: é a identidade da marca.
 - **Letras:** Bricolage Grotesque nos títulos (`--marca`), Geist no texto (`--sans`), Geist Mono nas etiquetas (`--mono`), Pinyon só na assinatura. Todas via `next/font` (sem link do Google Fonts).
 - **Forma:** nada quadrado. `--r-ed` 28px (24px no celular) nos contêineres, `--r-ctl` 16px em caixas pequenas, cápsula (`--r-pill`) em botões, abas, chips e campos.
-- **Botão principal:** cápsula em degradê papoula com brilho que atravessa no hover; secundário com contorno.
-- **Topo do computador:** cápsula de vidro flutuante; o item ativo do menu é uma cápsula papoula que desliza entre as páginas (view transition).
-- **Celular:** doca de vidro flutuante; aba ativa com cápsula clara e ícone papoula; botão + com mola.
+- **Botão principal:** cápsula em degradê menta com brilho que atravessa no hover; secundário com contorno.
+- **Topo do computador:** cápsula de vidro flutuante; o item ativo do menu é uma cápsula menta que desliza entre as páginas (view transition).
+- **Celular:** doca de vidro flutuante; aba ativa com cápsula clara e ícone menta; botão + com mola.
 - **Cores de dados:** cada acorde tem matiz próprio (`ACORDES` em `src/lib/cores.ts`, `EIXOS` em `src/desenho/h2.ts`); a escala prata virou escala musgo.
 - **Movimento:** aurora do território derivando atrás de tudo, grão de papel fixo, blocos entrando em sequência (`surge`), título do Início palavra por palavra (`.palavras`), frasco da vitrine flutuando (`.flutua`), troca de página com `ViewTransition` em `src/app/template.tsx`. Tudo desligado com `prefers-reduced-motion`.
+
+### §28.1 Menta e Início recomposto (out/2026)
+
+- Willian não gostou do laranja: o acento passou a ser o menta (`#7FE3C4`, botão em degradê menta). Frutado nos dados virou coral rosado (`#F2949A`).
+- Pedido: "mudou só a cor". O Início foi reescrito à mão (computador em `src/desenho/DesInicio.tsx` + `inicio.css`, celular em `src/cel/CelInicio.tsx` + `cel-inicio.css`), não é mais gerado da prancha:
+  - palco em tela cheia com o perfume da vitrine: nome gigante entrando palavra por palavra, letreiro vazado do nome correndo atrás, radar do DNA girando devagar, frasco flutuando sobre a luz do território;
+  - frase do dia grande ("Hoje faz 31 °C em…");
+  - bento: perfume do dia com palco grande + curiosidade com a foto da nota ocupando o cartão;
+  - semana com curva de temperatura que se desenha e um frasco por dia;
+  - índice da coleção com algarismos enormes, sem cartões, e a assinatura;
+  - prateleira de últimas entradas e contadores grandes dos esquecidos;
+  - celular: saudação grande, perfume do dia com frasco grande, curiosidade com foto, números 2×2, prateleiras com rolagem lateral.
+- Próximas telas seguem a mesma linguagem: Coleção, Ficha, DNA, Descobrir, Sommelier, Lançamentos.

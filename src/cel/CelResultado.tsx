@@ -56,7 +56,7 @@ export function CelResultado({ p, v, novo, podeSalvar }: { p: Perfume; v: V; nov
           <span style={{ fontSize: 24, fontFamily: "var(--marca)", fontWeight: 500, lineHeight: 1.1 }}>{p.nome}</span>
           <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
             <span style={{ padding: "2px 8px", borderRadius: 8, background: "var(--chip-2)", fontSize: 11.5 }}>{v.tem ? "Você tem" : "Você não tem"}</span>
-            {v.quero && <span style={{ padding: "2px 8px", borderRadius: 8, background: "rgba(255,107,61,.16)", color: OURO, fontSize: 11.5 }}>No seu Quero</span>}
+            {v.quero && <span style={{ padding: "2px 8px", borderRadius: 8, background: "rgba(127,227,196,.16)", color: OURO, fontSize: 11.5 }}>No seu Quero</span>}
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <Anel valor={v.pct / 100} txt={`${v.pct}%`} tam={46} sw={4} cor={OURO} />

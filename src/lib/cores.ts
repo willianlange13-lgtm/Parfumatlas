@@ -1,7 +1,7 @@
-// Atlas Vivo: cada acorde tem um matiz próprio (dado, não enfeite); a papoula é o acento da interface.
-export const OURO = "#FF6B3D";
+// Atlas Vivo: cada acorde tem um matiz próprio (dado, não enfeite); o menta é o acento da interface.
+export const OURO = "#7FE3C4";
 export const ACORDES: Record<string, string> = {
-  Frutado: "#FF8A5C",
+  Frutado: "#F2949A",
   Amadeirado: "#B08E6A",
   Baunilha: "#EBCB98",
   Gourmand: "#C9946A",

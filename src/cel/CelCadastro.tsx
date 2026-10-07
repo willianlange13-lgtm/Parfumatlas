@@ -206,7 +206,7 @@ export function CelCadastro({ c, modoInicial }: { c: CadCel; modoInicial?: strin
       <div className="c-tela sem-barra">
         <div className="c-topo"><Circ icone="voltar" tamanho={36} rotulo="Voltar" onClick={() => setPasso("revisar")} /><span className="c-topo-tit">Salvar</span><span style={{ width: 36 }} /></div>
         <Passos n={4} txt="Salvar" />
-        <div style={{ alignSelf: "center", width: 170, height: 190, borderRadius: "var(--r-ed)", border: "1px solid var(--line)", background: "radial-gradient(ellipse at 50% 85%, rgba(255,107,61,.18) 0%, var(--surface) 75%)", display: "flex", alignItems: "flex-end", justifyContent: "center", paddingBottom: 18, overflow: "hidden", position: "relative" }}>
+        <div style={{ alignSelf: "center", width: 170, height: 190, borderRadius: "var(--r-ed)", border: "1px solid var(--line)", background: "radial-gradient(ellipse at 50% 85%, rgba(127,227,196,.18) 0%, var(--surface) 75%)", display: "flex", alignItems: "flex-end", justifyContent: "center", paddingBottom: 18, overflow: "hidden", position: "relative" }}>
           {c.foto || f.imagem ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={c.foto ?? semFundo(f.imagem) ?? ""} alt="Seu frasco" style={{ position: "absolute", inset: c.foto ? 0 : 10, width: c.foto ? "100%" : "calc(100% - 20px)", height: c.foto ? "100%" : "calc(100% - 20px)", objectFit: c.foto ? "cover" : "contain", filter: c.foto ? "none" : "drop-shadow(0 12px 14px rgba(0,0,0,.5)) drop-shadow(0 2px 3px rgba(0,0,0,.35))", borderRadius: 14 }} />
@@ -254,7 +254,7 @@ export function CelCadastro({ c, modoInicial }: { c: CadCel; modoInicial?: strin
 
       {c.modo === "foto" && (
         <>
-          <button type="button" onClick={fotografar} style={{ position: "relative", height: 240, borderRadius: "var(--r-ed)", border: "1px solid var(--line)", background: "radial-gradient(ellipse at 50% 70%, rgba(255,107,61,.14) 0%, var(--surface) 75%)", overflow: "hidden", flexShrink: 0, color: "var(--ink)", padding: 0 }}>
+          <button type="button" onClick={fotografar} style={{ position: "relative", height: 240, borderRadius: "var(--r-ed)", border: "1px solid var(--line)", background: "radial-gradient(ellipse at 50% 70%, rgba(127,227,196,.14) 0%, var(--surface) 75%)", overflow: "hidden", flexShrink: 0, color: "var(--ink)", padding: 0 }}>
             {c.foto ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={c.foto} alt="Foto do frasco" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
@@ -301,7 +301,7 @@ export function CelCadastro({ c, modoInicial }: { c: CadCel; modoInicial?: strin
               </div>
               {["Lendo a página", "Nome, casa e ano", "Pirâmide e acordes", "Votos de fixação e projeção"].map((x, i) => {
                 const feito = Boolean(c.ficha) || (c.ocupado === "ficha" && i < 2);
-                return <span key={x} style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 13.5, color: feito ? "var(--ink)" : "var(--ink-3)" }}><span style={{ width: 18, height: 18, borderRadius: 9, background: feito ? OURO : "transparent", border: feito ? "none" : "1.5px solid var(--ink-3)", color: "#1A0904", display: "flex", alignItems: "center", justifyContent: "center" }}>{feito ? <Icone nome="check" tamanho={11} traco={2.6} /> : null}</span>{x}</span>;
+                return <span key={x} style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 13.5, color: feito ? "var(--ink)" : "var(--ink-3)" }}><span style={{ width: 18, height: 18, borderRadius: 9, background: feito ? OURO : "transparent", border: feito ? "none" : "1.5px solid var(--ink-3)", color: "#04140F", display: "flex", alignItems: "center", justifyContent: "center" }}>{feito ? <Icone nome="check" tamanho={11} traco={2.6} /> : null}</span>{x}</span>;
               })}
             </Card>
           )}
@@ -346,9 +346,9 @@ export function CelCadastro({ c, modoInicial }: { c: CadCel; modoInicial?: strin
 
       {c.modo === "voz" && (
         <>
-          <button type="button" onClick={c.ouvir} aria-label="Falar" style={{ alignSelf: "center", width: 200, height: 200, borderRadius: 100, border: "1px solid var(--line)", background: "radial-gradient(circle, rgba(255,107,61,.1) 0%, rgba(0,0,0,0) 70%)", display: "flex", alignItems: "center", justifyContent: "center", marginTop: 10, padding: 0 }}>
+          <button type="button" onClick={c.ouvir} aria-label="Falar" style={{ alignSelf: "center", width: 200, height: 200, borderRadius: 100, border: "1px solid var(--line)", background: "radial-gradient(circle, rgba(127,227,196,.1) 0%, rgba(0,0,0,0) 70%)", display: "flex", alignItems: "center", justifyContent: "center", marginTop: 10, padding: 0 }}>
             <span style={{ width: 140, height: 140, borderRadius: 70, border: `1px solid ${c.ouvindo ? OURO : "var(--line-2)"}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <span style={{ width: 84, height: 84, borderRadius: 42, background: "var(--btn)", color: "var(--on-btn)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: c.ouvindo ? `0 0 0 6px rgba(255,107,61,.25)` : "none" }}><Icone nome="mic" tamanho={30} /></span>
+              <span style={{ width: 84, height: 84, borderRadius: 42, background: "var(--btn)", color: "var(--on-btn)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: c.ouvindo ? `0 0 0 6px rgba(127,227,196,.25)` : "none" }}><Icone nome="mic" tamanho={30} /></span>
             </span>
           </button>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 3, height: 50, flexShrink: 0 }} aria-hidden="true">

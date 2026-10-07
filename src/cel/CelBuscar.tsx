@@ -201,7 +201,7 @@ export function CelBuscar({ lista, modoInicial }: { lista: ItemBusca[]; modoInic
             <>
               <Card fundo="destaque" pad={16}>
                 <div style={{ display: "flex", gap: 14 }}>
-                  <span style={{ width: 46, height: 46, borderRadius: "var(--r-ctl)", background: "rgba(255,107,61,.16)", color: OURO, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Icone nome="camera" tamanho={20} /></span>
+                  <span style={{ width: 46, height: 46, borderRadius: "var(--r-ctl)", background: "rgba(127,227,196,.16)", color: OURO, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Icone nome="camera" tamanho={20} /></span>
                   <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                     <span style={{ fontSize: 17, fontWeight: 500 }}>Modo compra</span>
                     <span style={{ fontSize: 13, lineHeight: 1.45, color: "var(--ink-2)" }}>Aponte a câmera para o frasco na loja. Mostra se você já tem, o que tem de parecido e se combina com o seu gosto.</span>

@@ -1,0 +1,128 @@
+/* Início do computador (Atlas Vivo). Desenhado para 1440 px; o zoom de .so-computador ajusta à tela. */
+.vivo { position: relative; width: 1440px; margin: 0 auto; color: var(--ink); overflow: hidden; }
+.vivo-h2 { margin: 0; font-family: var(--marca); font-size: 34px; font-weight: 600; letter-spacing: -0.025em; line-height: 1.05; }
+.vivo-h2.grande { font-size: 64px; letter-spacing: -0.035em; line-height: 0.98; }
+.vivo-casa { font-family: var(--mono); font-size: 12px; letter-spacing: 0.12em; color: var(--ink-3); }
+.vivo-link { display: inline-flex; align-items: center; gap: 6px; font-size: 14.5px; font-weight: 500; color: var(--acento); }
+.vivo-acoes { display: flex; gap: 12px; flex-wrap: wrap; }
+.vivo-btn { height: 56px; padding: 0 28px; font-size: 15.5px; }
+.chip-vivo { display: inline-flex; align-items: center; gap: 8px; height: 34px; padding: 0 14px; border-radius: var(--r-pill); border: 1px solid var(--line-2); font-size: 13.5px; color: var(--ink-2); }
+.chip-vivo i { width: 8px; height: 8px; border-radius: 50%; }
+
+/* ---------- palco ---------- */
+.vivo-palco { position: relative; height: 820px; margin-top: -76px; padding: 150px 72px 0; display: grid; grid-template-columns: 560px 1fr; isolation: isolate; }
+.vivo-palco-luz { position: absolute; inset: 0; z-index: -2; background:
+  radial-gradient(ellipse 42% 60% at 68% 46%, color-mix(in oklab, var(--luz) 34%, transparent) 0%, transparent 70%),
+  radial-gradient(ellipse 30% 40% at 72% 88%, color-mix(in oklab, var(--luz) 18%, transparent) 0%, transparent 70%),
+  linear-gradient(180deg, transparent 70%, var(--bg) 100%); }
+.vivo-anel { position: absolute; left: 640px; top: 40px; z-index: -1; animation: gira 160s linear infinite; }
+.vivo-letreiro { position: absolute; left: 0; right: 0; top: 330px; z-index: -1; overflow: hidden; pointer-events: none; mask-image: linear-gradient(90deg, transparent, #000 15%, #000 85%, transparent); }
+.vivo-letreiro > div { display: flex; width: max-content; animation: letreiro 60s linear infinite; }
+.vivo-letreiro span { font-family: var(--marca); font-size: 230px; font-weight: 700; letter-spacing: -0.04em; line-height: 1; white-space: nowrap; color: transparent; -webkit-text-stroke: 1px color-mix(in oklab, var(--ink) 13%, transparent); }
+@keyframes letreiro { to { transform: translateX(-50%); } }
+
+.vivo-palco-txt { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: flex-start; gap: 18px; }
+.vivo-saudacao { font-size: 14px; color: var(--ink-3); margin-bottom: 18px; }
+.vivo-saudacao span { margin: 0 6px; color: var(--line-2); }
+.vivo-selo { padding: 6px 13px; border-radius: var(--r-pill); background: color-mix(in oklab, var(--acento) 14%, transparent); border: 1px solid var(--ouro-linha); color: var(--acento); font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: 0.14em; }
+.vivo-h1 { margin: 0; font-family: var(--marca); font-size: 104px; font-weight: 600; letter-spacing: -0.045em; line-height: 0.9; }
+.vivo-notas { margin: 4px 0 0; font-size: 19px; color: var(--ink-2); }
+.vivo-chips { display: flex; gap: 8px; }
+.vivo-palco .vivo-acoes { margin-top: 18px; }
+
+.vivo-frasco { position: relative; z-index: 1; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 120px; }
+.vivo-frasco img { max-height: 520px; max-width: 420px; object-fit: contain; filter: drop-shadow(0 40px 40px rgba(0, 0, 0, 0.6)) drop-shadow(0 4px 6px rgba(0, 0, 0, 0.4)); }
+.vivo-frasco-vazio { width: 260px; height: 420px; border-radius: 40px; display: flex; align-items: center; justify-content: center; color: var(--ink-3); border: 1px solid var(--line-2); background: color-mix(in oklab, var(--luz) 8%, transparent); }
+.vivo-chao { position: absolute; bottom: 96px; left: 50%; width: 380px; height: 60px; margin-left: -190px; border-radius: 50%; background: radial-gradient(ellipse, rgba(0, 0, 0, 0.55), transparent 70%); }
+.vivo-rodape-palco { position: absolute; left: 72px; right: 72px; bottom: 34px; display: flex; justify-content: space-between; padding-top: 18px; border-top: 1px solid var(--line); font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em; color: var(--ink-3); }
+
+/* ---------- corpo ---------- */
+.vivo-corpo { position: relative; padding: 40px 72px 80px; display: flex; flex-direction: column; gap: 96px; }
+.vivo-frase { margin: 24px 0 0; max-width: 1100px; font-family: var(--marca); font-size: 52px; font-weight: 500; letter-spacing: -0.03em; line-height: 1.08; color: var(--ink-3); }
+.vivo-frase em { font-style: normal; color: var(--ink); }
+
+/* bento de hoje */
+.vivo-hoje { display: grid; grid-template-columns: 1.45fr 1fr; gap: 24px; margin-top: -40px; }
+.vivo-dia { position: relative; display: grid; grid-template-columns: 340px 1fr; gap: 36px; align-items: center; padding: 22px 40px 22px 22px; border-radius: 36px; background: radial-gradient(ellipse 50% 90% at 15% 50%, color-mix(in oklab, var(--terr) 22%, transparent), transparent 70%), var(--surface); border: 1px solid var(--line); box-shadow: var(--sombra); overflow: hidden; }
+.vivo-dia-palco { display: block; border-radius: 28px; overflow: hidden; transition: transform .6s var(--ease); }
+.vivo-dia-palco:hover { transform: scale(1.02) rotate(-0.5deg); }
+.vivo-dia-txt { display: flex; flex-direction: column; gap: 14px; }
+.vivo-dia-txt h2 { margin: 0; font-family: var(--marca); font-size: 52px; font-weight: 600; letter-spacing: -0.035em; line-height: 0.95; }
+.vivo-dia-txt p { margin: 0; font-size: 16px; line-height: 1.6; color: var(--ink-2); max-width: 46ch; }
+.vivo-dia-txt .vivo-acoes { margin-top: 8px; }
+
+.vivo-cur { position: relative; min-height: 424px; border-radius: 36px; overflow: hidden; display: flex; align-items: flex-end; background: var(--surface-2); border: 1px solid var(--line); isolation: isolate; }
+.vivo-cur img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -2; transition: transform 1.2s var(--ease); }
+.vivo-cur:hover img { transform: scale(1.06); }
+.vivo-cur::before { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, rgba(11, 17, 15, 0.1) 0%, rgba(11, 17, 15, 0.55) 45%, rgba(11, 17, 15, 0.96) 100%); }
+.vivo-cur-txt { padding: 32px; display: flex; flex-direction: column; gap: 10px; }
+.vivo-cur-txt h3 { margin: 0; font-family: var(--marca); font-size: 34px; font-weight: 600; letter-spacing: -0.025em; line-height: 1.05; }
+.vivo-cur-txt p { margin: 0; font-size: 15px; line-height: 1.55; color: var(--ink-2); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+
+/* semana */
+.vivo-semana header, .vivo-prateleira header { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; margin-bottom: 28px; }
+.vivo-semana header span { font-size: 14px; color: var(--ink-3); }
+.vivo-semana header b { color: var(--acento); font-weight: 500; }
+.vivo-semana-grade { position: relative; display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; padding-top: 30px; }
+.vivo-curva { position: absolute; left: 0; right: 0; top: 0; width: 100%; height: 80px; overflow: visible; pointer-events: none; }
+.vivo-diaseq { position: relative; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 70px 10px 20px; border-radius: 28px; border: 1px solid transparent; text-align: center; transition: background-color .3s, border-color .3s, transform .5s var(--ease); }
+.vivo-diaseq:hover { background: var(--surface); border-color: var(--line); transform: translateY(-4px); }
+.vivo-diaseq.hoje { background: var(--surface); border-color: var(--ouro-linha); }
+.vivo-diaseq-dia { font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em; color: var(--ink-3); }
+.vivo-diaseq.hoje .vivo-diaseq-dia { color: var(--acento); }
+.vivo-diaseq-temp { font-family: var(--marca); font-size: 34px; font-weight: 600; letter-spacing: -0.03em; line-height: 1; }
+.vivo-diaseq-frasco { width: 100%; }
+.vivo-diaseq-vazio { height: 130px; }
+.vivo-diaseq-nome { font-size: 13.5px; font-weight: 500; line-height: 1.25; min-height: 34px; }
+.vivo-tag { padding: 3px 10px; border-radius: var(--r-pill); background: color-mix(in oklab, var(--acento) 14%, transparent); color: var(--acento); font-size: 11px; font-weight: 500; }
+
+/* índice */
+.vivo-indice { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
+.vivo-indice-txt { display: flex; flex-direction: column; align-items: flex-start; gap: 22px; }
+.vivo-indice-txt p { margin: 0; font-size: 17px; line-height: 1.65; color: var(--ink-2); max-width: 44ch; }
+.vivo-assinatura { font-family: var(--script); font-size: 46px; line-height: 1; color: var(--ink); }
+.vivo-numeros { margin: 0; display: grid; grid-template-columns: 1fr 1fr; }
+.vivo-numeros > div { padding: 30px 0 30px 34px; border-left: 1px solid var(--line-2); display: flex; flex-direction: column; gap: 6px; }
+.vivo-numeros > div:nth-child(-n+2) { border-bottom: 1px solid var(--line); }
+.vivo-numeros dt { font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em; color: var(--ink-3); }
+.vivo-numeros dd { margin: 0; font-family: var(--marca); font-size: 112px; font-weight: 600; letter-spacing: -0.05em; line-height: 0.9; background: linear-gradient(180deg, var(--ink) 30%, var(--acento) 140%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.vivo-numeros span { font-size: 14px; color: var(--ink-3); }
+
+/* prateleira */
+.vivo-prateleira-trilho { display: grid; grid-auto-flow: column; grid-auto-columns: 214px; gap: 18px; overflow-x: auto; padding-bottom: 12px; scroll-snap-type: x mandatory; scrollbar-width: none; }
+.vivo-prateleira-trilho::-webkit-scrollbar { display: none; }
+.vivo-frasco-card { scroll-snap-align: start; display: flex; flex-direction: column; gap: 6px; }
+.vivo-frasco-card > div:first-child { transition: transform .6s var(--ease), box-shadow .6s var(--ease), border-color .3s; }
+.vivo-frasco-card:hover > div:first-child { transform: translateY(-8px) rotate(-1deg); box-shadow: 0 30px 50px -28px rgba(0, 0, 0, 0.9); border-color: var(--ouro-linha) !important; }
+.vivo-frasco-card strong { margin-top: 8px; font-size: 16px; font-weight: 600; }
+.vivo-num { position: absolute; left: 14px; top: 12px; font-family: var(--mono); font-size: 10.5px; color: var(--ink-3); }
+.vivo-acorde { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ink-2); }
+.vivo-acorde i { width: 7px; height: 7px; border-radius: 50%; }
+
+/* esquecidos */
+.vivo-esquecidos .vivo-h2 { margin-bottom: 28px; }
+.vivo-esquecidos-grade { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.vivo-esquecido { position: relative; display: grid; grid-template-columns: 1fr 120px; grid-template-rows: auto auto; gap: 4px 12px; padding: 26px 22px 22px 28px; border-radius: 32px; background: var(--surface); border: 1px solid var(--line); overflow: hidden; transition: border-color .3s, transform .5s var(--ease); }
+.vivo-esquecido:hover { border-color: var(--ouro-linha); transform: translateY(-4px); }
+.vivo-esquecido-n { display: flex; align-items: baseline; gap: 8px; }
+.vivo-esquecido-n b { font-family: var(--marca); font-size: 76px; font-weight: 600; letter-spacing: -0.05em; line-height: 1; color: var(--acento); }
+.vivo-esquecido-n span { font-family: var(--mono); font-size: 12px; letter-spacing: 0.12em; color: var(--ink-3); text-transform: uppercase; }
+.vivo-esquecido-frasco { grid-row: span 2; align-self: center; }
+.vivo-esquecido-txt { display: flex; flex-direction: column; gap: 3px; }
+.vivo-esquecido-txt strong { font-size: 17px; font-weight: 600; }
+.vivo-esquecido-txt span { font-size: 13px; color: var(--ink-3); }
+
+/* pilares */
+.vivo-pilares { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; margin: 0 72px 56px; padding-top: 36px; border-top: 1px solid var(--line); }
+.vivo-pilares > div { display: flex; flex-direction: column; gap: 8px; padding-right: 32px; }
+.vivo-pilares svg { width: 26px; height: 26px; fill: none; stroke: var(--acento); stroke-width: 1.3; stroke-linecap: round; stroke-linejoin: round; }
+.vivo-pilares strong { font-family: var(--mono); font-size: 11px; font-weight: 500; letter-spacing: 0.16em; }
+.vivo-pilares span { font-size: 14px; line-height: 1.5; color: var(--ink-3); }
+
+/* entrada dos blocos do corpo ao rolar */
+@supports (animation-timeline: view()) {
+  .so-computador .vivo-corpo > section, .vivo-numeros > div, .vivo-diaseq, .vivo-frasco-card, .vivo-esquecido { animation: surge linear both; animation-timeline: view(); animation-range: entry 0% entry 55%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .vivo-letreiro > div, .vivo-anel { animation: none !important; }
+}
