@@ -1,0 +1,17 @@
+/* Descobrir do computador (Atlas Vivo). */
+.ds-topo { display: grid; grid-template-columns: 1fr 420px; gap: 48px; align-items: end; padding: 32px 0 40px; }
+.ds-topo > div { display: flex; flex-direction: column; gap: 20px; }
+.ds-topo h1 { margin: 0; font-family: var(--marca); font-size: 118px; font-weight: 600; letter-spacing: -0.05em; line-height: 0.88; }
+.ds-topo h1 em { font-style: normal; color: var(--acento); }
+.ds-topo p { margin: 0; font-size: 19px; line-height: 1.55; color: var(--ink-2); max-width: 44ch; }
+.ds-numeros { margin: 0; display: grid; grid-template-columns: 1fr 1fr; border-left: 1px solid var(--line-2); }
+.ds-numeros > div { display: flex; flex-direction: column; gap: 6px; padding: 0 0 0 28px; }
+.ds-numeros dt { font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em; color: var(--ink-3); text-transform: uppercase; }
+.ds-numeros dd { margin: 0; font-family: var(--marca); font-size: 76px; font-weight: 600; letter-spacing: -0.05em; line-height: 0.95; background: linear-gradient(180deg, var(--ink) 30%, var(--acento) 150%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.ds-numeros span { font-size: 13.5px; color: var(--ink-3); }
+.ds-h2 { margin: 0; font-family: var(--marca); font-size: 34px; font-weight: 600; letter-spacing: -0.03em; line-height: 1; color: var(--ink); }
+/* linha do tempo e mapa saem da caixa: ocupam a largura como pranchas abertas */
+.ds article[style*="span 12"] { background: transparent !important; border: none !important; border-top: 1px solid var(--line) !important; border-radius: 0 !important; padding: 48px 0 0 !important; margin-top: 32px; }
+.ds article[style*="span 7"], .ds article[style*="span 5"] { border-radius: 36px !important; box-shadow: var(--sombra); }
+.ds article[style*="span 7"] > div:nth-child(2) { height: 8px !important; border-radius: 4px !important; }
+.ds article[style*="span 7"] > div:nth-child(2) > div { height: 8px !important; border-radius: 4px !important; background: var(--btn) !important; }
