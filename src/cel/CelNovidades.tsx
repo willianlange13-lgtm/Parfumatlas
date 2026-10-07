@@ -29,11 +29,11 @@ export function CelNovidades({ v, limite }: { v: V; limite: number }) {
       {d.id && (
         <Card fundo="destaque" pad={16}>
           <div style={{ display: "flex", gap: 14, alignItems: "stretch" }}>
-            <Link href={`/colecao/${d.id}`} style={{ width: 120, height: 150, flexShrink: 0, borderRadius: 18, border: "1px solid var(--line)", background: "radial-gradient(ellipse at 50% 85%, rgba(201,209,222,.14) 0%, var(--surface) 75%)", display: "flex", alignItems: "flex-end", justifyContent: "center", paddingBottom: 14 }}>
+            <Link href={`/colecao/${d.id}`} style={{ width: 120, height: 150, flexShrink: 0, borderRadius: 18, border: "1px solid var(--line)", background: "radial-gradient(ellipse at 50% 85%, rgba(201,214,207,.14) 0%, var(--surface) 75%)", display: "flex", alignItems: "flex-end", justifyContent: "center", paddingBottom: 14 }}>
               <FrascoMedidas bw={74} bh={84} br="34px" capW={34} tampa={d.tampa} vidro={d.vidro} rot={d.rot} nome={d.nome} k={0.85} foto={d.foto} />
             </Link>
             <div style={{ display: "flex", flexDirection: "column", gap: 6, minWidth: 0 }}>
-              <span style={{ alignSelf: "flex-start", padding: "3px 8px", borderRadius: 6, background: OURO, color: "#1A1407", fontSize: 10.5, fontWeight: 600 }}>MAIS AFINIDADE</span>
+              <span style={{ alignSelf: "flex-start", padding: "3px 8px", borderRadius: 6, background: OURO, color: "#1A0904", fontSize: 10.5, fontWeight: 600 }}>MAIS AFINIDADE</span>
               <span style={{ fontFamily: MONO, fontSize: 9.5, letterSpacing: ".1em", color: "var(--ink-3)" }}>{d.linha}</span>
               <span style={{ fontSize: 22, fontFamily: "var(--marca)", fontWeight: 500, lineHeight: 1.1 }}>{d.nome}</span>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>

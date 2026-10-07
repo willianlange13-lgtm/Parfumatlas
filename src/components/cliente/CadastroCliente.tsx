@@ -16,8 +16,8 @@ type Modo = "foto" | "link" | "nome" | "voz";
 type Cand = { nome: string; casa: string; concentracao: string; por: string; pct: number; link?: string; imagem?: string | null };
 type Ficha = Omit<Perfume, "id" | "clima"> & { revisar: string[]; completar?: boolean; fragrantica?: string };
 
-const OURO = "#D8B970";
-const CORES = ["#7F8AA0", "#B4BDCC", "#9099AC"];
+const OURO = "#FF6B3D";
+const CORES = ["#7A9184", "#AFC2B8", "#8AA094"];
 const ROT: Record<Modo, string> = { foto: "Foto", link: "Link", nome: "Nome", voz: "Voz" };
 const PH: Record<Modo, string> = { foto: "Ou cole o link de qualquer site de perfume", link: "Cole o link do Fragrantica, Parfumo ou do site da marca", nome: "Digite o nome e a casa, ex.: Aventus Creed", voz: "Ou digite o nome do perfume" };
 const NIVEL_F = ["Muito fraca", "Fraca", "Moderada", "Longa", "Eterna"];
@@ -38,7 +38,7 @@ async function reduzir(f: File) {
 
 export function CadastroCliente({ base, modoInicial }: { base: Record<string, unknown> & { t: Record<string, string> }; modoInicial?: string }) {
   // mesmo dourado do celular no acento e nos títulos (src/desenho/h2.ts)
-  const t: Record<string, string> = { ...base.t, ouro: OURO, amber: "#D8B970", amberTxt: "#E0C78C" };
+  const t: Record<string, string> = { ...base.t, ouro: OURO, amber: "#FF6B3D", amberTxt: "#FFA07E" };
   const router = useRouter();
   const [modo, setModo] = useState<Modo>((["foto", "link", "nome", "voz"].includes(modoInicial ?? "") ? modoInicial : "foto") as Modo);
   const [foto, setFoto] = useState<{ url: string; mime: string; base64: string } | null>(null);
@@ -162,7 +162,7 @@ export function CadastroCliente({ base, modoInicial }: { base: Record<string, un
     setCands([]); setSel(-1); setErro(""); setCompletando(false);
     setFicha({
       nome: /^https?:\/\//.test(q) ? "" : q, casa: "", concentracao: "", perfumistas: [], familia: "", acorde: "Amadeirado", genero: "", pais: "", descricao: "",
-      notas: { saida: [], coracao: [], fundo: [] }, acordes: [], forma: "ret", tampa: "#141417", imagem: null, fonteFicha: null, revisar: ["nome", "casa"],
+      notas: { saida: [], coracao: [], fundo: [] }, acordes: [], forma: "ret", tampa: "#141B18", imagem: null, fonteFicha: null, revisar: ["nome", "casa"],
     });
   }
 
@@ -192,7 +192,7 @@ export function CadastroCliente({ base, modoInicial }: { base: Record<string, un
   const etapa = ficha ? 3 : cands.length ? 2 : 1;
   const passo = (n: number, nome: string) => {
     const feito = n < etapa, atual = n === etapa;
-    return { n: feito ? "✓" : String(n), nome, bg: feito ? t.amber : atual ? OURO : "transparent", cor: feito ? t.onBtn : atual ? "#1A1407" : t.ink3, borda: feito ? t.amber : atual ? OURO : t.line2, txt: atual ? t.ink : feito ? t.ink2 : t.ink3, linha: n < 4 ? "block" : "none" };
+    return { n: feito ? "✓" : String(n), nome, bg: feito ? t.amber : atual ? OURO : "transparent", cor: feito ? t.onBtn : atual ? "#1A0904" : t.ink3, borda: feito ? t.amber : atual ? OURO : t.line2, txt: atual ? t.ink : feito ? t.ink2 : t.ink3, linha: n < 4 ? "block" : "none" };
   };
   const rev = (l: string) => Boolean(ficha?.revisar.some((r) => r.toLowerCase().slice(0, 4) === l.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").slice(0, 4) || r.toLowerCase().slice(0, 4) === l.toLowerCase().slice(0, 4)));
   const campo = (l: string, v: string | undefined, opcoes?: readonly string[]) => { const r = rev(l) || !v; return { l, v: v || "a confirmar", st: r ? "REVISAR" : "✓", stCor: r ? OURO : t.ink3, borda: r ? OURO : t.line, mudar: muda(l), opcoes: opcoes ? [...opcoes] : undefined }; };

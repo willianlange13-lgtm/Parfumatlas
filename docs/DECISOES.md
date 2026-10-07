@@ -335,3 +335,16 @@ Briefing do Willian: o desktop estava linear demais (preto + prata + cinza + dou
 - Decisão do Willian depois da auditoria de design (etapa 1 do plano "a ficha é um rótulo"): o recorte automático nunca fica bom em todo frasco. Fora da aba Início, a foto oficial aparece inteira sobre papel cor de rótulo (#E8DFCF), num cartão 3:4 com cantos arredondados e fio fino na borda. O branco da foto vira o papel por multiplicação, no servidor (`rotulo()` em `src/lib/recortar.ts`, `/api/frasco?modo=rotulo`). Nada é apagado, então vidro transparente e frasco branco saem certos. Fundo cinza-claro é levado ao branco antes.
 - A aba Início (computador e celular) continua com o frasco recortado, com luz e sombra (`recorte()` em `src/lib/sem-fundo.ts`, aplicado em `montarInicio`).
 - `semFundo()` agora devolve o rótulo; a sua própria foto do frasco continua como está.
+
+## 28. Atlas Vivo: nova direção visual (out/2026)
+
+Pedido do Willian: direção nova e ousada, com personalidade e animação, sem visual quadrado. Substitui as escolhas de cor e letra da §18 (os territórios olfativos, a ordem das fases e o rótulo de papel da §27 continuam).
+
+- **Atmosfera:** estufa à noite. Fundo verde quase preto (`#0B110F`), texto cor de osso (`#F2EEE3`), um único acento: papoula (`#FF6B3D`). O musgo (`#8FB5A2`) aparece só como luz secundária e em dados. Só tema escuro: é a identidade da marca.
+- **Letras:** Bricolage Grotesque nos títulos (`--marca`), Geist no texto (`--sans`), Geist Mono nas etiquetas (`--mono`), Pinyon só na assinatura. Todas via `next/font` (sem link do Google Fonts).
+- **Forma:** nada quadrado. `--r-ed` 28px (24px no celular) nos contêineres, `--r-ctl` 16px em caixas pequenas, cápsula (`--r-pill`) em botões, abas, chips e campos.
+- **Botão principal:** cápsula em degradê papoula com brilho que atravessa no hover; secundário com contorno.
+- **Topo do computador:** cápsula de vidro flutuante; o item ativo do menu é uma cápsula papoula que desliza entre as páginas (view transition).
+- **Celular:** doca de vidro flutuante; aba ativa com cápsula clara e ícone papoula; botão + com mola.
+- **Cores de dados:** cada acorde tem matiz próprio (`ACORDES` em `src/lib/cores.ts`, `EIXOS` em `src/desenho/h2.ts`); a escala prata virou escala musgo.
+- **Movimento:** aurora do território derivando atrás de tudo, grão de papel fixo, blocos entrando em sequência (`surge`), título do Início palavra por palavra (`.palavras`), frasco da vitrine flutuando (`.flutua`), troca de página com `ViewTransition` em `src/app/template.tsx`. Tudo desligado com `prefers-reduced-motion`.

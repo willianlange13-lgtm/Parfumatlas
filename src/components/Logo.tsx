@@ -17,14 +17,14 @@ export function Logo({ tamanho = 40, traco = 1.2 }: { tamanho?: number; traco?: 
           <rect x={50 - f} width={2 * f} height="120" fill="#000" />
         </mask>
       </defs>
-      <g mask={`url(#${id})`} fill="none" stroke="#E6EAF0">
+      <g mask={`url(#${id})`} fill="none" stroke="#E6EBE7">
         <circle cx="50" cy="62" r="30" strokeWidth={1.15 * traco} />
         <ellipse cx="50" cy="62" rx="16.8" ry="21.6" strokeWidth={0.85 * traco} />
         <ellipse cx="50" cy="62" rx="40.5" ry="9" strokeWidth={traco} />
       </g>
-      <rect x={50 - 0.6 * traco} y="20" width={1.2 * traco} height="80" fill="#E6EAF0" />
-      <path d={est(50, 22, 13, 5, 5.6)} fill="#E6EAF0" />
-      <path d={est(50, 99, 5, 12, 4.8)} fill="#E6EAF0" />
+      <rect x={50 - 0.6 * traco} y="20" width={1.2 * traco} height="80" fill="#E6EBE7" />
+      <path d={est(50, 22, 13, 5, 5.6)} fill="#E6EBE7" />
+      <path d={est(50, 99, 5, 12, 4.8)} fill="#E6EBE7" />
       <path d="M50 50 C53 55.5 54.6 58.6 54.6 61.6 a4.6 4.6 0 0 1 -9.2 0 C45.4 58.6 47 55.5 50 50 Z" fill="var(--ouro)" />
     </svg>
   );

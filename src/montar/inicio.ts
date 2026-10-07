@@ -115,7 +115,7 @@ export async function montarInicio(outra = 0) {
     resgata: resgatados ? `Resgata ${resgatados} esquecido${resgatados > 1 ? "s" : ""}` : "",
     semana: clima.dias.map((dd, i) => {
       const e = sem[i]?.entrada;
-      const f = e ? fr(e) : frascoMini("—", "", "", "ret", "#141417", "#9099AC");
+      const f = e ? fr(e) : frascoMini("—", "", "", "ret", "#141B18", "#8AA094");
       return { ...f, dia: dd.rotulo, temp: dd.temp, icone: ICONE_CLIMA[dd.icone], cor: t.amber, tag: sem[i]?.esquecido ? "Esquecido" : "", bg: i === 0 ? t.tileFeature : t.bg, borda: i === 0 ? t.line2 : t.line, nome: e?.perfume.nome ?? "—" };
     }),
     numeros: [

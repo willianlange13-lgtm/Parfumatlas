@@ -19,7 +19,7 @@ export type Resposta = {
   titulo?: string;
 };
 
-const OURO = "#D8B970";
+const OURO = "#FF6B3D";
 const FORM: Record<string, [number, number, string]> = { alto: [22, 42, "5px"], ret: [30, 36, "6px"], redondo: [36, 32, "16px"], largo: [38, 30, "7px"] };
 
 /** Converte a resposta no formato das telas (cards com frasco). */
@@ -121,7 +121,7 @@ function respostaLocal(pergunta: string, filtros: Filtros, itens: Entrada[], tem
   if (comFoto) {
     return {
       texto: `Pela foto, o look pede algo limpo. O ${ordem[0].nome} conversa melhor com essa roupa. Se quiser mais presença, tente este layering:`,
-      look: [{ nome: "Look da foto", cor: "#C9D1DE" }],
+      look: [{ nome: "Look da foto", cor: "#C9D6CF" }],
       layering: ordem[1] ? { base: ordem[0].nome, baseBorrifadas: 3, toque: ordem[ordem.length - 1].nome, toqueBorrifadas: 1, porque: `O ${ordem[ordem.length - 1].nome} aprofunda o fundo sem pesar. Borrife só no peito, por baixo da camisa.` } : undefined,
       titulo: "Look de hoje",
     };

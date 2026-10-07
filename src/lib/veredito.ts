@@ -15,7 +15,7 @@ export async function acharPerfume(q: { id?: string; nome?: string; casa?: strin
     const achado = [...acervo.perfumes.values()].find((p) => normal(p.nome) === normal(q.nome!) && (!q.casa || normal(p.casa) === normal(q.casa)));
     if (achado) return { p: achado, novo: false };
     const f = await gerarFicha({ nome: q.nome, casa: q.casa ?? "", concentracao: q.conc, link: q.link });
-    if (f) return { p: { ...f, id: "", forma: f.forma ?? "ret", tampa: f.tampa ?? "#141417" } as Perfume, novo: true };
+    if (f) return { p: { ...f, id: "", forma: f.forma ?? "ret", tampa: f.tampa ?? "#141B18" } as Perfume, novo: true };
   }
   return { p: null, novo: false };
 }

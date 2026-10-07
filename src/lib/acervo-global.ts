@@ -211,7 +211,7 @@ export function fichaDoAcervo(r: LinhaAcervo, forcar = false): FichaIA | null {
       // nível calculado (planilha/modelo), não votado: a ficha mostra "estimativa" e a IA pode trocar pelo real
       ...(nivelEstimado(r) && (r.fixacao_nivel || r.projecao_nivel) ? { estimado: true } : {}),
     },
-    imagem: fotoDoLink(r.fragrantica), forma: "ret", tampa: "#141417",
+    imagem: fotoDoLink(r.fragrantica), forma: "ret", tampa: "#141B18",
     fragrantica: r.fragrantica ?? undefined,
     // o que falta vai para a IA completar em segundo plano (completarDoAcervo, só os campos vazios).
     // Sempre há o que completar: descrição e "quando usar" não vêm no lote.

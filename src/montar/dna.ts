@@ -5,10 +5,10 @@ import { corDoAcorde } from "@/lib/cores";
 import base from "@/data/desenho/DNAPreto.json";
 import { glifo, hexA, P, t } from "@/desenho/h2";
 
-const EIXO_COR: Record<string, string> = { Cítrico: "#DCECFD", Frutado: "#D8B970", Aromático: "#B4BDCC", Aquático: "#C9D1DE", Floral: "#8E99AD", Amadeirado: "#7F8AA0", Âmbar: "#9099AC", Gourmand: "#A3ADBE" };
-const NCOR: Record<string, string> = { fruta: "#D8B970", baga: "#9099AC", citrico: "#DCECFD", flor: "#D8B970", folha: "#B4BDCC", madeira: "#7F8AA0", gota: "#C9D1DE", especiaria: "#6E7A90", resina: "#6E7A90", baunilha: "#A3ADBE", nuvem: "#A3ADBE" };
+const EIXO_COR: Record<string, string> = { Cítrico: "#E6EFEA", Frutado: "#FF6B3D", Aromático: "#AFC2B8", Aquático: "#C9D6CF", Floral: "#8FA399", Amadeirado: "#7A9184", Âmbar: "#8AA094", Gourmand: "#9DB2A7" };
+const NCOR: Record<string, string> = { fruta: "#FF6B3D", baga: "#8AA094", citrico: "#E6EFEA", flor: "#FF6B3D", folha: "#AFC2B8", madeira: "#7A9184", gota: "#C9D6CF", especiaria: "#6A8175", resina: "#6A8175", baunilha: "#9DB2A7", nuvem: "#9DB2A7" };
 const PLURAL: Record<string, string> = { Frutado: "frutados", Amadeirado: "amadeirados", Cítrico: "cítricos", Aquático: "aquáticos", Especiado: "especiados", Âmbar: "âmbares", Baunilha: "gourmands" };
-const CORF: Record<string, string> = { Frutado: "#D8B970", Amadeirado: "#7F8AA0", Cítrico: "#E8EDF5", Aquático: "#C9D1DE", Especiado: "#6E7A90", Âmbar: "#9099AC", Baunilha: "#B4BDCC" };
+const CORF: Record<string, string> = { Frutado: "#FF6B3D", Amadeirado: "#7A9184", Cítrico: "#E8EDF5", Aquático: "#C9D6CF", Especiado: "#6A8175", Âmbar: "#8AA094", Baunilha: "#AFC2B8" };
 
 export async function montarDNA() {
   const acervo = await carregarAcervo();
@@ -20,7 +20,7 @@ export async function montarDNA() {
   const notas = d.notas.map((n) => { const c = NCOR[tipoNota(n.nome)]; const r = refNota(n.nome); return { nome: n.nome, d: r.icone, cor: c, bg: r.foto ? "#FFFFFF" : hexA(c, 0.14), borda: hexA(c, 0.45), img: r.foto ?? "", semImg: !r.foto, qtd: n.qtd, pct: Math.round((n.qtd / mx) * 100) }; });
   const lacunas = d.lacunas.map((l) => {
     const p = acervo.perfumes.get(l.perfumeId)!;
-    const cor = l.falta === "Floral" ? "#8E99AD" : l.falta === "Couro" ? "#6E7A90" : l.falta === "Verde" ? "#B4BDCC" : "#C9D1DE";
+    const cor = l.falta === "Floral" ? "#8FA399" : l.falta === "Couro" ? "#6A8175" : l.falta === "Verde" ? "#AFC2B8" : "#C9D6CF";
     return { foto: p.imagem ?? null, falta: l.falta.toUpperCase(), cor, nome: p.nome, casa: p.casa, por: l.por, tampa: p.tampa, fundo: `linear-gradient(160deg, ${hexA(cor, 0.22)} 0%, ${hexA(cor, 0.04)} 100%)`, vidro: `linear-gradient(115deg, rgba(255,255,255,.35) 0%, ${hexA(cor, 0.32)} 45%, ${hexA(cor, 0.55)} 100%)`, href: `/colecao/${p.id}` };
   });
   const N = Math.max(13, itens.length);

@@ -7,7 +7,7 @@ import { nota as refNota } from "@/data/referencia";
 import { corDoAcorde, hexA } from "@/lib/cores";
 import { VoltarHist } from "./VoltarHist";
 
-export const OURO = "#D8B970";
+export const OURO = "#FF6B3D";
 export const MONO = "var(--mono)";
 
 export function Rot({ children, cor, style }: { children: ReactNode; cor?: string; style?: CSSProperties }) {
@@ -126,7 +126,7 @@ export function NotaChip({ nome, tam = 28, rotulo = true, fs = 13 }: { nome: str
 }
 
 /** Palco com frasco desenhado ou foto. */
-export function PalcoC({ nome, casa, acorde, forma = "ret", tampa = "#141417", altura, k, raio = 18, foto, oficial, children, semBorda, transparente }: { nome: string; casa: string; acorde?: string | null; forma?: Forma | string; tampa?: string; altura: number; k?: number; raio?: number; foto?: string | null; oficial?: boolean; children?: ReactNode; semBorda?: boolean; transparente?: boolean }) {
+export function PalcoC({ nome, casa, acorde, forma = "ret", tampa = "#141B18", altura, k, raio = 18, foto, oficial, children, semBorda, transparente }: { nome: string; casa: string; acorde?: string | null; forma?: Forma | string; tampa?: string; altura: number; k?: number; raio?: number; foto?: string | null; oficial?: boolean; children?: ReactNode; semBorda?: boolean; transparente?: boolean }) {
   const cor = corDoAcorde(acorde);
   const esc = k ?? Math.round((altura / 150) * 100) / 100;
   return (
@@ -242,10 +242,10 @@ export function FrascoMedidas({ bw, bh, br, capW, tampa, vidro, rot, nome, k = 1
   if (foto) return <img src={foto} alt={nome ?? ""} style={{ width: "100%", height: "100%", objectFit: "contain", filter: "drop-shadow(0 6px 10px rgba(0,0,0,.45))" }} />;
   return (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }} aria-hidden="true">
-      <span style={{ width: capW * k, height: 22 * k, borderRadius: 3, background: tampa, boxShadow: "inset 0 0 0 1px rgba(255,255,255,.14)" }} />
-      <span style={{ width: bw * 0.22 * k, height: Math.max(3, 6 * k), background: "#8E99AD" }} />
+      <span style={{ width: capW * k, height: 22 * k, borderRadius: 3, background: tampa, boxShadow: "inset 0 0 0 1px rgba(242,238,227,.14)" }} />
+      <span style={{ width: bw * 0.22 * k, height: Math.max(3, 6 * k), background: "#8FA399" }} />
       <span style={{ width: bw * k, height: bh * k, borderRadius: br, background: vidro, border: "1px solid var(--line-2)", boxShadow: "0 14px 26px rgba(0,0,0,.45)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <span style={{ width: (bw - 14) * k, height: Math.min(40, bh * 0.42) * k, borderRadius: "50%", background: "#F4F7FC", color: "#0A0A0C", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", lineHeight: 1.05, textAlign: "center", overflow: "hidden" }}>
+        <span style={{ width: (bw - 14) * k, height: Math.min(40, bh * 0.42) * k, borderRadius: "50%", background: "#F6F4EE", color: "#0A0A0C", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", lineHeight: 1.05, textAlign: "center", overflow: "hidden" }}>
           <span style={{ fontSize: 5.5 * k, letterSpacing: ".12em" }}>{rot}</span>
           {nome ? <span style={{ fontSize: 8 * k, fontWeight: 600 }}>{nome.length > 13 ? nome.split(" ").slice(0, 2).join(" ") : nome}</span> : null}
         </span>

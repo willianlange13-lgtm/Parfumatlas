@@ -28,7 +28,7 @@ export function perfumeDaLinha(r: Linha): Perfume {
     votos: (r.votos as Perfume["votos"]) && Object.keys(r.votos as object).length ? (r.votos as Perfume["votos"]) : undefined,
     clima: (r.clima as Perfume["clima"]) && Object.keys(r.clima as object).length ? (r.clima as Perfume["clima"]) : undefined,
     forma: ((r.votos as Linha)?.forma as Perfume["forma"]) ?? "ret",
-    tampa: ((r.votos as Linha)?.tampa as string) ?? "#141417",
+    tampa: ((r.votos as Linha)?.tampa as string) ?? "#141B18",
     inspiradoEm: (r.inspirado_em as string) ?? undefined,
     parecidos: ((r.votos as Linha)?.parecidos as Perfume["parecidos"]) ?? undefined,
     mesmaCasa: ((r.votos as Linha)?.mesmaCasa as Perfume["mesmaCasa"]) ?? undefined,

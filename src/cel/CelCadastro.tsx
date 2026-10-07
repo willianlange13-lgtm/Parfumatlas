@@ -176,7 +176,7 @@ export function CelCadastro({ c, modoInicial }: { c: CadCel; modoInicial?: strin
           {c.desemp.map((d) => (
             <div key={d.l} style={{ display: "flex", flexDirection: "column", gap: 6 }}>
               <span style={{ display: "flex", justifyContent: "space-between", fontSize: 12.5 }}><span style={{ fontFamily: MONO, fontSize: 9, letterSpacing: ".1em", color: "var(--ink-3)" }}>{d.l}</span>{d.v}</span>
-              <span style={{ display: "flex", gap: 4 }}>{d.seg.map((cor, i) => <span key={i} style={{ flex: 1, height: 4, borderRadius: 2, background: cor === "#C9D1DE" ? OURO : cor }} />)}</span>
+              <span style={{ display: "flex", gap: 4 }}>{d.seg.map((cor, i) => <span key={i} style={{ flex: 1, height: 4, borderRadius: 2, background: cor === "#C9D6CF" ? OURO : cor }} />)}</span>
             </div>
           ))}
         </Card>
@@ -206,7 +206,7 @@ export function CelCadastro({ c, modoInicial }: { c: CadCel; modoInicial?: strin
       <div className="c-tela sem-barra">
         <div className="c-topo"><Circ icone="voltar" tamanho={36} rotulo="Voltar" onClick={() => setPasso("revisar")} /><span className="c-topo-tit">Salvar</span><span style={{ width: 36 }} /></div>
         <Passos n={4} txt="Salvar" />
-        <div style={{ alignSelf: "center", width: 170, height: 190, borderRadius: "var(--r-ed)", border: "1px solid var(--line)", background: "radial-gradient(ellipse at 50% 85%, rgba(216,185,112,.18) 0%, var(--surface) 75%)", display: "flex", alignItems: "flex-end", justifyContent: "center", paddingBottom: 18, overflow: "hidden", position: "relative" }}>
+        <div style={{ alignSelf: "center", width: 170, height: 190, borderRadius: "var(--r-ed)", border: "1px solid var(--line)", background: "radial-gradient(ellipse at 50% 85%, rgba(255,107,61,.18) 0%, var(--surface) 75%)", display: "flex", alignItems: "flex-end", justifyContent: "center", paddingBottom: 18, overflow: "hidden", position: "relative" }}>
           {c.foto || f.imagem ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={c.foto ?? semFundo(f.imagem) ?? ""} alt="Seu frasco" style={{ position: "absolute", inset: c.foto ? 0 : 10, width: c.foto ? "100%" : "calc(100% - 20px)", height: c.foto ? "100%" : "calc(100% - 20px)", objectFit: c.foto ? "cover" : "contain", filter: c.foto ? "none" : "drop-shadow(0 12px 14px rgba(0,0,0,.5)) drop-shadow(0 2px 3px rgba(0,0,0,.35))", borderRadius: 14 }} />
@@ -254,7 +254,7 @@ export function CelCadastro({ c, modoInicial }: { c: CadCel; modoInicial?: strin
 
       {c.modo === "foto" && (
         <>
-          <button type="button" onClick={fotografar} style={{ position: "relative", height: 240, borderRadius: "var(--r-ed)", border: "1px solid var(--line)", background: "radial-gradient(ellipse at 50% 70%, rgba(216,185,112,.14) 0%, var(--surface) 75%)", overflow: "hidden", flexShrink: 0, color: "var(--ink)", padding: 0 }}>
+          <button type="button" onClick={fotografar} style={{ position: "relative", height: 240, borderRadius: "var(--r-ed)", border: "1px solid var(--line)", background: "radial-gradient(ellipse at 50% 70%, rgba(255,107,61,.14) 0%, var(--surface) 75%)", overflow: "hidden", flexShrink: 0, color: "var(--ink)", padding: 0 }}>
             {c.foto ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={c.foto} alt="Foto do frasco" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
@@ -267,7 +267,7 @@ export function CelCadastro({ c, modoInicial }: { c: CadCel; modoInicial?: strin
             {[["left", "top"], ["right", "top"], ["left", "bottom"], ["right", "bottom"]].map(([h, v]) => (
               <span key={h + v} style={{ position: "absolute", [h]: 14, [v]: 14, width: 26, height: 26, [`border${h === "left" ? "Left" : "Right"}`]: "2px solid var(--ink)", [`border${v === "top" ? "Top" : "Bottom"}`]: "2px solid var(--ink)", [`border${v === "top" ? "Top" : "Bottom"}${h === "left" ? "Left" : "Right"}Radius`]: 8 } as React.CSSProperties} />
             ))}
-            {c.foto && <span style={{ position: "absolute", left: 14, bottom: 12, padding: "3px 8px", borderRadius: 6, background: "rgba(5,5,6,.7)", fontFamily: MONO, fontSize: 9, letterSpacing: ".1em" }}>{c.ocupado === "lendo" ? "LENDO…" : "SUA FOTO"}</span>}
+            {c.foto && <span style={{ position: "absolute", left: 14, bottom: 12, padding: "3px 8px", borderRadius: 6, background: "rgba(11,17,15,.7)", fontFamily: MONO, fontSize: 9, letterSpacing: ".1em" }}>{c.ocupado === "lendo" ? "LENDO…" : "SUA FOTO"}</span>}
           </button>
           {c.lido.length > 0 && (
             <>
@@ -301,7 +301,7 @@ export function CelCadastro({ c, modoInicial }: { c: CadCel; modoInicial?: strin
               </div>
               {["Lendo a página", "Nome, casa e ano", "Pirâmide e acordes", "Votos de fixação e projeção"].map((x, i) => {
                 const feito = Boolean(c.ficha) || (c.ocupado === "ficha" && i < 2);
-                return <span key={x} style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 13.5, color: feito ? "var(--ink)" : "var(--ink-3)" }}><span style={{ width: 18, height: 18, borderRadius: 9, background: feito ? OURO : "transparent", border: feito ? "none" : "1.5px solid var(--ink-3)", color: "#1A1407", display: "flex", alignItems: "center", justifyContent: "center" }}>{feito ? <Icone nome="check" tamanho={11} traco={2.6} /> : null}</span>{x}</span>;
+                return <span key={x} style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 13.5, color: feito ? "var(--ink)" : "var(--ink-3)" }}><span style={{ width: 18, height: 18, borderRadius: 9, background: feito ? OURO : "transparent", border: feito ? "none" : "1.5px solid var(--ink-3)", color: "#1A0904", display: "flex", alignItems: "center", justifyContent: "center" }}>{feito ? <Icone nome="check" tamanho={11} traco={2.6} /> : null}</span>{x}</span>;
               })}
             </Card>
           )}
@@ -325,7 +325,7 @@ export function CelCadastro({ c, modoInicial }: { c: CadCel; modoInicial?: strin
                   {x.imagem
                     // eslint-disable-next-line @next/next/no-img-element
                     ? <img src={semFundo(x.imagem) ?? ""} alt="" style={{ width: 36, height: 42, objectFit: "contain", flexShrink: 0, filter: "drop-shadow(0 4px 6px rgba(0,0,0,.45))" }} />
-                    : <span style={{ width: 36, height: 42, borderRadius: 10, background: "var(--surface)", display: "flex", alignItems: "flex-end", justifyContent: "center", paddingBottom: 3, overflow: "hidden" }}><Frasco nome={x.nome} casa={x.casa} forma="ret" tampa="#141417" escala={0.3} /></span>}
+                    : <span style={{ width: 36, height: 42, borderRadius: 10, background: "var(--surface)", display: "flex", alignItems: "flex-end", justifyContent: "center", paddingBottom: 3, overflow: "hidden" }}><Frasco nome={x.nome} casa={x.casa} forma="ret" tampa="#141B18" escala={0.3} /></span>}
                   <span style={{ flexGrow: 1, display: "flex", flexDirection: "column", gap: 2 }}>
                     <span style={{ fontSize: 15, color: i === 0 ? OURO : "var(--ink)" }}>{x.nome}</span>
                     <span style={{ fontFamily: MONO, fontSize: 9, letterSpacing: ".1em", color: "var(--ink-3)" }}>{x.casa.toUpperCase()}{x.concentracao ? ` · ${x.concentracao}` : ""}</span>
@@ -346,9 +346,9 @@ export function CelCadastro({ c, modoInicial }: { c: CadCel; modoInicial?: strin
 
       {c.modo === "voz" && (
         <>
-          <button type="button" onClick={c.ouvir} aria-label="Falar" style={{ alignSelf: "center", width: 200, height: 200, borderRadius: 100, border: "1px solid var(--line)", background: "radial-gradient(circle, rgba(216,185,112,.1) 0%, rgba(0,0,0,0) 70%)", display: "flex", alignItems: "center", justifyContent: "center", marginTop: 10, padding: 0 }}>
+          <button type="button" onClick={c.ouvir} aria-label="Falar" style={{ alignSelf: "center", width: 200, height: 200, borderRadius: 100, border: "1px solid var(--line)", background: "radial-gradient(circle, rgba(255,107,61,.1) 0%, rgba(0,0,0,0) 70%)", display: "flex", alignItems: "center", justifyContent: "center", marginTop: 10, padding: 0 }}>
             <span style={{ width: 140, height: 140, borderRadius: 70, border: `1px solid ${c.ouvindo ? OURO : "var(--line-2)"}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <span style={{ width: 84, height: 84, borderRadius: 42, background: "var(--btn)", color: "var(--on-btn)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: c.ouvindo ? `0 0 0 6px rgba(216,185,112,.25)` : "none" }}><Icone nome="mic" tamanho={30} /></span>
+              <span style={{ width: 84, height: 84, borderRadius: 42, background: "var(--btn)", color: "var(--on-btn)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: c.ouvindo ? `0 0 0 6px rgba(255,107,61,.25)` : "none" }}><Icone nome="mic" tamanho={30} /></span>
             </span>
           </button>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 3, height: 50, flexShrink: 0 }} aria-hidden="true">

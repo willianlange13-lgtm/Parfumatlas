@@ -25,10 +25,10 @@ function Entrada({ v }: { v: VSom }) {
     <div className="c-rodape" style={{ flexDirection: "column", gap: 10, paddingTop: 26 }}>
       {!v.vazio && (
         <div className="c-rolar" style={{ gap: 6, margin: "0 -20px", padding: "0 20px" }}>
-          {v.rapidas.map((r) => <button key={r.t} type="button" onClick={r.pick} className="c-pill" style={{ height: 34, borderRadius: "var(--r-ctl)", fontSize: 12.5, border: "1px solid var(--line-2)", background: "rgba(5,5,6,.8)" }}>{r.t}</button>)}
+          {v.rapidas.map((r) => <button key={r.t} type="button" onClick={r.pick} className="c-pill" style={{ height: 34, borderRadius: "var(--r-ctl)", fontSize: 12.5, border: "1px solid var(--line-2)", background: "rgba(11,17,15,.8)" }}>{r.t}</button>)}
         </div>
       )}
-      <form onSubmit={v.enviar} className="c-campo" style={{ height: 52, borderRadius: "var(--r-ctl)", background: "#141417", border: "1px solid var(--line-2)" }}>
+      <form onSubmit={v.enviar} className="c-campo" style={{ height: 52, borderRadius: "var(--r-ctl)", background: "#141B18", border: "1px solid var(--line-2)" }}>
         <input name="q" placeholder={v.vozRotulo === "Parar de ouvir" ? "Ouvindo…" : "Pergunte ou toque no microfone"} aria-label="Mensagem para o sommelier" autoComplete="off" enterKeyHint="send" />
         <button type="button" className="c-circ" style={{ width: 36, height: 36, background: "var(--chip-2)" }} onClick={v.escolherFoto} aria-label="Foto do look"><Icone nome="camera" tamanho={16} /></button>
         <button type="button" className="c-circ" style={{ width: 40, height: 40, background: v.vozRotulo === "Parar de ouvir" ? OURO : "var(--btn)", color: "var(--on-btn)" }} onClick={v.falar} aria-label={v.vozRotulo}><Icone nome="mic" tamanho={17} /></button>

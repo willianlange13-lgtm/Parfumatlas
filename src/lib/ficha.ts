@@ -284,7 +284,7 @@ Regras:
 - fontes: os sites usados e o que veio de cada um.` }], { schema: SCHEMA_FICHA, temperatura: 0.1, leve: Boolean(pagina) });
       const imagem = pagina?.imagem ?? (f.imagem && /^https:\/\/fimgs\.net\//.test(f.imagem) ? f.imagem : null);
       const fontes = f.fontes?.length ? f.fontes : pagina ? [{ nome: new URL(pagina.url).hostname.replace("www.", ""), url: pagina.url, oQue: "notas, acordes e votos" }] : [];
-      return finalizar({ ...f, perfumistas: f.perfumistas ?? [], revisar: f.revisar ?? [], fontes, forma: f.forma ?? "ret", tampa: /^#[0-9a-f]{6}$/i.test(f.tampa ?? "") ? f.tampa : "#141417", imagem });
+      return finalizar({ ...f, perfumistas: f.perfumistas ?? [], revisar: f.revisar ?? [], fontes, forma: f.forma ?? "ret", tampa: /^#[0-9a-f]{6}$/i.test(f.tampa ?? "") ? f.tampa : "#141B18", imagem });
     } catch (e) {
       ultimoErroFicha = `${ultimoErroFicha ? ultimoErroFicha + " · " : ""}ficha: ${e instanceof Error ? e.message.slice(0, 160) : e}`;
       console.error("gerarFicha", e);
@@ -569,7 +569,7 @@ Pirâmide, acordes e família vêm do Fragrantica, sem misturar. Os outros campo
     f.parecidos = await verificarParecidos(f.nome || c.nome, f.parecidos);
     const { fragrantica: _fr, ...resto } = f;
     void _fr;
-    const pronta = finalizar({ ...resto, perfumistas: f.perfumistas ?? [], revisar: f.revisar ?? [], fontes: f.fontes ?? [], forma: f.forma ?? "ret", tampa: /^#[0-9a-f]{6}$/i.test(f.tampa ?? "") ? f.tampa : "#141417", imagem });
+    const pronta = finalizar({ ...resto, perfumistas: f.perfumistas ?? [], revisar: f.revisar ?? [], fontes: f.fontes ?? [], forma: f.forma ?? "ret", tampa: /^#[0-9a-f]{6}$/i.test(f.tampa ?? "") ? f.tampa : "#141B18", imagem });
     const duplicados = await votosDuplicadosNoAcervo(pronta.nome || c.nome, pronta.casa || c.casa, pronta.votos);
     const saneada = duplicados ? invalidarVotos(pronta) : pronta;
     // votos faltando ou suspeitos: a tela pede o complemento em segundo plano (outra chamada, sem travar o cadastro)
