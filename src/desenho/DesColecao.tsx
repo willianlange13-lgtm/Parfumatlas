@@ -1,10 +1,131 @@
 "use client";
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* Gerado a partir da prancha do desenho. Não editar à mão. */
-import { Fragment } from "react";
-import { css } from "./css";
+/* Coleção do computador, Atlas Vivo (docs/DECISOES.md §28.2). Escrita à mão: não é mais gerada da prancha. */
+import Link from "next/link";
+import type { CSSProperties } from "react";
+import { Icone } from "@/components/Icone";
+import { PalcoC } from "@/cel/kit";
+import type { DadosColecao } from "@/montar/colecao";
+import type { EstadoColecao } from "@/cel/CelColecao";
+import "./colecao.css";
 
-export default function DesColecao({ v }: { v: any }) {
-  const { t, licoes, notasMini, arvore, tempo, perfumistas, mapaC, classe, marcosL, marcosN, marcosT, total, resumo, marcas, grupos, secoes, buscar, demo } = v;
-  return (<><div style={{ width: "1440px", minHeight: "2950px", boxSizing: "border-box", background: t.bg, color: t.ink, fontFamily: "var(--sans)", position: "relative", overflow: "hidden" }}><div style={{ position: "absolute", left: "900px", top: "-220px", width: "760px", height: "760px", borderRadius: "380px", background: `radial-gradient(circle, ${t.glowA} 0%, rgba(0,0,0,0) 65%)` }}></div><main style={{ position: "relative", padding: "28px 64px 80px", display: "flex", flexDirection: "column", gap: "22px" }}><div style={{ display: "flex", alignItems: "center", gap: "12px" }}><span style={{ fontFamily: "var(--mono)", fontSize: "12px", letterSpacing: ".14em", color: t.amberTxt }}>SUA COLEÇÃO</span><div style={{ flexGrow: "1" }}></div>{(demo) ? (<><span style={{ padding: "6px 12px", border: `1px dashed ${t.line2}`, borderRadius: "14px", fontFamily: "var(--mono)", fontSize: "11px", color: t.ink3 }}>DADOS ILUSTRATIVOS</span></>) : null}</div><section style={{ display: "grid", gridTemplateColumns: "520px minmax(0, 1fr)", gap: "20px" }}><div style={{ borderRadius: "var(--r-ed)", background: t.tileFeature, border: "1px solid var(--ouro-linha)", padding: "22px 24px", display: "flex", gap: "22px", alignItems: "center" }}><div style={{ position: "relative", width: "104px", height: "104px", flexShrink: "0" }}><svg viewBox="0 0 104 104" style={{ position: "absolute", left: "0", top: "0", width: "104px", height: "104px" }}><path d={classe.trilho} style={{ fill: "none", stroke: t.chip2, strokeWidth: "7" }}></path></svg><svg viewBox="0 0 104 104" style={{ position: "absolute", left: "0", top: "0", width: "104px", height: "104px" }}><path d={classe.arco} style={{ fill: "none", stroke: t.amber, strokeWidth: "7", strokeLinecap: "round" }}></path></svg><div style={{ position: "absolute", left: "0", right: "0", top: "30px", textAlign: "center", fontSize: "30px", fontWeight: "500", lineHeight: "1" }}>{classe.total}</div><div style={{ position: "absolute", left: "0", right: "0", top: "62px", textAlign: "center", fontFamily: "var(--mono)", fontSize: "9.5px", letterSpacing: ".1em", color: t.ink3 }}>FRASCOS</div></div><div style={{ flexGrow: "1", display: "flex", flexDirection: "column", gap: "8px" }}><span style={{ fontFamily: "var(--mono)", fontSize: "11px", letterSpacing: ".14em", color: t.amberTxt }}>CLASSE DO COLECIONADOR</span><span style={{ fontSize: "26px", fontWeight: "500", letterSpacing: "-.01em", lineHeight: "1" }}>{classe.nome}</span><span style={{ fontSize: "13.5px", color: t.ink2 }}>Faltam <b style={{ color: t.ink }}>{classe.faltam} frascos</b> para {classe.prox}</span><div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>{(resumo ?? []).map((r: any, _i6: number) => (<Fragment key={_i6}><span style={{ padding: "4px 10px", borderRadius: "12px", background: t.chip, fontSize: "12px", color: t.ink2 }}><b style={{ color: t.ink, fontWeight: "600" }}>{r.v}</b> {r.l}</span></Fragment>))}</div><div style={{ display: "grid", gridTemplateColumns: "repeat(5, minmax(0, 1fr))", gap: "4px", marginTop: "4px" }}>{(classe.niveis ?? []).map((n: any, _i6: number) => (<Fragment key={_i6}><div style={{ display: "flex", flexDirection: "column", gap: "5px" }}><div style={{ height: "5px", borderRadius: "3px", background: n.cor }}></div><span style={{ fontSize: "10.5px", color: n.txt, whiteSpace: "nowrap" }}>{n.nome}</span></div></Fragment>))}</div></div></div><div style={{ borderRadius: "var(--r-ed)", background: t.surface, border: `1px solid ${t.line}`, padding: "22px 24px", display: "flex", flexDirection: "column", gap: "14px" }}><div style={{ display: "flex", alignItems: "baseline", gap: "10px" }}><span style={{ fontFamily: "var(--mono)", fontSize: "11px", letterSpacing: ".14em", color: t.amberTxt }}>MARCOS DA COLEÇÃO</span><span style={{ fontSize: "13px", color: t.ink3 }}>{marcosN} de {marcosT}</span></div><div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: "10px" }}>{(marcosL ?? []).map((m: any, _i5: number) => (<Fragment key={_i5}><div style={{ display: "flex", alignItems: "center", gap: "10px", padding: "9px 10px", borderRadius: "14px", border: `1px ${m.estilo} ${m.borda}`, background: m.bg, opacity: m.op }}><span style={{ width: "32px", height: "32px", borderRadius: "16px", background: m.ibg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: "0" }}><svg viewBox="0 0 24 24" style={{ width: "16px", height: "16px", fill: "none", stroke: m.icor, strokeWidth: "1.6", strokeLinecap: "round", strokeLinejoin: "round" }}><path d={m.d}></path></svg></span><span style={{ display: "flex", flexDirection: "column", gap: "1px", minWidth: "0" }}><span style={{ fontSize: "13px", fontWeight: "500", lineHeight: "1.2" }}>{m.nome}</span><span style={{ fontSize: "11px", color: t.ink3, lineHeight: "1.3" }}>{m.sub}</span></span></div></Fragment>))}</div></div></section><section style={{ display: "flex", alignItems: "center", gap: "12px", padding: "14px 0", borderTop: `1px solid ${t.line}`, borderBottom: `1px solid ${t.line}` }}><div style={{ display: "flex", gap: "2px", padding: "4px", borderRadius: "var(--r-ed)", background: t.pill }}>{(marcas ?? []).map((m: any, _i4: number) => (<Fragment key={_i4}><button type="button" onClick={m.pick} style={{ height: "38px", padding: "0 16px", border: "none", borderRadius: "var(--r-ctl)", background: m.bg, color: m.cor, fontFamily: "var(--sans)", fontSize: "13.5px", fontWeight: "500", whiteSpace: "nowrap", cursor: "pointer" }}>{m.nome} <span style={{ fontFamily: "var(--mono)", fontSize: "11.5px", opacity: ".7" }}>{m.n}</span></button></Fragment>))}</div><label style={{ display: "flex", alignItems: "center", gap: "10px", width: "260px", height: "46px", boxSizing: "border-box", padding: "0 16px", borderRadius: "var(--r-ctl)", background: t.pill, color: t.ink3 }}><svg viewBox="0 0 24 24" style={{ width: "17px", height: "17px", fill: "none", stroke: "currentColor", strokeWidth: "1.6" }}><circle cx="11" cy="11" r="7"></circle><path d="M20 20 L16 16"></path></svg><input type="text" placeholder="Nome, marca ou nota" aria-label="Buscar na coleção" onChange={buscar} style={{ flexGrow: "1", minWidth: "0", background: "transparent", border: "none", outline: "none", color: t.ink, fontFamily: "var(--sans)", fontSize: "14px" }} /></label><div style={{ flexGrow: "1" }}></div><span style={{ fontFamily: "var(--mono)", fontSize: "11px", letterSpacing: ".1em", color: t.ink3, whiteSpace: "nowrap" }}>AGRUPAR</span><div style={{ display: "flex", gap: "2px", padding: "4px", borderRadius: "var(--r-ed)", background: t.pill }}>{(grupos ?? []).map((g: any, _i4: number) => (<Fragment key={_i4}><button type="button" onClick={g.pick} style={{ height: "38px", padding: "0 14px", border: "none", borderRadius: "var(--r-ctl)", background: g.bg, color: g.cor, fontFamily: "var(--sans)", fontSize: "13.5px", fontWeight: "500", whiteSpace: "nowrap", cursor: "pointer" }}>{g.nome}</button></Fragment>))}</div></section>{(secoes ?? []).map((sec: any, _i2: number) => (<Fragment key={_i2}><section style={{ display: "flex", flexDirection: "column", gap: "14px", marginTop: "10px" }}><div style={{ display: "flex", alignItems: "center", gap: "12px" }}><span style={{ width: "10px", height: "10px", borderRadius: "5px", background: sec.cor }}></span><h2 style={{ margin: "0", fontSize: "20px", fontWeight: "500", letterSpacing: "-.01em" }}>{sec.nome}</h2><span style={{ fontFamily: "var(--mono)", fontSize: "12px", color: t.ink3 }}>{sec.n}</span><span style={{ flexGrow: "1", height: "1px", background: t.line }}></span></div><div style={{ display: "grid", gridTemplateColumns: "repeat(6, minmax(0, 1fr))", gap: "18px" }}>{(sec.itens ?? []).map((p: any, _i5: number) => (<Fragment key={_i5}><a href={p.href} style={{ display: "flex", flexDirection: "column", gap: "12px", textDecoration: "none", color: t.ink }}><div style={{ position: "relative", height: "200px", borderRadius: "var(--r-ed)", background: p.palco, border: `1px solid ${t.line}`, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "flex-end", paddingBottom: "26px", boxSizing: "border-box", overflow: "hidden" }}>{(p.dna) ? (<svg viewBox="0 0 100 100" aria-label="DNA olfativo" style={{ position: "absolute", right: "10px", bottom: "10px", width: "34px", height: "34px", zIndex: 3, overflow: "visible" }}><path d={p.dna.aro} style={{ fill: "none", stroke: t.line2, strokeWidth: "2" }}></path><path d={p.dna.eixos} style={{ fill: "none", stroke: t.line2, strokeWidth: "1.5" }}></path><path d={p.dna.forma} style={{ fill: p.corTerr, fillOpacity: ".28", stroke: p.corTerr, strokeWidth: "3", strokeLinejoin: "round" }}></path></svg>) : null}{(p.rel) ? (<><span style={{ position: "absolute", left: "10px", top: "10px", padding: "4px 9px", borderRadius: "10px", background: t.bg, color: t.amber, fontSize: "10.5px", whiteSpace: "nowrap" }}>{p.rel}</span></>) : null}{(p.assin) ? (<><svg viewBox="0 0 24 24" aria-label="Assinatura" style={{ position: "absolute", right: "10px", top: "10px", width: "17px", height: "17px", fill: t.amber }}><path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.5 1.3 6.6L12 17.2 6.1 20.5l1.3-6.6L2.5 9.4l6.6-.8z"></path></svg></>) : null}<div style={{ width: `${p.capW}px`, height: `${p.capH}px`, borderRadius: "3px", background: p.tampa, boxShadow: "inset 0 0 0 1px rgba(242,238,227,.12)" }}></div><div style={{ width: `${p.neckW}px`, height: "6px", background: "#8FA399" }}></div><div style={{ position: "relative", width: `${p.bw}px`, height: `${p.bh}px`, borderRadius: p.br, background: p.vidro, border: `1px solid ${t.line2}`, boxShadow: "0 14px 26px rgba(0,0,0,.35)", display: "flex", alignItems: "center", justifyContent: "center" }}><span style={{ width: `${p.lw}px`, height: `${p.lh}px`, borderRadius: "50%", background: "#F6F4EE", color: "#0B110F", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "1px", textAlign: "center" }}><span style={{ fontSize: "6px", letterSpacing: ".14em" }}>{p.rotMarca}</span><span style={{ fontSize: "9px", fontWeight: "600", lineHeight: "1.05" }}>{p.rotNome}</span></span></div>{p.foto ? (<img src={p.foto} alt={p.nome} loading="lazy" style={{ position: "absolute", inset: p.oficial ? "10px" : "0", width: p.oficial ? "calc(100% - 20px)" : "100%", height: p.oficial ? "calc(100% - 20px)" : "100%", objectFit: p.oficial ? "contain" : "cover", background: "transparent", filter: p.oficial ? "drop-shadow(0 12px 14px rgba(0,0,0,.5)) drop-shadow(0 2px 3px rgba(0,0,0,.35))" : "none", borderRadius: "12px", zIndex: 2 }} />) : null}<div style={{ position: "absolute", left: "50%", bottom: "14px", width: `${p.sombra}px`, height: "10px", marginLeft: `-${p.sombraM}px`, borderRadius: "50%", background: "radial-gradient(ellipse, rgba(0,0,0,.45), rgba(0,0,0,0) 70%)" }}></div></div><div style={{ display: "flex", flexDirection: "column", gap: "4px", padding: "0 4px" }}><span style={{ fontSize: "15px", fontWeight: "500", lineHeight: "1.2" }}>{p.nome}</span><span style={{ fontFamily: "var(--mono)", fontSize: "10.5px", letterSpacing: ".08em", color: t.ink3 }}>{p.marcaUp}</span><span style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "12.5px", color: t.ink2, marginTop: "2px" }}><span style={{ width: "7px", height: "7px", borderRadius: "4px", background: p.corFam }}></span>{p.fam}</span><span style={{ fontSize: "12px", color: t.ink3, lineHeight: "1.4" }}>{p.notas}</span></div></a></Fragment>))}</div></section></Fragment>))}</main></div></>);
+type Item = DadosColecao["itens"][number];
+const GN: [string, string][] = [["acorde", "Acorde"], ["familia", "Família"], ["marca", "Marca"], ["genero", "Gênero"], ["az", "A–Z"]];
+const SIT: [string, string][] = [["tenho", "Tenho"], ["tive", "Tive"], ["quero", "Quero"], ["assinatura", "Assinatura"]];
+const ORD: [string, string][] = [["recentes", "Mais recentes"], ["usados", "Mais usados"], ["esquecidos", "Esquecidos"]];
+const n3 = (n: number) => String(n).padStart(3, "0");
+
+function Cartao({ p, grande, k }: { p: Item; grande?: boolean; k: number }) {
+  return (
+    <Link href={p.href} className={`dc-cartao ${grande ? "grande" : ""}`} style={{ ["--terr" as string]: p.corTerr, ["--i" as string]: k } as CSSProperties}>
+      <div className="dc-cartao-palco">
+        <PalcoC nome={p.nome} casa={p.marca} acorde={p.acorde} forma={p.forma} tampa={p.tampa} foto={p.foto} oficial={p.oficial} altura={280} k={1.3} raio={28} transparente semBorda />
+        {p.numero ? <span className="dc-num">Nº {n3(p.numero)}</span> : null}
+        {p.rel ? <span className="dc-rel">{p.rel}</span> : null}
+        {p.assin ? <span className="dc-assin" title="Assinatura"><Icone nome="estrela" tamanho={16} /></span> : null}
+        {p.dna ? (
+          <svg className="dc-dna" viewBox="0 0 100 100" aria-hidden="true">
+            <path d={p.dna.aro} /><path d={p.dna.eixos} /><path className="forma" d={p.dna.forma} />
+          </svg>
+        ) : null}
+      </div>
+      <div className="dc-cartao-txt">
+        <strong>{p.nome}</strong>
+        <span className="dc-marca">{p.marcaUp}</span>
+        <span className="dc-fam"><i style={{ background: p.corFam }} />{p.fam}</span>
+        {grande && p.notas ? <span className="dc-notas">{p.notas}</span> : null}
+      </div>
+    </Link>
+  );
+}
+
+export default function DesColecao({ d, s }: { d: DadosColecao; s: EstadoColecao }) {
+  const c = d.classe;
+  const conta = d.contagem as Record<string, number>;
+  const frac = c.total / Math.max(1, c.total + c.faltam);
+  const R = 92, L = 2 * Math.PI * R;
+  return (
+    <div className="dc">
+      {/* ---------- cabeçalho: título enorme + classe do colecionador ---------- */}
+      <header className="dc-cab">
+        <div className="dc-cab-txt">
+          <h1 className="dc-h1 palavras"><span style={{ ["--i" as string]: 0 } as CSSProperties}>Coleção</span><sup>{c.total}</sup></h1>
+          <p>Seu arquivo de frascos: o que você tem, o que já teve e o que ainda quer.</p>
+          <div className="dc-resumo">
+            {d.resumo.map((r) => <span key={r.l}><b>{r.v}</b> {r.l}</span>)}
+          </div>
+        </div>
+        <div className="dc-classe">
+          <svg viewBox="0 0 220 220" className="dc-anel" aria-hidden="true">
+            <defs>
+              <linearGradient id="dc-anel" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="var(--acento)" /><stop offset="1" stopColor="var(--musgo)" /></linearGradient>
+            </defs>
+            <circle cx="110" cy="110" r={R} className="trilho" />
+            <circle cx="110" cy="110" r={R} className="arco" style={{ strokeDasharray: L, ["--fim" as string]: L * (1 - frac) } as CSSProperties} />
+          </svg>
+          <div className="dc-classe-txt">
+            <span className="rotulo">Classe do colecionador</span>
+            <strong>{c.nome}</strong>
+            {c.faltam > 0 ? <span>Faltam <b>{c.faltam} frascos</b> para {c.prox}</span> : <span>Classe máxima alcançada</span>}
+            <div className="dc-niveis">
+              {c.niveis.map((n) => <span key={n.nome} style={{ color: n.txt }}><i style={{ background: n.cor }} />{n.nome}</span>)}
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* ---------- marcos: fileira de selos ---------- */}
+      <section className="dc-marcos">
+        <span className="dc-marcos-tit">Marcos <b>{d.marcosN}/{d.marcosT}</b></span>
+        {d.marcosL.map((m) => {
+          const ok = m.op === 1;
+          return (
+            <span key={m.nome} className={`dc-marco ${ok ? "ok" : ""}`} title={m.sub}>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d={m.d} /></svg>{m.nome}
+            </span>
+          );
+        })}
+      </section>
+
+      {/* ---------- barra de ferramentas presa ao topo ---------- */}
+      <div className="dc-barra">
+        <div className="dc-seg">
+          {SIT.map(([k, nome]) => <button key={k} type="button" className={s.sit === k ? "on" : ""} onClick={() => s.setSit(k)}>{nome}<small>{conta[k] ?? 0}</small></button>)}
+        </div>
+        <label className="campo dc-busca">
+          <Icone nome="busca" tamanho={18} />
+          <input value={s.busca} onChange={(e) => s.setBusca(e.target.value)} placeholder="Nome, marca ou nota" aria-label="Buscar na coleção" />
+        </label>
+        <div className="dc-seg leve">
+          {GN.map(([k, nome]) => <button key={k} type="button" className={s.modo === k ? "on" : ""} onClick={() => s.setModo(k)}>{nome}</button>)}
+        </div>
+        <select className="dc-ordem" value={s.ordem} onChange={(e) => s.setOrdem(e.target.value)} aria-label="Ordenar">
+          {ORD.map(([k, nome]) => <option key={k} value={k}>{nome}</option>)}
+        </select>
+      </div>
+
+      {/* ---------- grupos: o primeiro de cada grupo ganha destaque ---------- */}
+      <main className="dc-grupos">
+        {s.secoes.length === 0 && (
+          <div className="dc-vazio">
+            <strong>Nada por aqui.</strong>
+            <span>{s.busca ? "Tente outro nome, marca ou nota." : "Cadastre um frasco para começar esta prateleira."}</span>
+            <Link href="/adicionar" className="btn">Adicionar perfume</Link>
+          </div>
+        )}
+        {s.secoes.map((g) => (
+          <section key={g.nome} className="dc-grupo" style={{ ["--cor" as string]: g.cor } as CSSProperties}>
+            <header>
+              <h2>{g.nome}</h2>
+              <span>{g.n}</span>
+            </header>
+            <div className="dc-grade">
+              {g.itens.map((p, k) => <Cartao key={p.id} p={p} k={k} grande={k === 0 && g.itens.length >= 3} />)}
+            </div>
+          </section>
+        ))}
+      </main>
+
+      {d.demo ? <span className="tracejado dc-demo">DADOS ILUSTRATIVOS</span> : null}
+    </div>
+  );
 }

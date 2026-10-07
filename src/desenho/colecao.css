@@ -1,0 +1,85 @@
+/* Coleção do computador (Atlas Vivo). Desenhada para 1440 px; o zoom de .so-computador ajusta à tela. */
+.dc { position: relative; width: 1440px; margin: 0 auto; padding: 56px 72px 96px; display: flex; flex-direction: column; gap: 36px; }
+
+/* cabeçalho */
+.dc-cab { display: grid; grid-template-columns: 1fr 560px; gap: 48px; align-items: center; }
+.dc-cab-txt { display: flex; flex-direction: column; gap: 18px; }
+.dc-h1 { margin: 0; font-family: var(--marca); font-size: 168px; font-weight: 600; letter-spacing: -0.055em; line-height: 0.82; display: flex; align-items: flex-start; }
+.dc-h1 sup { margin-left: 14px; margin-top: 14px; font-family: var(--mono); font-size: 22px; font-weight: 500; letter-spacing: 0; color: var(--acento); }
+.dc-cab-txt p { margin: 0; font-size: 18px; line-height: 1.55; color: var(--ink-2); max-width: 42ch; }
+.dc-resumo { display: flex; gap: 8px; flex-wrap: wrap; }
+.dc-resumo span { padding: 7px 14px; border-radius: var(--r-pill); border: 1px solid var(--line-2); font-size: 13.5px; color: var(--ink-2); }
+.dc-resumo b { color: var(--ink); font-weight: 600; }
+
+.dc-classe { position: relative; display: grid; grid-template-columns: 220px 1fr; gap: 28px; align-items: center; padding: 26px 30px 26px 26px; border-radius: 36px; background: radial-gradient(ellipse 60% 80% at 20% 50%, color-mix(in oklab, var(--acento) 14%, transparent), transparent 70%), var(--surface); border: 1px solid var(--line); box-shadow: var(--sombra); }
+.dc-anel { width: 220px; height: 220px; transform: rotate(-90deg); }
+.dc-anel circle { fill: none; stroke-width: 14; stroke-linecap: round; }
+.dc-anel .trilho { stroke: var(--chip-2); }
+.dc-anel .arco { stroke: url(#dc-anel); stroke-dashoffset: var(--fim); animation: dc-arco 1.6s var(--ease) both .2s; }
+@keyframes dc-arco { from { stroke-dashoffset: 578; } }
+.dc-classe-txt { display: flex; flex-direction: column; gap: 6px; }
+.dc-classe-txt strong { font-family: var(--marca); font-size: 44px; font-weight: 600; letter-spacing: -0.035em; line-height: 1; }
+.dc-classe-txt > span:not(.rotulo) { font-size: 14.5px; color: var(--ink-2); }
+.dc-classe-txt b { color: var(--ink); }
+.dc-niveis { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 10px; }
+.dc-niveis span { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; }
+.dc-niveis i { width: 18px; height: 5px; border-radius: 3px; }
+
+/* marcos */
+.dc-marcos { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.dc-marcos-tit { margin-right: 6px; font-family: var(--mono); font-size: 11px; letter-spacing: 0.14em; color: var(--ink-3); text-transform: uppercase; }
+.dc-marcos-tit b { color: var(--acento); font-weight: 500; }
+.dc-marco { display: inline-flex; align-items: center; gap: 8px; height: 38px; padding: 0 16px 0 10px; border-radius: var(--r-pill); border: 1px dashed var(--line-2); font-size: 13.5px; color: var(--ink-3); }
+.dc-marco svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.dc-marco.ok { border-style: solid; border-color: var(--ouro-linha); background: color-mix(in oklab, var(--acento) 10%, transparent); color: var(--ink); }
+.dc-marco.ok svg { stroke: var(--acento); }
+
+/* barra */
+.dc-barra { position: sticky; top: 96px; z-index: 10; display: flex; align-items: center; gap: 12px; padding: 8px; border-radius: var(--r-pill); background: var(--vidro); backdrop-filter: blur(20px) saturate(160%); -webkit-backdrop-filter: blur(20px) saturate(160%); border: 1px solid var(--line); box-shadow: 0 18px 40px -26px rgba(0, 0, 0, 0.9); }
+.dc-seg { display: flex; gap: 2px; padding: 4px; border-radius: var(--r-pill); background: var(--pill); }
+.dc-seg button { display: inline-flex; align-items: center; gap: 7px; height: 38px; padding: 0 16px; border: none; border-radius: var(--r-pill); background: transparent; color: var(--ink-3); font-size: 14px; font-weight: 500; transition: background-color .25s var(--ease), color .25s; }
+.dc-seg button:hover { color: var(--ink); }
+.dc-seg button.on { background: var(--btn); color: var(--on-btn); font-weight: 600; box-shadow: 0 6px 16px -8px color-mix(in oklab, var(--acento) 80%, transparent); }
+.dc-seg.leve button.on { background: var(--ink); color: var(--bg); box-shadow: none; }
+.dc-seg small { font-family: var(--mono); font-size: 11px; opacity: 0.7; }
+.dc-busca { flex: 1; height: 46px; background: transparent; }
+.dc-ordem { height: 46px; padding: 0 18px; border-radius: var(--r-pill); border: 1px solid var(--line); background: var(--pill); color: var(--ink); font-size: 14px; }
+
+/* grupos */
+.dc-grupos { display: flex; flex-direction: column; gap: 72px; margin-top: 12px; }
+.dc-grupo header { display: flex; align-items: baseline; gap: 16px; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--line); }
+.dc-grupo h2 { position: relative; margin: 0; padding-left: 26px; font-family: var(--marca); font-size: 56px; font-weight: 600; letter-spacing: -0.04em; line-height: 1; }
+.dc-grupo h2::before { content: ""; position: absolute; left: 0; top: 50%; width: 14px; height: 14px; margin-top: -4px; border-radius: 50%; background: var(--cor); box-shadow: 0 0 24px var(--cor); }
+.dc-grupo header span { font-family: var(--mono); font-size: 12px; letter-spacing: 0.1em; color: var(--ink-3); }
+.dc-grade { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; }
+
+.dc-cartao { display: flex; flex-direction: column; gap: 14px; }
+.dc-cartao.grande { grid-column: span 2; }
+.dc-cartao-palco { position: relative; border-radius: 30px; border: 1px solid var(--line); background: radial-gradient(ellipse 70% 60% at 50% 80%, color-mix(in oklab, var(--terr) 26%, transparent), transparent 70%), var(--surface); overflow: hidden; transition: transform .6s var(--ease), border-color .3s, box-shadow .6s var(--ease); }
+.dc-cartao.grande .dc-cartao-palco { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; background: radial-gradient(ellipse 60% 55% at 50% 60%, color-mix(in oklab, var(--terr) 34%, transparent), transparent 72%), var(--surface); }
+.dc-cartao:hover .dc-cartao-palco { transform: translateY(-8px); border-color: color-mix(in oklab, var(--terr) 55%, transparent); box-shadow: 0 34px 60px -34px color-mix(in oklab, var(--terr) 60%, black); }
+.dc-cartao:hover .dc-cartao-palco img { transform: scale(1.04) rotate(-1deg); }
+.dc-cartao-palco img { transition: transform .8s var(--ease); }
+.dc-num { position: absolute; left: 18px; top: 16px; font-family: var(--mono); font-size: 11px; color: var(--ink-3); }
+.dc-rel { position: absolute; left: 18px; bottom: 16px; padding: 4px 11px; border-radius: var(--r-pill); background: var(--vidro); border: 1px solid var(--line-2); font-size: 11.5px; color: var(--ink-2); backdrop-filter: blur(8px); }
+.dc-assin { position: absolute; right: 16px; top: 14px; color: var(--acento); }
+.dc-assin svg { fill: currentColor; }
+.dc-dna { position: absolute; right: 14px; bottom: 14px; width: 38px; height: 38px; opacity: 0.85; }
+.dc-dna path { fill: none; stroke: var(--line-2); stroke-width: 1.2; }
+.dc-dna .forma { fill: color-mix(in oklab, var(--terr) 35%, transparent); stroke: var(--terr); stroke-width: 2; }
+.dc-cartao-txt { display: flex; flex-direction: column; gap: 4px; padding: 0 6px; }
+.dc-cartao-txt strong { font-size: 17px; font-weight: 600; letter-spacing: -0.01em; }
+.dc-cartao.grande .dc-cartao-txt strong { font-family: var(--marca); font-size: 34px; letter-spacing: -0.03em; line-height: 1; }
+.dc-marca { font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; color: var(--ink-3); }
+.dc-fam { display: inline-flex; align-items: center; gap: 7px; font-size: 13.5px; color: var(--ink-2); }
+.dc-fam i { width: 8px; height: 8px; border-radius: 50%; }
+.dc-notas { font-size: 14px; color: var(--ink-3); }
+
+.dc-vazio { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; padding: 48px; border-radius: 36px; border: 1px dashed var(--line-2); }
+.dc-vazio strong { font-family: var(--marca); font-size: 36px; font-weight: 600; }
+.dc-vazio span { color: var(--ink-2); }
+.dc-demo { align-self: flex-end; }
+
+@supports (animation-timeline: view()) {
+  .dc-cartao { animation: surge linear both; animation-timeline: view(); animation-range: entry 0% entry 45%; }
+}

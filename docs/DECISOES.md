@@ -361,3 +361,13 @@ Pedido do Willian: direção nova e ousada, com personalidade e animação, sem 
   - prateleira de últimas entradas e contadores grandes dos esquecidos;
   - celular: saudação grande, perfume do dia com frasco grande, curiosidade com foto, números 2×2, prateleiras com rolagem lateral.
 - Próximas telas seguem a mesma linguagem: Coleção, Ficha, DNA, Descobrir, Sommelier, Lançamentos.
+
+### §28.2 Coleção recomposta (out/2026)
+
+- Computador (`src/desenho/DesColecao.tsx` + `colecao.css`), escrita à mão e ligada ao mesmo estado do celular (`ColecaoCliente` passa `s` para os dois):
+  - título "Coleção" enorme com a contagem ao lado; classe do colecionador num anel em degradê que se desenha;
+  - marcos como fileira de selos (feitos em menta, faltando tracejados);
+  - barra de ferramentas de vidro presa ao topo: situação, busca, agrupar e ordenar;
+  - grupos com nome grande e ponto luminoso na cor do grupo; o primeiro frasco de cada grupo (com 3 ou mais) ocupa duas colunas;
+  - cartões com luz do território, número da entrada, selo Inspirado/Original, estrela da assinatura e o DNA em miniatura; sobem e inclinam no hover.
+- Celular (`src/cel/CelColecao.tsx` + `cel-colecao.css`): título grande com contagem, marcos em selos, grupos com nome grande, primeiro frasco do grupo em largura total.

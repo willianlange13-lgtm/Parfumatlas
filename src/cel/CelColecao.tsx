@@ -1,8 +1,9 @@
 "use client";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
+import "./cel-colecao.css";
 import { Icone } from "@/components/Icone";
-import { Anel, Btn, Card, Circ, MONO, OURO, PalcoC, Pill, Qtd, Rolar, Rot, Secao, TituloAba } from "./kit";
+import { Anel, Btn, Card, Circ, MONO, PalcoC, Pill, Qtd, Rolar, Rot } from "./kit";
 import type { DadosColecao } from "@/montar/colecao";
 import { ouvirUmaVez } from "./voz";
 
@@ -21,19 +22,18 @@ const GN: [string, string][] = [["acorde", "Acorde"], ["familia", "Família"], [
 const SIT: [string, string][] = [["tenho", "Tenho"], ["tive", "Tive"], ["quero", "Quero"], ["assinatura", "Assinatura"]];
 const ORD: [string, string][] = [["usados", "Mais usados"], ["recentes", "Mais recentes"], ["esquecidos", "Esquecidos"]];
 
-function CardP({ p }: { p: Item }) {
+function CardP({ p, grande }: { p: Item; grande?: boolean }) {
   return (
-    <Link href={p.href} style={{ display: "flex", flexDirection: "column", gap: 8, minWidth: 0 }}>
-      <PalcoC nome={p.nome} casa={p.marca} acorde={p.acorde} forma={p.forma} tampa={p.tampa} foto={p.foto} oficial={p.oficial} altura={140} k={0.78} raio={18}>
-        {p.rel ? <span style={{ position: "absolute", left: 9, top: 9, padding: "3px 8px", borderRadius: 9, background: "var(--bg)", color: "var(--prata)", fontSize: 10 }}>{p.rel}</span> : null}
-        {p.assin ? <span style={{ position: "absolute", right: 9, top: 9 }}><svg viewBox="0 0 24 24" style={{ width: 15, height: 15, fill: OURO, stroke: OURO, strokeWidth: 1 }}><path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.5 1.3 6.6L12 17.2 6.1 20.5l1.3-6.6L2.5 9.4l6.6-.8z" /></svg></span> : null}
-      </PalcoC>
-      <div style={{ display: "flex", flexDirection: "column", gap: 3, padding: "0 2px" }}>
-        <span style={{ fontSize: 14, fontWeight: 500, lineHeight: 1.2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.nome}</span>
-        <span style={{ fontFamily: MONO, fontSize: 9.5, letterSpacing: ".08em", color: "var(--ink-3)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{p.marcaUp}</span>
-        <span style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11.5, color: "var(--ink-2)" }}><span style={{ width: 6, height: 6, borderRadius: 3, background: p.corFam, flexShrink: 0 }} />{p.fam}</span>
-        <span style={{ fontSize: 11, color: "var(--ink-3)", lineHeight: 1.35 }}>{p.notas}</span>
+    <Link href={p.href} className={`cc-cartao ${grande ? "grande" : ""}`} style={{ ["--terr" as string]: p.corTerr } as CSSProperties}>
+      <div className="cc-palco">
+        <PalcoC nome={p.nome} casa={p.marca} acorde={p.acorde} forma={p.forma} tampa={p.tampa} foto={p.foto} oficial={p.oficial} altura={grande ? 300 : 190} k={grande ? 1.45 : 0.95} raio={26} transparente semBorda />
+        {p.rel ? <span className="cc-rel">{p.rel}</span> : null}
+        {p.assin ? <span className="cc-assin"><Icone nome="estrela" tamanho={15} /></span> : null}
       </div>
+      <strong>{p.nome}</strong>
+      <span className="cc-marca">{p.marcaUp}</span>
+      <span className="cc-fam"><i style={{ background: p.corFam }} />{p.fam}</span>
+      {grande && p.notas ? <span className="cc-notas">{p.notas}</span> : null}
     </Link>
   );
 }
@@ -53,9 +53,10 @@ export function CelColecao({ d, s }: { d: DadosColecao; s: EstadoColecao }) {
   const ouvir = () => ouvirUmaVez((txt) => s.setBusca(txt));
   return (
     <div className="c-tela">
-      <TituloAba titulo="Coleção">
-        <Circ icone="filtro" rotulo="Organizar" onClick={() => setFolha(true)} />
-      </TituloAba>
+      <header className="cc-cab">
+        <h1>Coleção<sup>{d.total}</sup></h1>
+        <Circ icone="filtro" rotulo="Organizar" onClick={() => setFolha(true)} tamanho={44} />
+      </header>
       <label className="c-campo">
         <Icone nome="busca" tamanho={18} />
         <input value={s.busca} onChange={(e) => s.setBusca(e.target.value)} placeholder="Nome, marca ou nota" aria-label="Buscar na coleção" />
@@ -84,20 +85,13 @@ export function CelColecao({ d, s }: { d: DadosColecao; s: EstadoColecao }) {
         </div>
       </Card>
 
-      <Secao titulo="Marcos da coleção" dir={`${d.marcosN} de ${d.marcosT}`} />
-      <Rolar>
-        {d.marcosL.map((m) => {
-          const ok = m.op === 1;
-          return (
-            <div key={m.nome} style={{ width: 136, flexShrink: 0, borderRadius: 16, padding: 12, background: ok ? "var(--chip)" : "transparent", border: `1px ${ok ? "solid" : "dashed"} ${ok ? "var(--line-2)" : "var(--line)"}`, display: "flex", flexDirection: "column", gap: 8, opacity: ok ? 1 : 0.75 }}>
-              <span style={{ width: 28, height: 28, borderRadius: 14, background: ok ? "var(--prata)" : "var(--chip)", color: ok ? "var(--on-btn)" : "var(--ink-3)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <svg viewBox="0 0 24 24" style={{ width: 14, height: 14, fill: "none", stroke: "currentColor", strokeWidth: ok ? 2.2 : 1.8, strokeLinecap: "round", strokeLinejoin: "round" }}><path d={m.d} /></svg>
-              </span>
-              <span style={{ fontSize: 13.5, fontWeight: 500, lineHeight: 1.2 }}>{m.nome}</span>
-              <span style={{ fontSize: 11, color: "var(--ink-3)", lineHeight: 1.3 }}>{m.sub}</span>
-            </div>
-          );
-        })}
+      <div className="cc-marcos-tit"><span className="c-rot">Marcos da coleção</span><span>{d.marcosN} de {d.marcosT}</span></div>
+      <Rolar gap={6}>
+        {d.marcosL.map((m) => (
+          <span key={m.nome} className={`cc-marco ${m.op === 1 ? "ok" : ""}`}>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d={m.d} /></svg>{m.nome}
+          </span>
+        ))}
       </Rolar>
 
       {abas}
@@ -116,13 +110,11 @@ export function CelColecao({ d, s }: { d: DadosColecao; s: EstadoColecao }) {
       )}
       {s.secoes.map((g) => (
         <div key={g.nome} style={{ display: "flex", flexDirection: "column", gap: 14, flexShrink: 0 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <span style={{ width: 9, height: 9, borderRadius: 5, background: g.cor }} />
-            <span style={{ fontSize: 18, fontWeight: 500 }}>{g.nome}</span>
-            <span style={{ fontFamily: MONO, fontSize: 11, color: "var(--ink-3)" }}>{g.n}</span>
-            <span style={{ flexGrow: 1, height: 1, background: "var(--line)" }} />
+          <div className="cc-grupo" style={{ ["--cor" as string]: g.cor } as CSSProperties}>
+            <h2>{g.nome}</h2>
+            <span>{g.n}</span>
           </div>
-          <div className="c-grade2">{g.itens.map((p) => <CardP key={p.id} p={p} />)}</div>
+          <div className="c-grade2">{g.itens.map((p, k) => <CardP key={p.id} p={p} grande={k === 0 && g.itens.length >= 3} />)}</div>
         </div>
       ))}
 
