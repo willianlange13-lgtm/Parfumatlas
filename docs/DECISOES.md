@@ -419,3 +419,8 @@ Pedido do Willian: direção nova e ousada, com personalidade e animação, sem 
 - `npm run typecheck` gera os tipos das rotas e roda o TypeScript.
 - Ficha, Descobrir e Lançamentos do computador recebem os dados tipados pelo retorno das funções `montar*` (sem `any`). Isso achou o campo `oficial` que as telas de Lançamentos liam e os dados não tinham; agora ele existe.
 - `EmConstrucao.tsx` (sem uso) saiu.
+
+### §28.10 DNA e Descobrir no celular; títulos de aba (out/2026)
+
+- O DNA e o Descobrir deixaram de mostrar "abra no computador": têm versões próprias no celular (`src/cel/CelDNA.tsx`, `CelDescobrir.tsx`). DNA: título do gosto, radar com os eixos, traços, cifras, notas em bolhas, caráter, estações e lacunas em rolagem lateral. Descobrir: lições em rolagem lateral, nota em foco, linha do tempo em lista por ano e países de origem.
+- `TituloAba` (Buscar, Novidades) ficou em tamanho de cartaz.

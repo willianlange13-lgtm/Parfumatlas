@@ -1,0 +1,42 @@
+.cd { gap: 26px; }
+.cd-topo { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; }
+.cd-topo h1 { margin: 0; font-family: var(--marca); font-size: 44px; font-weight: 600; letter-spacing: -0.045em; line-height: 0.95; }
+.cd-topo h1 em { font-style: normal; color: var(--acento); }
+.cd-topo p { margin: 0; font-size: 15px; line-height: 1.5; color: var(--ink-2); }
+.cd-radar { position: relative; width: 340px; height: 340px; max-width: 100%; align-self: center; margin: 0 10px; transform: scale(.94); }
+.cd-radar > div { position: absolute; left: 20px; top: 20px; }
+.cd-radar > span { position: absolute; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center; font-family: var(--mono); font-size: 8.5px; letter-spacing: 0.08em; color: var(--ink-3); white-space: nowrap; }
+.cd-radar b { font-family: var(--marca); font-size: 14px; font-weight: 600; }
+.cd-tracos { display: flex; flex-wrap: wrap; gap: 6px; }
+.cd-tracos span { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px; border-radius: var(--r-pill); border: 1px solid var(--line-2); font-size: 13px; }
+.cd-tracos i { width: 7px; height: 7px; border-radius: 50%; }
+.cd-cifras { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.cd-cifras > div { display: flex; flex-direction: column; gap: 3px; padding: 16px 0 16px 12px; border-left: 1px solid var(--line); min-width: 0; }
+.cd-cifras > div:first-child { border-left: none; padding-left: 0; }
+.cd-cifras span { font-family: var(--mono); font-size: 8.5px; letter-spacing: 0.1em; color: var(--ink-3); }
+.cd-cifras b { font-family: var(--marca); font-size: 24px; font-weight: 600; letter-spacing: -0.04em; line-height: 1; overflow: hidden; text-overflow: ellipsis; }
+.cd-cifras small { font-size: 11px; color: var(--ink-3); }
+.cd-bloco { display: flex; flex-direction: column; gap: 14px; }
+.cd-bloco h2 { margin: 0; font-family: var(--marca); font-size: 26px; font-weight: 600; letter-spacing: -0.03em; line-height: 1; }
+.cd-bloco p { margin: 0; font-size: 13.5px; line-height: 1.5; color: var(--ink-2); }
+.cd-cartao { padding: 20px; border-radius: var(--r-ed); background: var(--surface); border: 1px solid var(--line); }
+.cd-notas { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 14px 16px; }
+.cd-notas > div { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.cd-notas > div > span { width: var(--tam); height: var(--tam); border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 2px var(--bg), 0 0 0 3px color-mix(in oklab, var(--cor) 60%, transparent); }
+.cd-notas img { width: 100%; height: 100%; object-fit: cover; }
+.cd-notas svg { width: 45%; height: 45%; fill: none; stroke: var(--cor); stroke-width: 1.4; }
+.cd-notas strong { font-size: 12px; font-weight: 600; }
+.cd-notas small { font-family: var(--mono); font-size: 9.5px; color: var(--ink-3); }
+.cd-escala { display: grid; grid-template-columns: 64px 1fr 64px; align-items: center; gap: 10px; font-size: 13px; }
+.cd-escala span:last-child { text-align: right; }
+.cd-escala > div { position: relative; height: 2px; background: var(--line-2); }
+.cd-escala i { position: absolute; top: 50%; width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%; background: var(--btn); box-shadow: 0 0 0 4px color-mix(in oklab, var(--acento) 18%, transparent); }
+.cd-estacoes { display: grid; grid-template-columns: repeat(4, 1fr); }
+.cd-estacoes > div { display: flex; flex-direction: column; }
+.cd-estacoes b { font-family: var(--marca); font-size: 40px; font-weight: 600; letter-spacing: -0.05em; line-height: 1; }
+.cd-estacoes span { font-size: 12px; color: var(--ink-2); }
+.cd-lacunas { gap: 10px; }
+.cd-lacunas a { width: 170px; flex-shrink: 0; display: flex; flex-direction: column; gap: 4px; padding: 12px; border-radius: 26px; border: 1px dashed color-mix(in oklab, var(--cor) 55%, transparent); }
+.cd-falta { align-self: flex-start; padding: 3px 9px; border-radius: var(--r-pill); background: color-mix(in oklab, var(--cor) 20%, transparent); font-family: var(--mono); font-size: 9px; letter-spacing: 0.1em; }
+.cd-lacunas strong { font-size: 14px; font-weight: 600; }
+.cd-lacunas small { font-size: 11.5px; color: var(--ink-3); }
