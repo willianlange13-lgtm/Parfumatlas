@@ -430,3 +430,12 @@ Pedido do Willian: direção nova e ousada, com personalidade e animação, sem 
 - Componente `Cartaz` (`src/cel/kit.tsx`): título de cartaz em duas linhas (a segunda em menta) nas telas internas do celular. Configurações ("Seu Atlas, do seu jeito."), Editar ("Ajuste a sua ficha."), Blind test ("Prove sem ver o rótulo."), Curiosidade (nome da nota) e Comparar (os dois perfumes, com a semelhança).
 - O nome deixou de estar escrito no código: saudação e assinatura do Início vêm de `configuracoes.nome` (`obterConfig`), e as iniciais do topo usam a mesma regra das Configurações (duas primeiras palavras). O texto do prompt do Sommelier ainda cita o nome; fica como está.
 - Coleção e DNA não usam mais os JSON das pranchas (`AtlasAzulPreto.json` e `DNAPreto.json` saíram). As outras telas ainda tiram textos e dados padrão dos seus JSON.
+
+## 31. Camada de cor e movimento v2 (out/2026)
+
+Pedido do Willian: "ainda muito básico, sem animações, cores lineares demais".
+- Diagnóstico: parte do movimento dependia de `animation-timeline: view()`, que o Safari do iPhone não tem; e tudo some com "Reduzir movimento" ligado no aparelho (respeitado de propósito).
+- `src/components/Vida.tsx` (no layout): revela os blocos ao rolar com IntersectionObserver (funciona no iPhone), em cascata na abertura; conta os números grandes de 0 até o valor; no computador inclina cartões em 3D e acende uma luz menta sob o cursor.
+- `src/app/vida.css`: céu de malha com três luzes (menta, petróleo e a do território) derivando atrás de tudo; bordas em degradê menta→âmbar nos cartões; títulos com brilho que atravessa as letras (o degradê vai em cada palavra animada, por causa do Safari) e parte em destaque em degradê menta→âmbar; botão principal com degradê que respira e o + da barra com pulso.
+- Segundo tom (`--ambar` #FFB86B) só em degradês, nunca como cor de botão: o acento continua o menta.
+- JSON das pranchas: removidas as chaves que nenhum código lê.

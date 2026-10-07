@@ -1,0 +1,86 @@
+/* Atlas Vivo · camada de cor e movimento v2 (docs/DECISOES.md §31).
+ * Cor com profundidade: céu de malha (menta, petróleo e âmbar) derivando atrás de tudo, bordas em degradê,
+ * títulos com brilho que atravessa. Movimento visível em todo navegador: revelação ao rolar, números que
+ * contam, cartões que inclinam e acendem sob o cursor. */
+:root {
+  --ambar: #ffb86b;
+  --petroleo: #2e8fa3;
+  --borda-viva: linear-gradient(140deg, rgba(127, 227, 196, 0.55), rgba(242, 238, 227, 0.06) 38%, rgba(242, 238, 227, 0.04) 62%, rgba(255, 184, 107, 0.4));
+}
+
+/* ---------- céu de malha: três luzes grandes que derivam devagar ---------- */
+body::before, body::after { content: ""; position: fixed; z-index: 0; pointer-events: none; border-radius: 50%; filter: blur(60px); }
+body::before { width: 62vmax; height: 62vmax; left: -18vmax; top: -22vmax; background: radial-gradient(circle, rgba(127, 227, 196, 0.22), transparent 62%); animation: ceu-a 26s ease-in-out infinite alternate; }
+body::after { width: 56vmax; height: 56vmax; right: -16vmax; bottom: -24vmax; background: radial-gradient(circle, rgba(46, 143, 163, 0.26), transparent 62%); animation: ceu-b 32s ease-in-out infinite alternate; }
+.brilho { opacity: 1; background: radial-gradient(circle at 45% 45%, color-mix(in oklab, var(--terr-a) 30%, transparent) 0%, transparent 58%), radial-gradient(circle at 70% 70%, rgba(255, 184, 107, 0.14) 0%, transparent 55%) !important; filter: blur(40px) !important; }
+@keyframes ceu-a { to { transform: translate3d(14vmax, 10vmax, 0) scale(1.15); } }
+@keyframes ceu-b { to { transform: translate3d(-12vmax, -14vmax, 0) scale(1.1); } }
+
+/* ---------- bordas em degradê nos cartões (por cima do fundo, sem depender dele) ---------- */
+.card, .c-card, .vivo-dia, .vivo-cur, .vivo-esquecido, .dc-cartao-palco, .dc-classe, .dd-duplo > .dd-bloco, .dl-destaque, .dl-cards article, .ci-dia, .ci-cur, .cc-palco, .so-chat, .en-form, .cd-cartao, .cdes-nota, .cdes-licoes article, .ci-diaseq, .ci-esquecido {
+  isolation: isolate; position: relative;
+}
+.card::before, .c-card::before, .vivo-dia::before, .vivo-cur::after, .vivo-esquecido::before, .dc-cartao-palco::before, .dc-classe::before, .dd-duplo > .dd-bloco::before, .dl-destaque::before, .dl-cards article::before, .ci-dia::before, .cc-palco::before, .so-chat::before, .en-form::before, .cd-cartao::before, .cdes-nota::before, .ci-diaseq::before, .ci-esquecido::before {
+  content: ""; position: absolute; inset: 0; z-index: 2; border-radius: inherit; padding: 1px; pointer-events: none;
+  background: var(--borda-viva);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); mask-composite: exclude;
+  opacity: .8; transition: opacity .4s var(--ease);
+}
+
+/* ---------- títulos: brilho menta que atravessa as letras ---------- */
+/* em títulos com palavras animadas, o degradê vai em cada palavra (no Safari o recorte do pai não alcança filhos animados) */
+:is(.titulo-poster, .vivo-h1, .dc-h1, .dd-topo h1, .ds-topo h1, .dl-topo h1, .df-titulo h1, .ci-ola h1, .cc-cab h1, .cs-hero h1, .cd-topo h1, .cdes-topo h1, .cad-tit, .en-tit h1, .ne h1, .so-titulo):not(.palavras),
+.palavras span {
+  background: linear-gradient(100deg, var(--ink) 0%, var(--ink) 38%, #c9fbe9 47%, var(--acento) 50%, #c9fbe9 53%, var(--ink) 62%, var(--ink) 100%);
+  background-size: 260% 100%; background-position: 100% 0;
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+:is(.titulo-poster, .vivo-h1, .dc-h1, .dd-topo h1, .ds-topo h1, .dl-topo h1, .df-titulo h1, .ci-ola h1, .cc-cab h1, .cs-hero h1, .cd-topo h1, .cdes-topo h1, .cad-tit, .en-tit h1, .ne h1, .so-titulo):not(.palavras) { animation: reluz 7s var(--ease) infinite; }
+.palavras > span { animation: palavra .9s var(--ease) both, reluz 7s var(--ease) 1.2s infinite; animation-delay: calc(var(--i, 0) * 70ms + 120ms), 1.2s; }
+.palavras em span, :is(h1, .cad-tit) em, .titulo-poster span[style*="acento"] {
+  background: linear-gradient(90deg, var(--acento), #b9f6e2 45%, var(--ambar) 110%); -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.palavras em span { animation: palavra .9s var(--ease) both; animation-delay: calc(var(--i, 0) * 70ms + 120ms); }
+@keyframes reluz { 0%, 55% { background-position: 100% 0; } 100% { background-position: -60% 0; } }
+
+/* ---------- botão principal: degradê que respira e halo ---------- */
+.btn:not(.ghost):not(.perigo):not(.btn-sec), .c-btn:not(.sec), .barra-app .mais {
+  background: linear-gradient(120deg, #b5f2df, #7fe3c4 35%, #4fcfaa 60%, #9be8d0 100%) !important; background-size: 220% 100% !important;
+  animation: respira-btn 6s ease-in-out infinite;
+}
+@keyframes respira-btn { 0%, 100% { background-position: 0% 0; } 50% { background-position: 100% 0; } }
+.barra-app .mais { box-shadow: 0 0 0 0 rgba(127, 227, 196, 0.5), 0 12px 26px -8px rgba(127, 227, 196, 0.7); animation: respira-btn 6s ease-in-out infinite, pulso 2.8s ease-out infinite; }
+@keyframes pulso { 0% { box-shadow: 0 0 0 0 rgba(127, 227, 196, 0.45), 0 12px 26px -8px rgba(127, 227, 196, 0.7); } 70%, 100% { box-shadow: 0 0 0 16px rgba(127, 227, 196, 0), 0 12px 26px -8px rgba(127, 227, 196, 0.7); } }
+
+/* ---------- revelação ao rolar (Vida.tsx põe .revela e .visto) ---------- */
+html.vida .revela { opacity: 0; transform: translateY(34px) scale(.97); filter: blur(8px); transition: opacity .9s var(--ease), transform 1s var(--ease), filter .9s var(--ease); transition-delay: var(--d, 0ms); animation: none !important; }
+html.vida .revela.visto { opacity: 1; transform: none; filter: none; }
+/* as animações antigas de entrada saem do caminho quando a camada nova está ligada */
+html.vida .c-tela > *, html.vida .so-computador main > *, html.vida .surge > * { animation: none; }
+
+/* ---------- inclinação e luz sob o cursor (computador) ---------- */
+@media (hover: hover) and (pointer: fine) {
+  .dc-cartao-palco, .vivo-dia, .vivo-cur, .vivo-esquecido, .dd-lacuna, .dl-cards article, .dl-destaque, .card, .vivo-frasco-card > div:first-child, .dd-duplo > .dd-bloco {
+    transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+    transition: transform .5s var(--ease), box-shadow .5s var(--ease);
+    will-change: transform;
+  }
+  .inclinado { box-shadow: 0 40px 70px -40px rgba(0, 0, 0, 0.95), 0 0 0 1px rgba(127, 227, 196, 0.12); }
+  .inclinado::before { opacity: 1 !important; }
+  .dc-cartao-palco::after, .vivo-dia::after, .vivo-esquecido::after, .dd-lacuna::after, .dl-cards article::after, .card::after {
+    content: ""; position: absolute; inset: 0; z-index: 1; border-radius: inherit; pointer-events: none; opacity: 0; transition: opacity .4s var(--ease);
+    background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 50%), rgba(127, 227, 196, 0.16), transparent 45%);
+  }
+  .inclinado::after { opacity: 1; }
+}
+
+/* ---------- toque no celular: cartões afundam de leve ---------- */
+@media (hover: none) {
+  .c-card:active, .cc-cartao:active .cc-palco, .ci-frasco:active, .ci-diaseq:active, .ci-esquecido:active { transform: scale(.97); transition: transform .2s var(--ease); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body::before, body::after { animation: none; }
+  :is(.titulo-poster, .vivo-h1, .dc-h1, .dd-topo h1, .ds-topo h1, .dl-topo h1, .df-titulo h1, .ci-ola h1, .cc-cab h1, .cs-hero h1, .cd-topo h1, .cdes-topo h1, .cad-tit, .en-tit h1, .ne h1, .so-titulo):not(.palavras), .palavras span { animation: none !important; background-position: 50% 0; }
+}

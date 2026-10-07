@@ -13,3 +13,5 @@
 .df-palco form button { border-radius: var(--r-pill) !important; transition: background-color .25s var(--ease), color .25s; }
 .df-palco form button:hover { color: var(--ink) !important; }
 .df-palco > div:nth-child(2) > div[style*="r-ed"] { border-radius: var(--r-pill) !important; }
+.df-palco div:has(> a.btn) { flex-wrap: wrap; }
+.df-palco .btn { flex-shrink: 0; }
