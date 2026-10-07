@@ -1,0 +1,5 @@
+/* Sommelier do celular (Atlas Vivo). */
+.cs-hero { display: flex; flex-direction: column; align-items: flex-start; gap: 14px; padding: 10px 0 6px; }
+.cs-hero h1 { margin: 0; font-family: var(--marca); font-size: 46px; font-weight: 600; letter-spacing: -0.045em; line-height: 0.95; }
+.cs-hero h1 em { font-style: normal; color: var(--acento); }
+.cs-hero p { margin: 0; font-size: 15px; color: var(--ink-2); }

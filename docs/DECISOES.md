@@ -391,3 +391,8 @@ Pedido do Willian: direção nova e ousada, com personalidade e animação, sem 
 ### §28.6 Descobrir recomposto (out/2026)
 
 - `src/desenho/DesDescobrir.tsx` virou código legível, mantido à mão (`descobrir.css`). Topo com título de cartaz em duas linhas ("Aprender com / a própria coleção.", a segunda em menta) e dois números grandes (progresso da escola, notas da coleção); títulos de seção grandes; linha do tempo e mapa das casas saem da caixa e ocupam a largura como pranchas abertas. No celular continua o aviso para abrir no computador.
+
+### §28.7 Sommelier recomposto (out/2026)
+
+- Computador (`src/desenho/DesSommelier.tsx` legível + `sommelier.css`): a bússola virou uma esfera menta que respira e emite uma onda; título "Sommelier" grande; coluna da conversa com luz menta no topo e cantos de 40 px; campo de mensagem em cápsula de vidro presa ao rodapé da conversa.
+- Celular (`cel-sommelier.css`): abertura com a esfera e "O que vamos usar hoje?" em tamanho de cartaz; campo em cápsula de vidro.
