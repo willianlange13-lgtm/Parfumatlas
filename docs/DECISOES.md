@@ -412,3 +412,10 @@ Pedido do Willian: direção nova e ousada, com personalidade e animação, sem 
 - Entrar: cartaz com "Parfum Atlas" correndo em letras vazadas e a esfera menta; formulário em cápsula de vidro com "Bem-vindo de volta." (a esfera `.so-orbe` passou para `globals.css`).
 - 404 próprio (`src/app/not-found.tsx`): "404" vazado em menta, "Esta página não está no seu mapa." e botões para o início e a coleção.
 - Adicionar no celular: título de cartaz "Foto, link, nome ou voz." e linha de leitura percorrendo o visor da câmera.
+
+## 30. Testes e tipos (out/2026)
+
+- Testes com Vitest (`npm test`) em `src/lib/__testes__/`: régua única de fixação/projeção, acordes sinônimos, acorde principal, territórios, DNA, afinidade, classe, esquecidos e perfume do dia, usando a coleção de exemplo. `server-only` vira módulo vazio nos testes (`vitest.config.ts`).
+- `npm run typecheck` gera os tipos das rotas e roda o TypeScript.
+- Ficha, Descobrir e Lançamentos do computador recebem os dados tipados pelo retorno das funções `montar*` (sem `any`). Isso achou o campo `oficial` que as telas de Lançamentos liam e os dados não tinham; agora ele existe.
+- `EmConstrucao.tsx` (sem uso) saiu.
