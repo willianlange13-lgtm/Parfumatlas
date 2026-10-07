@@ -377,3 +377,7 @@ Pedido do Willian: direção nova e ousada, com personalidade e animação, sem 
 - `src/desenho/DesFicha.tsx` deixou de ser gerado: virou código legível, mantido à mão (`ficha.css` ao lado). Ordem e conteúdo da ficha continuam os da §18 e da §27.
 - Topo: casa e cidade em menta, nome em tamanho de cartaz (150 px) entrando palavra por palavra, linha cartográfica; abaixo, rótulo do frasco flutuando com a luz do território, descrição grande, acordes, situação e ações em cápsula, e o DNA à direita.
 - Celular (`cel-ficha.css`): palco do frasco maior com a luz do território, nome grande palavra por palavra.
+
+### §28.4 Demais telas do computador (out/2026)
+
+- DNA, Descobrir, Lançamentos e Adicionar: títulos de página em tamanho de cartaz (Bricolage, 1,6× o tamanho anterior, classe `.titulo-poster` com entrada suave) e botões em cápsula sem quebra de linha. Estrutura das telas mantida.
