@@ -1,0 +1,15 @@
+/* Ficha do computador (Atlas Vivo). */
+.df-titulo { position: relative; display: flex; flex-direction: column; gap: 14px; padding: 28px 0 8px; }
+.df-casa { font-family: var(--mono); font-size: 13px; letter-spacing: 0.22em; color: var(--acento); }
+.df-titulo h1 { margin: 0; font-family: var(--marca); font-size: 150px; font-weight: 600; letter-spacing: -0.055em; line-height: 0.86; }
+.df-coord { display: flex; align-items: center; gap: 12px; font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; color: var(--ink-3); }
+.df-coord span { width: 40px; height: 1px; }
+
+.df-palco { position: relative; display: grid; grid-template-columns: 320px minmax(0, 1fr) 500px; gap: 48px; align-items: center; min-height: 520px; }
+.df-palco::before { content: ""; position: absolute; left: -64px; right: -64px; top: -40px; bottom: -40px; z-index: -1; background: radial-gradient(ellipse 30% 70% at 12% 50%, color-mix(in oklab, var(--terr) 22%, transparent), transparent 70%); pointer-events: none; }
+.df-figura { border-radius: 36px !important; box-shadow: 0 40px 70px -40px color-mix(in oklab, var(--terr) 70%, black); animation: flutua 8s ease-in-out infinite; }
+.df-desc { font-size: 20px; line-height: 1.5; color: var(--ink-2); max-width: 30ch; }
+.df-palco .btn { border-radius: var(--r-pill) !important; padding: 0 28px !important; white-space: nowrap; }
+.df-palco form button { border-radius: var(--r-pill) !important; transition: background-color .25s var(--ease), color .25s; }
+.df-palco form button:hover { color: var(--ink) !important; }
+.df-palco > div:nth-child(2) > div[style*="r-ed"] { border-radius: var(--r-pill) !important; }

@@ -1,4 +1,6 @@
 import Link from "next/link";
+import type React from "react";
+import "./cel-ficha.css";
 import { Icone } from "@/components/Icone";
 import type { montarFicha } from "@/montar/ficha";
 import { Barra, Bloco, Btn, Camadas, Card, Demo, MONO, NotaChip, OURO, PalcoC, Rot, Topo } from "./kit";
@@ -19,15 +21,17 @@ export function CelFicha({ v, x }: { v: V; x: ExtraFicha }) {
       <Topo titulo={`Coleção / ${p.acorde}`} voltar direita={<OpcoesPerfume id={p.id} nome={p.nome} casa={p.casa} entradaId={x.entradaId} situacao={x.situacao} numero={x.numero} />} />
 
       {/* 01 · identidade */}
-      <PalcoC nome={p.nome} casa={p.casa} acorde={p.acorde} forma={p.forma} tampa={p.tampa} foto={x.foto ?? p.imagem} oficial={!x.foto && Boolean(p.imagem)} altura={240} k={1.25} raio={18}>
+      <div className="cf-palco" style={{ ["--terr" as string]: v.terr.a } as React.CSSProperties}>
+      <PalcoC nome={p.nome} casa={p.casa} acorde={p.acorde} forma={p.forma} tampa={p.tampa} foto={x.foto ?? p.imagem} oficial={!x.foto && Boolean(p.imagem)} altura={340} k={1.6} raio={32} transparente semBorda>
         {x.situacao === "assinatura" ? <span style={{ position: "absolute", right: 14, top: 14 }}><svg viewBox="0 0 24 24" style={{ width: 18, height: 18, fill: OURO, stroke: OURO }}><path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.5 1.3 6.6L12 17.2 6.1 20.5l1.3-6.6L2.5 9.4l6.6-.8z" /></svg></span> : null}
         <span style={{ position: "absolute", left: 14, bottom: 12, fontFamily: MONO, fontSize: 9.5, letterSpacing: ".14em", color: "var(--ink-3)" }}>{x.foto ? "FOTO DO SEU FRASCO" : p.imagem ? "FOTO OFICIAL" : "FRASCO ILUSTRATIVO"}</span>
         {p.fonteFicha && <span style={{ position: "absolute", right: 14, bottom: 12, fontFamily: MONO, fontSize: 9.5, letterSpacing: ".1em", color: p.fonteFicha === "ia" ? OURO : "var(--ink-3)" }}>{p.fonteFicha === "ia" ? "FICHA POR IA" : "FICHA DO ACERVO"}</span>}
       </PalcoC>
+      </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 8, flexShrink: 0 }}>
         <Rot style={{ color: "var(--ink-2)" }}>{cab.casaCidade}</Rot>
-        <h1 style={{ margin: 0, fontSize: 40, fontFamily: "var(--marca)", fontWeight: 500, letterSpacing: "-.01em", lineHeight: 1.02 }}>{p.nome}</h1>
-        <p style={{ margin: 0, fontSize: 14.5, lineHeight: 1.5, color: "var(--ink-2)" }}>{cab.desc}</p>
+        <h1 className="cf-nome palavras">{p.nome.split(" ").map((w, k) => <span key={k} style={{ ["--i" as string]: k } as React.CSSProperties}>{w}&nbsp;</span>)}</h1>
+        <p style={{ margin: 0, fontSize: 16, lineHeight: 1.5, color: "var(--ink-2)" }}>{cab.desc}</p>
       </div>
       <div style={{ display: "flex", gap: 6, flexWrap: "wrap", flexShrink: 0 }}>
         {v.topFam.map((f) => (

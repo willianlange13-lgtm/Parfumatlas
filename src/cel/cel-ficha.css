@@ -1,0 +1,4 @@
+/* Ficha do celular (Atlas Vivo). */
+.cf-palco { position: relative; margin: 0 -20px; padding: 10px 20px 0; background: radial-gradient(ellipse 70% 60% at 50% 55%, color-mix(in oklab, var(--terr) 30%, transparent), transparent 72%); }
+.cf-palco img { animation: flutua 7s ease-in-out infinite; }
+.cf-nome { margin: 0; font-family: var(--marca); font-size: 52px; font-weight: 600; letter-spacing: -0.045em; line-height: 0.92; }

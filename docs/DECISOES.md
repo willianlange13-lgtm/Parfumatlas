@@ -371,3 +371,9 @@ Pedido do Willian: direção nova e ousada, com personalidade e animação, sem 
   - grupos com nome grande e ponto luminoso na cor do grupo; o primeiro frasco de cada grupo (com 3 ou mais) ocupa duas colunas;
   - cartões com luz do território, número da entrada, selo Inspirado/Original, estrela da assinatura e o DNA em miniatura; sobem e inclinam no hover.
 - Celular (`src/cel/CelColecao.tsx` + `cel-colecao.css`): título grande com contagem, marcos em selos, grupos com nome grande, primeiro frasco do grupo em largura total.
+
+### §28.3 Ficha recomposta (out/2026)
+
+- `src/desenho/DesFicha.tsx` deixou de ser gerado: virou código legível, mantido à mão (`ficha.css` ao lado). Ordem e conteúdo da ficha continuam os da §18 e da §27.
+- Topo: casa e cidade em menta, nome em tamanho de cartaz (150 px) entrando palavra por palavra, linha cartográfica; abaixo, rótulo do frasco flutuando com a luz do território, descrição grande, acordes, situação e ações em cápsula, e o DNA à direita.
+- Celular (`cel-ficha.css`): palco do frasco maior com a luz do território, nome grande palavra por palavra.
