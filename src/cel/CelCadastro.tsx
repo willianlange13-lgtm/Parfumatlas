@@ -95,7 +95,7 @@ export function CelCadastro({ c, modoInicial }: { c: CadCel; modoInicial?: strin
   // na busca por nome, procura enquanto digita
   useEffect(() => {
     if (c.modo !== "nome" || q.trim().length < 3) return;
-    const t = setTimeout(() => c.identificar("nome", q.trim(), undefined, true), 650);
+    const t = setTimeout(() => c.identificar("nome", q.trim(), undefined, true), 350);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [q, c.modo]);

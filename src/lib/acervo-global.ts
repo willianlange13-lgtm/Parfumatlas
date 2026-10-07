@@ -15,7 +15,12 @@ export type LinhaAcervo = {
   notas_saida: string[]; notas_coracao: string[]; notas_fundo: string[]; acordes: string[];
   fixacao_nivel: string | null; projecao_nivel: string | null;
   concentracao: string | null; ano: number | null; genero: string | null;
+  /** de onde vieram (migração 0005): "fragrantica", "acervo", "pesquisa", "estimativa (modelo)" */
+  fonte_notas?: string | null; fonte_niveis?: string | null; tentado_em?: string | null;
 };
+
+/** Nível de fixação/projeção calculado (não votado): pode ser trocado quando chegar o dado real. */
+export const nivelEstimado = (r: Pick<LinhaAcervo, "fonte_niveis">) => /^estimativa/i.test(r.fonte_niveis ?? "");
 
 export const chaveAcervo = (nome: string, casa: string) => `${nome} ${casa}`.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
 const tira = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z ]/g, " ").replace(/\s+/g, " ").trim();
@@ -33,6 +38,7 @@ function linkValido(url: unknown, nome: string) {
   return alvo.includes(tira(nome)) ? u : null;
 }
 
+const temVotosL = (l: number[]) => l.some((x) => x > 0);
 const anoValido = (x: unknown) => { const n = parseInt(String(x ?? ""), 10); return n >= 1700 && n <= new Date().getFullYear() + 1 ? n : null; };
 const lista = (x: unknown) => (Array.isArray(x) ? x.map((y) => String(y ?? "").trim()).filter(Boolean) : typeof x === "string" && x.trim() ? x.split(/\s*,\s*/).filter(Boolean) : []);
 
@@ -63,14 +69,21 @@ export function linhaDoImport(o: Record<string, unknown>): LinhaAcervo | { erro:
 export function mesclar(velha: LinhaAcervo, nova: LinhaAcervo, soVazios = false): LinhaAcervo {
   // soVazios: resultado de pesquisa paga só completa o que faltava; quem manda é o lote importado
   const mais = (a: string[], b: string[]) => (soVazios ? (a.length ? a : b) : b.length && b.length >= a.length ? b : a);
-  return {
+  const semNotas = !velha.notas_saida.length && !velha.notas_coracao.length && !velha.notas_fundo.length;
+  // nível estimado (calculado, não votado) cede lugar ao nível real que chegar
+  const trocaNivel = nivelEstimado(velha) && !nivelEstimado(nova) && Boolean(nova.fixacao_nivel || nova.projecao_nivel);
+  const junta: LinhaAcervo = {
     ...velha,
     fragrantica: velha.fragrantica ?? nova.fragrantica,
     notas_saida: mais(velha.notas_saida, nova.notas_saida), notas_coracao: mais(velha.notas_coracao, nova.notas_coracao), notas_fundo: mais(velha.notas_fundo, nova.notas_fundo),
     acordes: mais(velha.acordes, nova.acordes),
-    fixacao_nivel: velha.fixacao_nivel ?? nova.fixacao_nivel, projecao_nivel: velha.projecao_nivel ?? nova.projecao_nivel,
+    fixacao_nivel: trocaNivel ? nova.fixacao_nivel ?? velha.fixacao_nivel : velha.fixacao_nivel ?? nova.fixacao_nivel,
+    projecao_nivel: trocaNivel ? nova.projecao_nivel ?? velha.projecao_nivel : velha.projecao_nivel ?? nova.projecao_nivel,
     concentracao: velha.concentracao ?? nova.concentracao, ano: velha.ano ?? nova.ano, genero: velha.genero ?? nova.genero,
   };
+  if (trocaNivel || (!velha.fixacao_nivel && !velha.projecao_nivel && (nova.fixacao_nivel || nova.projecao_nivel))) junta.fonte_niveis = nova.fonte_niveis ?? "fragrantica";
+  if (semNotas && (nova.notas_saida.length || nova.notas_coracao.length || nova.notas_fundo.length)) junta.fonte_notas = nova.fonte_notas ?? velha.fonte_notas ?? null;
+  return junta;
 }
 
 /** Lê texto colado ou arquivo: JSON Lines, lista JSON ou um objeto só. */
@@ -90,24 +103,71 @@ export function lerImport(texto: string): { itens: { linha: number; obj: Record<
 
 export const notasSemTraducao = (l: LinhaAcervo) => [...l.notas_saida, ...l.notas_coracao, ...l.notas_fundo].filter((n) => !notaConhecida(n));
 
-/** Busca por palavras no acervo (sem IA). */
+const NORMAL = (s: string) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+const trigramas = (s: string) => { const t = `  ${s} `; const g = new Set<string>(); for (let i = 0; i < t.length - 2; i++) g.add(t.slice(i, i + 3)); return g; };
+/** Semelhança de trigramas entre a busca e o melhor trecho do alvo (como o word_similarity do Postgres). */
+function parecido(q: string, alvo: string) {
+  const a = trigramas(q); if (!a.size) return 0;
+  const pal = alvo.split(" ");
+  let melhor = 0;
+  for (let i = 0; i < pal.length; i++) for (let j = i + 1; j <= Math.min(pal.length, i + q.split(" ").length + 1); j++) {
+    const b = trigramas(pal.slice(i, j).join(" "));
+    let comum = 0; a.forEach((x) => { if (b.has(x)) comum++; });
+    melhor = Math.max(melhor, (2 * comum) / (a.size + b.size)); // coeficiente de Dice
+  }
+  return melhor;
+}
+/**
+ * Nota de 0 a 99 para o quanto o perfume bate com o que foi digitado. Ordem das palavras não importa
+ * ("lattafa khamrah" = "khamrah lattafa"); erro de digitação ganha nota pela semelhança ("kamrah").
+ */
+export function pontuar(texto: string, nome: string, casa: string): number {
+  const q = NORMAL(texto), n = NORMAL(nome), alvo = `${n} ${NORMAL(casa)}`;
+  const pal = q.split(" ").filter((w) => w.length > 1);
+  if (!pal.length) return 0;
+  if (q === n || q === alvo || q === `${NORMAL(casa)} ${n}`) return 99;
+  const acertos = pal.filter((w) => alvo.includes(w)).length;
+  if (acertos === pal.length) return n.startsWith(pal[0]) || n.startsWith(q) ? 96 : 92;
+  const parcial = Math.round((acertos / pal.length) * 80);
+  return Math.max(parcial, Math.min(88, Math.round(parecido(q, alvo) * 92)));
+}
+
+/** Busca por nome/casa no acervo (sem IA). Usa a função do banco (rápida e tolerante a erro); sem ela, a busca antiga. */
 export async function buscarNoAcervo(texto: string, max = 5): Promise<(LinhaAcervo & { pct: number })[]> {
   if (!supabaseConfigurado()) return [];
   const pal = tira(texto).split(" ").filter((w) => w.length > 1);
   if (!pal.length) return [];
   try {
     const sb = await createClient();
-    const maior = [...pal].sort((a, b) => b.length - a.length)[0];
-    const { data } = await sb.from("acervo").select("*").or(`nome.ilike.%${maior}%,casa.ilike.%${maior}%`).limit(60);
-    return ((data ?? []) as LinhaAcervo[])
-      .map((r) => {
-        const alvo = tira(`${r.nome} ${r.casa}`);
-        const acertos = pal.filter((w) => alvo.includes(w)).length;
-        return { ...r, pct: Math.round((acertos / pal.length) * (tira(r.nome).startsWith(pal[0]) ? 96 : 82)) };
-      })
-      .filter((r) => r.pct >= 40).sort((a, b) => b.pct - a.pct).slice(0, max);
+    let linhas: LinhaAcervo[] = [];
+    const rpc = await sb.rpc("buscar_acervo", { q: texto, lim: Math.max(12, max * 3) });
+    if (!rpc.error) linhas = (rpc.data ?? []) as LinhaAcervo[];
+    else {
+      // migração 0005 ainda não rodada: procura pelas palavras mais longas (qualquer ordem)
+      const maiores = [...pal].sort((a, b) => b.length - a.length).slice(0, 3);
+      const { data } = await sb.from("acervo").select("*").or(maiores.flatMap((w) => [`nome.ilike.%${w}%`, `casa.ilike.%${w}%`]).join(",")).limit(80);
+      linhas = (data ?? []) as LinhaAcervo[];
+    }
+    return linhas
+      .map((r) => ({ ...r, pct: pontuar(texto, r.nome, r.casa) }))
+      .filter((r) => r.pct >= 40).sort((a, b) => b.pct - a.pct || a.nome.length - b.nome.length).slice(0, max);
   } catch {
     return []; // tabela ainda não criada: segue sem o acervo
+  }
+}
+
+/** Perfumes do acervo que têm todas estas notas (aba Notas da busca). */
+export async function buscarNoAcervoPorNotas(notas: string[], max = 12): Promise<LinhaAcervo[]> {
+  if (!supabaseConfigurado() || !notas.length) return [];
+  try {
+    const sb = await createClient();
+    const rpc = await sb.rpc("buscar_acervo_notas", { notas, lim: max });
+    if (!rpc.error) return (rpc.data ?? []) as LinhaAcervo[];
+    // sem a migração 0005: as notas de uma camada só
+    const { data } = await sb.from("acervo").select("*").or(["notas_saida", "notas_coracao", "notas_fundo"].map((c) => `${c}.cs.{${notas.map((n) => `"${n.replace(/"/g, "")}"`).join(",")}}`).join(",")).limit(max);
+    return (data ?? []) as LinhaAcervo[];
+  } catch {
+    return [];
   }
 }
 
@@ -131,9 +191,10 @@ export const fotoDoLink = (url?: string | null) => {
  * Ficha montada só com o acervo, sem IA. Votos sem distribuição inventada: só o nível mais votado
  * vira horas/metros pela régua do Atlas (origem "acervo"). Ano, concentração, país e "quando usar" ficam para revisar.
  */
-export function fichaDoAcervo(r: LinhaAcervo): FichaIA | null {
+export function fichaDoAcervo(r: LinhaAcervo, forcar = false): FichaIA | null {
   const temNotas = r.notas_saida.length + r.notas_coracao.length + r.notas_fundo.length > 0;
-  if (!temNotas && !r.acordes.length) return null;
+  // forcar: ficha-base mesmo vazia, para a IA completar (Completar acervo com IA)
+  if (!temNotas && !r.acordes.length && !forcar) return null;
   const acordes = r.acordes.map((nome, i) => ({ nome, valor: Math.max(30, 100 - i * 12) }));
   const f = NIVEIS_FIXACAO.find((n) => n.nome === r.fixacao_nivel), p = NIVEIS_PROJECAO.find((n) => n.nome === r.projecao_nivel);
   return {
@@ -147,6 +208,8 @@ export function fichaDoAcervo(r: LinhaAcervo): FichaIA | null {
       total: 0, fixacao: [0, 0, 0, 0, 0], projecao: [0, 0, 0, 0],
       estacoes: { primavera: 0, verao: 0, outono: 0, inverno: 0 }, dia: 0, noite: 0, ocasioes: [],
       origem: "acervo", nivelFixacao: r.fixacao_nivel ?? undefined, nivelProjecao: r.projecao_nivel ?? undefined,
+      // nível calculado (planilha/modelo), não votado: a ficha mostra "estimativa" e a IA pode trocar pelo real
+      ...(nivelEstimado(r) && (r.fixacao_nivel || r.projecao_nivel) ? { estimado: true } : {}),
     },
     imagem: fotoDoLink(r.fragrantica), forma: "ret", tampa: "#141417",
     fragrantica: r.fragrantica ?? undefined,
@@ -179,11 +242,24 @@ export async function guardarNoAcervo(f: FichaIA): Promise<void> {
       fixacao_nivel: f.votos?.estimado ? null : f.votos?.origem === "acervo" ? f.votos.nivelFixacao ?? null : NIVEIS_FIXACAO[maisVotado(fx)]?.nome ?? null,
       projecao_nivel: f.votos?.estimado ? null : f.votos?.origem === "acervo" ? f.votos.nivelProjecao ?? null : NIVEIS_PROJECAO[maisVotado(pj)]?.nome ?? null,
       concentracao: concentracaoPT(f.concentracao ?? "") || null, ano: anoValido(f.ano), genero: generoPT(f.genero) || f.genero || null,
+      fonte_notas: "pesquisa",
+      fonte_niveis: temVotosL(fx) ? "fragrantica (votos)" : "fragrantica (nível mais votado)",
     };
     if (!nova.notas_saida.length && !nova.notas_coracao.length && !nova.notas_fundo.length && !nova.acordes.length) return;
     const { data: velha } = await sb.from("acervo").select("*").eq("chave", nova.chave).maybeSingle();
     const r = velha ? mesclar(velha as LinhaAcervo, nova, true) : nova;
-    await sb.from("acervo").upsert({ ...r, ...(velha ? {} : { origem: "pesquisa" }), atualizado_em: new Date().toISOString() }, { onConflict: "chave" });
+    if (!r.fixacao_nivel && !r.projecao_nivel) r.fonte_niveis = null;
+    // "busca" é coluna calculada pelo banco (0005): não pode ir no upsert
+    const { busca: _b, ...gravar } = r as LinhaAcervo & { busca?: string };
+    void _b;
+    let { error } = await sb.from("acervo").upsert({ ...gravar, ...(velha ? {} : { origem: "pesquisa" }), atualizado_em: new Date().toISOString() }, { onConflict: "chave" });
+    // sem a migração 0005 as colunas de fonte não existem: grava sem elas
+    if (error && /fonte_|tentado_em|column/i.test(error.message)) {
+      const { fonte_notas: _fn, fonte_niveis: _fv, tentado_em: _t, ...antigo } = gravar;
+      void _fn; void _fv; void _t;
+      ({ error } = await sb.from("acervo").upsert({ ...antigo, ...(velha ? {} : { origem: "pesquisa" }), atualizado_em: new Date().toISOString() }, { onConflict: "chave" }));
+    }
+    if (error) console.error("[atlas:acervo] guardar", error.message);
   } catch (e) {
     console.error("[atlas:acervo] guardar", e instanceof Error ? e.message : e);
   }

@@ -10,7 +10,7 @@ import { NIVEIS_FIXACAO, NIVEIS_PROJECAO, chaveAcorde, concentracaoPT, generoPT,
 
 export type Candidato = { nome: string; casa: string; concentracao: string; por: string; pct: number; link?: string; imagem?: string | null };
 export type Identificacao = { lido: string[]; candidatos: Candidato[]; /** a busca usou IA (paga)? */ buscaIA?: boolean };
-import { acharNoAcervo, buscarNoAcervo, fichaDoAcervo, guardarNoAcervo, notasSemTraducao } from "@/lib/acervo-global";
+import { acharNoAcervo, buscarNoAcervo, fichaDoAcervo, guardarNoAcervo, notasSemTraducao, pontuar } from "@/lib/acervo-global";
 
 export type FichaIA = Omit<Perfume, "id" | "clima"> & { revisar: string[]; completar?: boolean; fragrantica?: string };
 
@@ -22,15 +22,9 @@ function normal(s: string) { return s.normalize("NFD").replace(/[̀-ͯ]/g, "").t
 /** Busca no catálogo local (sem IA ou como reforço). */
 async function buscaLocal(texto: string): Promise<Candidato[]> {
   const { perfumes } = await carregarAcervo();
-  const q = normal(texto);
-  const pal = q.split(" ").filter((x) => x.length > 1);
+  // mesma nota da busca do acervo: palavras em qualquer ordem e tolerância a erro de digitação
   return [...perfumes.values()]
-    .map((p) => {
-      const alvo = normal(`${p.nome} ${p.casa}`);
-      const acertos = pal.filter((w) => alvo.includes(w)).length;
-      const pct = pal.length ? Math.round((acertos / pal.length) * (normal(p.nome).startsWith(pal[0] ?? "") ? 96 : 80)) : 0;
-      return { nome: p.nome, casa: p.casa, concentracao: (p.concentracao ?? "").toUpperCase(), por: "Encontrado no catálogo do Atlas", pct };
-    })
+    .map((p) => ({ nome: p.nome, casa: p.casa, concentracao: (p.concentracao ?? "").toUpperCase(), por: "Encontrado no catálogo do Atlas", pct: pontuar(texto, p.nome, p.casa) }))
     .filter((c) => c.pct >= 40)
     .sort((a, b) => b.pct - a.pct)
     .slice(0, 3);
@@ -430,10 +424,12 @@ async function completarDoAcervo(f: FichaIA): Promise<FichaIA> {
   if (semContagem && !temVotos(out.votos?.fixacao)) {
     const nf = NIVEIS_FIXACAO.find((n) => n.nome === x.nivelFixacao), np = NIVEIS_PROJECAO.find((n) => n.nome === x.nivelProjecao);
     const v: Votos = { ...(out.votos ?? { total: 0, fixacao: [0, 0, 0, 0, 0], projecao: [0, 0, 0, 0], estacoes: { primavera: 0, verao: 0, outono: 0, inverno: 0 }, dia: 0, noite: 0, ocasioes: [] }) };
-    if (nf && !v.nivelFixacao) { v.nivelFixacao = nf.nome; out.fixacaoH = nf.h; v.origem = "acervo"; }
-    if (np && !v.nivelProjecao) { v.nivelProjecao = np.nome; out.projecaoM = np.m; v.origem = "acervo"; }
-    if ((nf || np) && x.origemNivel === "estimativa") v.estimado = true;
-    if (nf || np) { out.votos = v; tira("votos"); }
+    // nível que veio do acervo como estimativa (calculado, não votado) cede lugar ao nível lido no Fragrantica
+    const trocaEstimado = Boolean(v.estimado) && x.origemNivel === "fragrantica";
+    const usaF = nf && (!v.nivelFixacao || trocaEstimado), usaP = np && (!v.nivelProjecao || trocaEstimado);
+    if (usaF) { v.nivelFixacao = nf!.nome; out.fixacaoH = nf!.h; v.origem = "acervo"; }
+    if (usaP) { v.nivelProjecao = np!.nome; out.projecaoM = np!.m; v.origem = "acervo"; }
+    if (usaF || usaP) { v.estimado = x.origemNivel === "estimativa" ? true : undefined; out.votos = v; tira("votos"); }
   }
   // marca como completada só quando a IA respondeu; se falhou, a próxima abertura da ficha tenta de novo
   if (!erro && out.votos) out.votos = { ...out.votos, completadoEm: new Date().toISOString() };

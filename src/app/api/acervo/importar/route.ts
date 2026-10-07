@@ -60,8 +60,11 @@ export async function POST(request: NextRequest) {
       chave: r.chave, nome: r.nome, casa: r.casa, fragrantica: r.fragrantica,
       notas_saida: r.notas_saida, notas_coracao: r.notas_coracao, notas_fundo: r.notas_fundo, acordes: r.acordes,
       fixacao_nivel: r.fixacao_nivel, projecao_nivel: r.projecao_nivel, concentracao: r.concentracao, ano: r.ano, genero: r.genero, atualizado_em: new Date().toISOString(),
+      ...(r.fonte_niveis !== undefined ? { fonte_niveis: r.fonte_niveis } : {}), ...(r.fonte_notas !== undefined ? { fonte_notas: r.fonte_notas } : {}),
     }));
-    const { error } = await sb.from("acervo").upsert(parte, { onConflict: "chave" });
+    let { error } = await sb.from("acervo").upsert(parte, { onConflict: "chave" });
+    // sem a migração 0005 (colunas de fonte): grava sem elas
+    if (error && /fonte_/i.test(error.message)) ({ error } = await sb.from("acervo").upsert(parte.map(({ fonte_niveis: _a, fonte_notas: _b, ...x }) => { void _a; void _b; return x; }), { onConflict: "chave" }));
     if (error) return json({ erro: /column|coluna/i.test(error.message) ? "Faltam as colunas novas do acervo: rode o SQL supabase/migrations/0003_acervo_campos.sql no Supabase." : error.message, novos, atualizados }, 500);
   }
 
