@@ -3,8 +3,9 @@
 import "./lancamentos.css";
 import React, { Fragment } from "react";
 import { css } from "./css";
+import type { montarLancamentos } from "@/montar/lancamentos";
 
-export default function DesLancamentos({ v }: { v: any }) {
+export default function DesLancamentos({ v }: { v: NonNullable<Awaited<ReturnType<typeof montarLancamentos>>> }) {
   const { t, n, filtros, destaque, cards, casas, dest, limite, demo } = v;
   return (
     <>
@@ -52,7 +53,7 @@ export default function DesLancamentos({ v }: { v: any }) {
             }}
           >
             <div style={{ display: "flex", gap: "2px", padding: "4px", borderRadius: "var(--r-ed)", background: t.pill }}>
-              {(filtros ?? []).map((f: any, _i4: number) => (
+              {(filtros ?? []).map((f, _i4) => (
                 <Fragment key={_i4}>
                   <a
                     href={f.href}
@@ -172,7 +173,7 @@ export default function DesLancamentos({ v }: { v: any }) {
               <h2 className="dl-nome">{dest.nome}</h2>
               <p style={{ margin: "0", fontSize: "16px", lineHeight: "1.6", color: t.ink2, maxWidth: "560px" }}>{dest.porque}</p>
               <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-                {(destaque.notas ?? []).map((n: any, _i5: number) => (
+                {(destaque.notas ?? []).map((n, _i5) => (
                   <Fragment key={_i5}>
                     <span
                       style={{
@@ -318,7 +319,7 @@ export default function DesLancamentos({ v }: { v: any }) {
                 </div>
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: "6px", width: "100%" }}>
-                {(destaque.porque ?? []).map((p: any, _i5: number) => (
+                {(destaque.porque ?? []).map((p, _i5) => (
                   <Fragment key={_i5}>
                     <div style={{ display: "flex", justifyContent: "space-between", fontSize: "13px", padding: "6px 0", borderTop: `1px solid ${t.line}` }}>
                       <span style={{ color: t.ink2 }}>{p.l}</span>
@@ -330,7 +331,7 @@ export default function DesLancamentos({ v }: { v: any }) {
             </div>
           </section>
           <section className="dl-cards" style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: "22px" }}>
-            {(cards ?? []).map((c: any, _i3: number) => (
+            {(cards ?? []).map((c, _i3) => (
               <Fragment key={_i3}>
                 <article
                   style={{
@@ -494,7 +495,7 @@ export default function DesLancamentos({ v }: { v: any }) {
               <span style={{ fontFamily: "var(--mono)", fontSize: "11px", letterSpacing: ".12em", color: t.amberTxt, paddingBottom: "8px" }}>
                 DAS CASAS QUE VOCÊ TEM
               </span>
-              {(casas ?? []).map((h: any, _i4: number) => (
+              {(casas ?? []).map((h, _i4) => (
                 <Fragment key={_i4}>
                   <div
                     style={{

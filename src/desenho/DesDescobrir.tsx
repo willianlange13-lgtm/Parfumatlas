@@ -3,9 +3,10 @@
 import "./descobrir.css";
 import React, { Fragment } from "react";
 import { css } from "./css";
+import type { montarDescobrir } from "@/montar/descobrir";
 import { LicaoFeita } from "@/components/cliente/LicaoFeita";
 
-export default function DesDescobrir({ v }: { v: any }) {
+export default function DesDescobrir({ v }: { v: NonNullable<Awaited<ReturnType<typeof montarDescobrir>>> }) {
   const { t, licoes, notasMini, tempo, mapa, licoesTxt, licoesPct, licoesAviso, licoesIA, notasTxt, enc, tempoTxt, demo } = v;
   return (
     <>
@@ -75,7 +76,7 @@ export default function DesDescobrir({ v }: { v: any }) {
               </div>
               {licoesAviso ? <div style={{ fontSize: "13px", color: t.ink3 }}>{licoesAviso}</div> : null}
               <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "14px", marginTop: "4px" }}>
-                {(licoes ?? []).map((l: any, _i5: number) => (
+                {(licoes ?? []).map((l, _i5) => (
                   <Fragment key={_i5}>
                     <div
                       style={{
@@ -157,7 +158,7 @@ export default function DesDescobrir({ v }: { v: any }) {
                 <span>{enc.conhecer}</span>
               </div>
               <div style={{ display: "flex", gap: "10px", marginTop: "auto", flexWrap: "wrap" }}>
-                {(notasMini ?? []).map((n: any, _i5: number) => (
+                {(notasMini ?? []).map((n, _i5) => (
                   <Fragment key={_i5}>
                     <a
                       href={n.href}
@@ -172,7 +173,7 @@ export default function DesDescobrir({ v }: { v: any }) {
                       }}
                     >
                       <span style={{ width: "26px", height: "26px", borderRadius: "13px", overflow: "hidden", background: "#FFFFFF" }}>
-                        <img src={n.img} alt={n.nome} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                        <img src={n.img ?? undefined} alt={n.nome} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                       </span>
                       {n.nome}
                     </a>
@@ -207,7 +208,7 @@ export default function DesDescobrir({ v }: { v: any }) {
               </div>
               <div style={{ position: "relative", width: "810px", height: "300px" }}>
                 <div style={{ position: "absolute", left: "0", right: "0", top: "150px", height: "2px", background: t.line2 }}></div>
-                {(tempo.anos ?? []).map((a: any, _i5: number) => (
+                {(tempo.anos ?? []).map((a, _i5) => (
                   <Fragment key={_i5}>
                     <div
                       style={{
@@ -224,7 +225,7 @@ export default function DesDescobrir({ v }: { v: any }) {
                     </div>
                   </Fragment>
                 ))}
-                {(tempo.pts ?? []).map((p: any, _i5: number) => (
+                {(tempo.pts ?? []).map((p, _i5) => (
                   <Fragment key={_i5}>
                     <div style={{ position: "absolute", left: `${p.x}px`, top: `${p.ly}px`, width: "1px", height: `${p.lh}px`, background: t.line2 }}></div>
                     <div
@@ -280,14 +281,14 @@ export default function DesDescobrir({ v }: { v: any }) {
                   <span style={{ fontSize: "14px", color: t.ink2 }}>de onde vêm os seus perfumes</span>
                 </div>
                 <div style={{ position: "relative", width: "900px", height: "360px", borderRadius: "var(--r-ed)", background: t.bg, overflow: "hidden" }}>
-                  {(mapa.grade ?? []).map((g: any, _i6: number) => (
+                  {(mapa.grade ?? []).map((g, _i6) => (
                     <Fragment key={_i6}>
                       <div
                         style={{ position: "absolute", left: `${g.x}px`, top: `${g.y}px`, width: "3px", height: "3px", borderRadius: "2px", background: g.cor }}
                       ></div>
                     </Fragment>
                   ))}
-                  {(mapa.pts ?? []).map((p: any, _i6: number) => (
+                  {(mapa.pts ?? []).map((p, _i6) => (
                     <Fragment key={_i6}>
                       <div
                         style={{
@@ -323,7 +324,7 @@ export default function DesDescobrir({ v }: { v: any }) {
                 </div>
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: "4px", paddingTop: "32px" }}>
-                {(mapa.paises ?? []).map((p: any, _i5: number) => (
+                {(mapa.paises ?? []).map((p, _i5) => (
                   <Fragment key={_i5}>
                     <div style={{ display: "flex", flexDirection: "column", gap: "4px", padding: "12px 0", borderTop: `1px solid ${t.line}` }}>
                       <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between" }}>

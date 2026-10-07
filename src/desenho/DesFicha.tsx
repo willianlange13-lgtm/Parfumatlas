@@ -3,8 +3,9 @@
 import "./ficha.css";
 import React, { Fragment, type ReactNode } from "react";
 import { css } from "./css";
+import type { montarFicha } from "@/montar/ficha";
 
-export default function DesFicha({ v, acoes }: { v: any; acoes?: ReactNode }) {
+export default function DesFicha({ v, acoes }: { v: NonNullable<Awaited<ReturnType<typeof montarFicha>>>; acoes?: ReactNode }) {
   const {
     semAcordes,
     historico,
@@ -69,7 +70,7 @@ export default function DesFicha({ v, acoes }: { v: any; acoes?: ReactNode }) {
           aria-hidden="true"
           style={{ position: "absolute", right: "-300px", top: "1240px", width: "760px", height: "760px", opacity: ".07", pointerEvents: "none" }}
         >
-          {(glifo ?? []).map((L: any, _i2: number) => (
+          {(glifo ?? []).map((L, _i2) => (
             <Fragment key={_i2}>
               <svg viewBox="-12 -12 344 344" style={{ position: "absolute", inset: "0", width: "100%", height: "100%", overflow: "visible" }}>
                 <path d={L.d} style={{ fill: _i2 === 2 ? terr.a : "none", fillOpacity: ".5", stroke: terr.a, strokeWidth: "1" }}></path>
@@ -182,7 +183,7 @@ export default function DesFicha({ v, acoes }: { v: any; acoes?: ReactNode }) {
 
               <div className="df-desc">{cab.desc}</div>
               <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-                {(topFam ?? []).map((f: any, _i5: number) => (
+                {(topFam ?? []).map((f, _i5) => (
                   <Fragment key={_i5}>
                     <span
                       style={{
@@ -210,7 +211,7 @@ export default function DesFicha({ v, acoes }: { v: any; acoes?: ReactNode }) {
                 ) : null}
               </div>
               <div style={{ display: "flex", gap: "6px", padding: "5px", borderRadius: "var(--r-ed)", background: t.pill, alignSelf: "flex-start" }}>
-                {(marcas ?? []).map((m: any, _i5: number) => (
+                {(marcas ?? []).map((m, _i5) => (
                   <Fragment key={_i5}>
                     <form action="/api/situacao" method="post" style={{ display: "contents" }}>
                       <input type="hidden" name="perfume" defaultValue={cab.id} />
@@ -357,7 +358,7 @@ export default function DesFicha({ v, acoes }: { v: any; acoes?: ReactNode }) {
                   <span style={{ color: t.amberTxt }}>Marcar em Editar →</span>
                 </a>
               ) : null}
-              {(glifo ?? []).map((L: any, _i4: number) => (
+              {(glifo ?? []).map((L, _i4) => (
                 <Fragment key={_i4}>
                   <svg
                     className="dna-respira"
@@ -368,7 +369,7 @@ export default function DesFicha({ v, acoes }: { v: any; acoes?: ReactNode }) {
                   </svg>
                 </Fragment>
               ))}
-              {(eixos ?? []).map((e: any, _i4: number) => (
+              {(eixos ?? []).map((e, _i4) => (
                 <Fragment key={_i4}>
                   <div
                     style={{
@@ -393,7 +394,7 @@ export default function DesFicha({ v, acoes }: { v: any; acoes?: ReactNode }) {
             </div>
           </section>
           <section style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: "16px" }}>
-            {(fatos ?? []).map((s: any, _i3: number) => (
+            {(fatos ?? []).map((s, _i3) => (
               <Fragment key={_i3}>
                 <div
                   style={{
@@ -430,7 +431,7 @@ export default function DesFicha({ v, acoes }: { v: any; acoes?: ReactNode }) {
                 ACORDES PRINCIPAIS
               </h2>
               <div style={{ display: "flex", alignItems: "flex-end", gap: "10px", height: "230px" }}>
-                {(espectro ?? []).map((e: any, _i5: number) => (
+                {(espectro ?? []).map((e, _i5) => (
                   <Fragment key={_i5}>
                     <div style={{ flexGrow: "1", flexBasis: "0", display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
                       <span style={{ fontFamily: "var(--mono)", fontSize: "13px" }}>{e.v}</span>
@@ -440,7 +441,7 @@ export default function DesFicha({ v, acoes }: { v: any; acoes?: ReactNode }) {
                 ))}
               </div>
               <div style={{ display: "flex", gap: "10px", marginTop: "-8px" }}>
-                {(espectro ?? []).map((e: any, _i5: number) => (
+                {(espectro ?? []).map((e, _i5) => (
                   <Fragment key={_i5}>
                     <span style={{ flexGrow: "1", flexBasis: "0", textAlign: "center", fontSize: "11px", color: t.ink2 }}>{e.curto}</span>
                   </Fragment>
@@ -462,7 +463,7 @@ export default function DesFicha({ v, acoes }: { v: any; acoes?: ReactNode }) {
               <h2 style={{ margin: "0", fontFamily: "var(--mono)", fontSize: "12px", fontWeight: "400", letterSpacing: ".14em", color: t.amberTxt }}>
                 DESEMPENHO · COMUNIDADE
               </h2>
-              {(gauges ?? []).map((g: any, _i4: number) => (
+              {(gauges ?? []).map((g, _i4) => (
                 <Fragment key={_i4}>
                   <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "2px" }}>
                     <div style={{ position: "relative", width: "240px", height: "132px" }}>
@@ -511,7 +512,7 @@ export default function DesFicha({ v, acoes }: { v: any; acoes?: ReactNode }) {
               <div style={{ display: "flex", alignItems: "baseline", gap: "14px", marginBottom: "8px" }}>
                 <div style={{ fontSize: "24px", fontWeight: "500", letterSpacing: "-.02em", lineHeight: "1.2" }}>{cab.frase}</div>
               </div>
-              {(piramide ?? []).map((c: any, _i4: number) => (
+              {(piramide ?? []).map((c, _i4) => (
                 <Fragment key={_i4}>
                   <div
                     style={{
@@ -528,7 +529,7 @@ export default function DesFicha({ v, acoes }: { v: any; acoes?: ReactNode }) {
                       <span style={{ fontFamily: "var(--mono)", fontSize: "11px", letterSpacing: ".06em", color: t.ink3 }}>{c.tempo}</span>
                     </div>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: "22px" }}>
-                      {(c.notas ?? []).map((n: any, _i7: number) => (
+                      {(c.notas ?? []).map((n, _i7) => (
                         <Fragment key={_i7}>
                           <div style={{ width: "104px", display: "flex", flexDirection: "column", alignItems: "center", gap: "10px" }}>
                             <span
@@ -597,14 +598,14 @@ export default function DesFicha({ v, acoes }: { v: any; acoes?: ReactNode }) {
                 <svg viewBox="0 0 280 260" style={{ position: "absolute", left: "0", top: "0", width: "280px", height: "260px" }}>
                   <path d={roda.guia} style={{ fill: "none", stroke: t.line2, strokeWidth: "1" }}></path>
                 </svg>
-                {(roda.seg ?? []).map((s: any, _i5: number) => (
+                {(roda.seg ?? []).map((s, _i5) => (
                   <Fragment key={_i5}>
                     <svg viewBox="0 0 280 260" style={{ position: "absolute", left: "0", top: "0", width: "280px", height: "260px" }}>
                       <path d={s.d} style={{ fill: s.cor, stroke: t.bgWine, strokeWidth: "3" }}></path>
                     </svg>
                   </Fragment>
                 ))}
-                {(roda.seg ?? []).map((s: any, _i5: number) => (
+                {(roda.seg ?? []).map((s, _i5) => (
                   <Fragment key={_i5}>
                     <div
                       style={{
@@ -653,11 +654,11 @@ export default function DesFicha({ v, acoes }: { v: any; acoes?: ReactNode }) {
               }}
             >
               <h2 style={{ margin: "0", fontFamily: "var(--mono)", fontSize: "12px", fontWeight: "400", letterSpacing: ".14em", color: t.amberTxt }}>VOTOS</h2>
-              {(votos ?? []).map((v: any, _i4: number) => (
+              {(votos ?? []).map((v, _i4) => (
                 <Fragment key={_i4}>
                   <div style={{ display: "flex", flexDirection: "column", gap: "7px" }}>
                     <span style={{ fontSize: "14px", fontWeight: "500" }}>{v.nome}</span>
-                    {(v.itens ?? []).map((i: any, _i6: number) => (
+                    {(v.itens ?? []).map((i, _i6) => (
                       <Fragment key={_i6}>
                         <div style={{ display: "grid", gridTemplateColumns: "96px minmax(0, 1fr) 30px", gap: "8px", alignItems: "center", fontSize: "12px" }}>
                           <span style={{ color: i.txt }}>{i.nome}</span>
@@ -728,7 +729,7 @@ export default function DesFicha({ v, acoes }: { v: any; acoes?: ReactNode }) {
                     {[0, 25, 50, 75, 100].map((x: number) => (
                       <span key={x} style={{ position: "absolute", left: `${x}%`, bottom: "-1px", width: "1px", height: "8px", background: t.line2 }}></span>
                     ))}
-                    {(historico.marcas ?? []).map((m: any, _i9: number) => (
+                    {(historico.marcas ?? []).map((m, _i9) => (
                       <Fragment key={_i9}>
                         <span
                           style={{
@@ -817,7 +818,7 @@ export default function DesFicha({ v, acoes }: { v: any; acoes?: ReactNode }) {
                 </>
               ) : null}
               <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
-                {(perguntas ?? []).map((q: any, _i5: number) => (
+                {(perguntas ?? []).map((q, _i5) => (
                   <Fragment key={_i5}>
                     <a
                       href={q.href}
