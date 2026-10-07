@@ -280,3 +280,7 @@ p { text-wrap: pretty; }
   .brilho, .flutua, .dna-respira { animation: none !important; }
   ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
 }
+
+/* títulos de página em tamanho de cartaz (pranchas do computador) */
+.titulo-poster { animation: palavra 1s var(--ease) both .1s; }
+.so-computador a[style*="r-pill"], .so-computador button[style*="r-pill"] { white-space: nowrap; }
