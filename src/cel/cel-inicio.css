@@ -12,7 +12,7 @@
 
 .ci-dia { position: relative; display: flex; flex-direction: column; gap: 10px; padding: 18px 18px 18px; border-radius: 32px; border: 1px solid var(--line); background: radial-gradient(ellipse 80% 55% at 50% 30%, color-mix(in oklab, var(--terr, var(--acento)) 26%, transparent), transparent 70%), var(--surface); box-shadow: var(--sombra); overflow: hidden; }
 .ci-dia-topo { display: flex; align-items: center; justify-content: space-between; }
-.ci-clima { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 11px; border-radius: var(--r-pill); background: var(--chip); font-size: 12px; }
+.ci-clima { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 11px; white-space: nowrap; flex-shrink: 0; border-radius: var(--r-pill); background: var(--chip); font-size: 12px; }
 .ci-clima svg { width: 14px; height: 14px; fill: none; stroke: var(--acento); stroke-width: 1.6; }
 .ci-dia-palco { display: block; margin: -4px -8px 0; }
 .ci-dia h2 { margin: 0; font-family: var(--marca); font-size: 38px; font-weight: 600; letter-spacing: -0.035em; line-height: 0.95; }
