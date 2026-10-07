@@ -2,10 +2,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import DesSommelier from "@/desenho/DesSommelier";
 import { CelSommelier, type VSom } from "@/cel/CelSommelier";
+import { ouvir as ouvirVoz, type Escuta } from "@/cel/voz";
 
 type Msg = Record<string, unknown> & { eu?: boolean; som?: boolean; texto: string; foto?: string | null };
 type Base = Record<string, unknown> & { t: Record<string, string>; atalhos: { nome: string; d: string }[]; rapidas: string[]; filtros: { nome: string; opcoes: { nome: string }[] }[] };
-type SR = { lang: string; interimResults: boolean; onresult: (e: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void; onend: () => void; onerror: () => void; start: () => void; stop: () => void };
 
 const CHAVE_FILTRO = ["ocasiao", "sentir", "origem"] as const;
 
@@ -17,7 +17,7 @@ export function SommelierCliente({ base, iniciais, perfumeId, pergunta, voz, con
   const [ouvindo, setOuvindo] = useState(false);
   const [conversaId, setConversaId] = useState<string | undefined>(c0);
   const [filtros, setFiltros] = useState<Record<string, string>>({ ocasiao: "", sentir: "", origem: "Minha coleção" });
-  const rec = useRef<SR | null>(null);
+  const rec = useRef<Escuta | null>(null);
   const enviado = useRef(false);
 
   const mandar = useCallback(async (texto: string, foto?: { mime: string; base64: string; url: string }, porVoz = false) => {
@@ -48,19 +48,14 @@ export function SommelierCliente({ base, iniciais, perfumeId, pergunta, voz, con
   }, [msgs, filtros, perfumeId, conversaId, voz, falarRespostas]);
 
   const falar = useCallback(() => {
-    const W = window as unknown as { SpeechRecognition?: new () => SR; webkitSpeechRecognition?: new () => SR };
-    const C = W.SpeechRecognition ?? W.webkitSpeechRecognition;
-    if (!C) { alert("Este navegador não reconhece voz. No celular, use o Chrome ou o Safari."); return; }
-    if (ouvindo) { rec.current?.stop(); return; }
-    const r = new C();
-    r.lang = "pt-BR";
-    r.interimResults = false;
-    r.onresult = (e) => { const txt = e.results[0][0].transcript; mandar(txt, undefined, true); };
-    r.onend = () => setOuvindo(false);
-    r.onerror = () => setOuvindo(false);
-    rec.current = r;
+    // tocar de novo enquanto ouve = "terminei de falar" (manda o que já ouviu)
+    if (ouvindo) { rec.current?.parar(); return; }
     setOuvindo(true);
-    r.start();
+    rec.current = ouvirVoz({
+      aoOuvir: (txt) => mandar(txt, undefined, true),
+      aoFim: () => setOuvindo(false),
+      aoErro: (msg) => { if (msg && !/Gravando o áudio/.test(msg)) setMsgs((m) => [...m, { som: true, eu: false, texto: msg }]); },
+    });
   }, [ouvindo, mandar]);
 
   useEffect(() => {

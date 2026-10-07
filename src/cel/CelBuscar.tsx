@@ -1,10 +1,10 @@
 "use client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Icone } from "@/components/Icone";
 import { Btn, Card, Mini, MONO, NotaChip, OURO, Rot, TituloAba } from "./kit";
-import { ouvirUmaVez, reduzirFoto } from "./voz";
+import { ouvir, reduzirFoto, type Escuta } from "./voz";
 
 export type ItemBusca = { imagem?: string | null; id: string; nome: string; casa: string; acorde: string; forma: string; tampa: string; ano: number | null; notas: string[]; tem: boolean; quero: boolean; pct: number; inspiradoEm: string | null };
 type Cand = { nome: string; casa: string; concentracao: string; por: string; pct: number; link?: string };
@@ -121,7 +121,18 @@ export function CelBuscar({ lista, modoInicial }: { lista: ItemBusca[]; modoInic
     }
   }
   const escanear = () => document.getElementById("escanear")?.click();
-  const falar = () => { setLendo("Ouvindo…"); ouvirUmaVez((t) => { setQ(t); identificar("nome", t); }, () => setLendo((x) => (x === "Ouvindo…" ? "" : x))); };
+  const escuta = useRef<Escuta | null>(null);
+  // tocar no microfone de novo enquanto ouve = "terminei de falar"
+  const falar = () => {
+    if (lendo === "Ouvindo…" || lendo.startsWith("“")) { escuta.current?.parar(); return; }
+    setErro(""); setCands([]); setLendo("Ouvindo…");
+    escuta.current = ouvir({
+      aoParcial: (t) => setLendo(t === "Entendendo…" ? t : `“${t}”`),
+      aoOuvir: (t) => { setQ(t); setAba("perfume"); identificar("nome", t); },
+      aoErro: (msg) => { if (/Gravando o áudio/.test(msg)) setLendo("Gravando… toque no microfone quando terminar."); else { setErro(msg); setLendo(""); } },
+      aoFim: () => setLendo((x) => (x === "Ouvindo…" || x.startsWith("“") || x.startsWith("Gravando") || x === "Entendendo…" ? "" : x)),
+    });
+  };
   async function fotoEscolhida(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0];
     if (!f) return;

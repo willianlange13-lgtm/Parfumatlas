@@ -1,5 +1,5 @@
 "use client";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import DesCadastro from "@/desenho/DesCadastro";
 import { CelCadastro } from "@/cel/CelCadastro";
@@ -10,11 +10,11 @@ import { CONCENTRACOES, GENEROS, NIVEIS_FIXACAO, NIVEIS_PROJECAO } from "@/lib/n
 import { semFundo } from "@/lib/sem-fundo";
 import { EditorAcordes, EditorNota, EditorQuando } from "@/cel/EditoresFicha";
 import { seloBusca, seloFicha } from "@/lib/selo-fonte";
+import { ouvir as ouvirVoz, pararEscuta } from "@/cel/voz";
 
 type Modo = "foto" | "link" | "nome" | "voz";
 type Cand = { nome: string; casa: string; concentracao: string; por: string; pct: number; link?: string; imagem?: string | null };
 type Ficha = Omit<Perfume, "id" | "clima"> & { revisar: string[]; completar?: boolean; fragrantica?: string };
-type SR = { lang: string; onresult: (e: { results: ArrayLike<ArrayLike<{ transcript: string }>> }) => void; onend: () => void; onerror: () => void; start: () => void };
 
 const OURO = "#D8B970";
 const CORES = ["#7F8AA0", "#B4BDCC", "#9099AC"];
@@ -53,6 +53,7 @@ export function CadastroCliente({ base, modoInicial }: { base: Record<string, un
   const [minhaNota, setMinhaNota] = useState<number | null>(null);
   const [ocupado, setOcupado] = useState<"" | "lendo" | "ficha" | "salvando">("");
   const [ouvindo, setOuvindo] = useState(false);
+  const [ouvido, setOuvido] = useState(""); // frase falada, procurada no efeito abaixo
   const [fala, setFala] = useState("");
   const [erro, setErro] = useState("");
   const [pesquisou, setPesquisou] = useState(false);
@@ -63,7 +64,8 @@ export function CadastroCliente({ base, modoInicial }: { base: Record<string, un
   const ultimaBusca = useRef("");
   const salvoId = useRef<string | null>(null); // ficha salva antes da segunda etapa terminar
 
-  async function identificar(m: "foto" | "link" | "nome", texto?: string, f?: { mime: string; base64: string }, rapido = false) {
+  async function identificar(m: "foto" | "link" | "nome", texto?: string, f?: { mime: string; base64: string }, rapido = false): Promise<Cand[]> {
+    let achados: Cand[] = [];
     setOcupado("lendo"); setErro(""); setFicha(null); setSel(-1); setPesquisou(false);
     link.current = m === "link" ? texto : undefined;
     if (m === "nome" && texto) ultimaBusca.current = texto;
@@ -72,9 +74,10 @@ export function CadastroCliente({ base, modoInicial }: { base: Record<string, un
       const j = await r.json();
       setLido(j.lido ?? []);
       setCands(j.candidatos ?? []);
+      achados = j.candidatos ?? [];
       setBuscaIA(rapido ? null : Boolean(j.buscaIA));
       setPesquisou(!rapido);
-      if (rapido) return; // enquanto digita: só mostra o catálogo, sem erro e sem escolher
+      if (rapido) return achados; // enquanto digita: só mostra o catálogo, sem erro e sem escolher
       if (!j.candidatos?.length) setErro(j.ia === false ? "A IA ainda não está ligada (falta a chave do Gemini na Vercel). Sem ela, só acho os perfumes do catálogo de exemplo." : "Não encontrei esse perfume. Tente o nome completo com a casa, ou cole o link do Fragrantica.");
       // só segue direto quando veio de um link; por nome, voz ou foto a pessoa escolhe a opção
       else if (m === "link" && j.candidatos.length === 1) escolher(j.candidatos[0], 0);
@@ -83,6 +86,7 @@ export function CadastroCliente({ base, modoInicial }: { base: Record<string, un
     } finally {
       setOcupado((o) => (o === "lendo" ? "" : o));
     }
+    return achados;
   }
 
   async function escolher(c: Cand, i: number) {
@@ -99,6 +103,18 @@ export function CadastroCliente({ base, modoInicial }: { base: Record<string, un
       setOcupado("");
     }
   }
+
+  // voz: procura o que foi falado e, se achar com segurança (ou só um), já monta a ficha
+  useEffect(() => {
+    if (!ouvido) return;
+    const txt = ouvido;
+    Promise.resolve().then(async () => {
+      setOuvido("");
+      const achados = await identificar("nome", txt);
+      if (achados.length && (achados.length === 1 || achados[0].pct >= 85)) escolher(achados[0], 0);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ouvido]);
 
   const mexeu = (a: unknown, b: unknown) => JSON.stringify(a) !== JSON.stringify(b);
   const quando = (v?: Ficha["votos"]) => (v ? [v.estacoes, v.dia, v.noite] : null);
@@ -124,18 +140,18 @@ export function CadastroCliente({ base, modoInicial }: { base: Record<string, un
     }
   }
 
+  /** Voz: ouve o nome, procura e, se achar com segurança (ou só um), já monta a ficha. Tocar de novo = "terminei de falar". */
   function ouvir() {
-    const W = window as unknown as { SpeechRecognition?: new () => SR; webkitSpeechRecognition?: new () => SR };
-    const C = W.SpeechRecognition ?? W.webkitSpeechRecognition;
-    if (!C) { setErro("Este navegador não reconhece voz. No celular, use o Chrome ou o Safari."); return; }
-    const r = new C();
-    r.lang = "pt-BR";
-    r.onresult = (e) => { const txt = e.results[0][0].transcript; setFala(`“${txt}”`); identificar("nome", txt); };
-    r.onend = () => setOuvindo(false);
-    r.onerror = () => setOuvindo(false);
+    if (ouvindo) { pararEscuta(); return; }
+    setErro(""); setCands([]); setSel(-1); setFicha(null);
     setFala("Fale o nome e a casa do perfume…");
     setOuvindo(true);
-    r.start();
+    ouvirVoz({
+      aoParcial: (t) => setFala(t === "Entendendo…" ? t : `“${t}”`),
+      aoErro: (msg) => { if (/Gravando o áudio/.test(msg)) setFala("Gravando… fale o nome e a casa e toque para terminar."); else { setErro(msg); setFala(""); } },
+      aoFim: () => setOuvindo(false),
+      aoOuvir: (txt) => { setFala(`“${txt}”`); setOuvido(txt); },
+    });
   }
 
   /** Adicionar sem pesquisa: ficha em branco com o nome digitado; você completa e salva (sem custo de IA). */

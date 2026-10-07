@@ -355,6 +355,8 @@ export function CelCadastro({ c, modoInicial }: { c: CadCel; modoInicial?: strin
             {Array.from({ length: 27 }, (_, i) => <span key={i} className={c.ouvindo ? "onda" : ""} style={{ width: 3, height: 8 + Math.round(Math.abs(Math.sin(i * 0.9)) * 36), borderRadius: 2, background: i > 9 && i < 17 ? OURO : "var(--prata)", opacity: c.ouvindo ? 1 : 0.4, animationDelay: `${(i % 7) * 0.08}s` }} />)}
           </div>
           <div style={{ textAlign: "center", fontSize: 19, lineHeight: 1.35, minHeight: 50 }}>{c.fala || "Toque e diga o nome do perfume e da casa."}</div>
+          {c.ouvindo && <span style={{ textAlign: "center", fontSize: 12.5, color: "var(--ink-3)" }}>Toque no microfone quando terminar de falar.</span>}
+          {c.ocupado === "lendo" && <span style={{ textAlign: "center", fontSize: 13.5, color: "var(--ink-2)" }}>Procurando…</span>}
           {sel && (
             <Card pad={14} gap={8}>
               <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -375,7 +377,7 @@ export function CelCadastro({ c, modoInicial }: { c: CadCel; modoInicial?: strin
       {c.modo === "foto" && c.cands.length > 0 && rodape(btnP(c.ocupado === "ficha" ? "Montando a ficha…" : "É este", () => (f ? setPasso("revisar") : sel && c.escolher(sel, c.sel < 0 ? 0 : c.sel)), c.ocupado === "ficha"), btnS("Outra foto", fotografar))}
       {c.modo === "foto" && !c.cands.length && rodape(btnP(c.ocupado === "lendo" ? "Lendo o frasco…" : "Fotografar o frasco", fotografar, c.ocupado === "lendo"))}
       {c.modo === "link" && rodape(btnP(c.ocupado ? "Lendo…" : "Continuar", () => (f ? setPasso("revisar") : sel ? c.escolher(sel, 0) : q.trim() && c.identificar("link", q.trim())), Boolean(c.ocupado)))}
-      {c.modo === "voz" && sel && rodape(btnP(f ? "Continuar" : "Montando…", () => setPasso("revisar"), !f), btnS("Falar de novo", c.ouvir))}
+      {c.modo === "voz" && sel && rodape(btnP(f ? "Continuar" : c.ocupado === "ficha" ? "Montando a ficha…" : "É este", () => (f ? setPasso("revisar") : c.escolher(sel, c.sel < 0 ? 0 : c.sel)), c.ocupado === "ficha"), btnS("Falar de novo", c.ouvir))}
     </div>
   );
 }
