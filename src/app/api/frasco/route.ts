@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { recortar } from "@/lib/recortar";
+import { recortar, rotulo } from "@/lib/recortar";
 
 /**
  * Foto oficial do frasco sem o fundo branco (docs/DECISOES.md §17).
@@ -19,7 +19,9 @@ export async function GET(request: NextRequest) {
   try {
     const r = await fetch(original, { headers: { "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Safari/605.1.15", Referer: "https://www.fragrantica.com.br/" }, signal: AbortSignal.timeout(8000) });
     if (!r.ok) throw new Error(`fimgs ${r.status}`);
-    const png = await recortar(Buffer.from(await r.arrayBuffer()));
+    const bruto = Buffer.from(await r.arrayBuffer());
+    // ?modo=rotulo: foto inteira sobre papel (todo o sistema); sem modo: recorte (só a aba Início)
+    const png = request.nextUrl.searchParams.get("modo") === "rotulo" ? await rotulo(bruto) : await recortar(bruto);
     return new NextResponse(new Uint8Array(png), { headers: { "Content-Type": "image/png", "Cache-Control": CACHE } });
   } catch (e) {
     console.error("[atlas:frasco]", id, e instanceof Error ? e.message : e);

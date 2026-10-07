@@ -329,3 +329,9 @@ Briefing do Willian: o desktop estava linear demais (preto + prata + cinza + dou
 - Problema relatado pelo Willian: o botão de voz mostrava "gravando" e nada acontecia. Causas: (1) no cadastro por voz, depois de achar o perfume, ninguém mandava montar a ficha (o botão ficava "Montando…" travado quando havia um só candidato); (2) o reconhecimento só aceitava a frase "final", que às vezes não chega (iPhone), e os erros (microfone bloqueado, nada ouvido) eram engolidos.
 - `src/cel/voz.ts` (`ouvir`): texto parcial ao vivo na tela, usa o parcial se a frase final não vier, para sozinho em 12 s, tocar no microfone de novo = "terminei de falar", erros com mensagem em português. Sem reconhecimento no navegador (Firefox, app instalado no iPhone): grava até 8 s e transcreve em `/api/transcrever` (OpenAI `gpt-4o-mini-transcribe`, ou Gemini; centavos por frase).
 - Cadastro por voz: achou com 85% ou mais (ou um só), monta a ficha sozinho; senão mostra as opções e o botão "É este" funciona. Buscar, Sommelier e Coleção usam o mesmo módulo.
+
+## 27. O frasco é um rótulo; recorte só no Início (out/2026)
+
+- Decisão do Willian depois da auditoria de design (etapa 1 do plano "a ficha é um rótulo"): o recorte automático nunca fica bom em todo frasco. Fora da aba Início, a foto oficial aparece inteira sobre papel cor de rótulo (#E8DFCF), num cartão 3:4 com cantos arredondados e fio fino na borda. O branco da foto vira o papel por multiplicação, no servidor (`rotulo()` em `src/lib/recortar.ts`, `/api/frasco?modo=rotulo`). Nada é apagado, então vidro transparente e frasco branco saem certos. Fundo cinza-claro é levado ao branco antes.
+- A aba Início (computador e celular) continua com o frasco recortado, com luz e sombra (`recorte()` em `src/lib/sem-fundo.ts`, aplicado em `montarInicio`).
+- `semFundo()` agora devolve o rótulo; a sua própria foto do frasco continua como está.

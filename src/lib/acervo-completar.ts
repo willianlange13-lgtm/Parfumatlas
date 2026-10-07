@@ -5,7 +5,7 @@ import { completarFicha } from "@/lib/ficha";
 import { geminiConfigurado } from "@/lib/gemini";
 
 /**
- * Completar o acervo com IA, em lotes pequenos (docs/DECISOES.md §25). Fila: primeiro quem não tem nota
+ * Completar o acervo com IA, em lotes pequenos (docs/DECISOES.md §27). Fila: primeiro quem não tem nota
  * nenhuma, depois quem tem fixação/projeção vazia ou só estimada. Cada perfume é uma pesquisa paga
  * (a mesma completação da ficha: até 3 buscas). Só preenche o que está vazio; nível estimado cede ao real.
  */

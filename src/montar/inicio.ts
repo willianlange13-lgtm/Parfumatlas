@@ -10,6 +10,7 @@ import { NIVEIS_FIXACAO } from "@/lib/normalizar";
 import { territorio } from "@/lib/territorio";
 import { coordenadas, paisDaCasa } from "@/data/casas";
 import { hexA } from "@/desenho/h2";
+import { recorte } from "@/lib/sem-fundo";
 
 // No Início, sempre que houver, vale a foto oficial recortada (só o frasco, com sombra e luz; decisão do Willian,
 // docs/DECISOES.md §17). A sua foto só entra quando não há a oficial; sem nenhuma, o desenho.
@@ -32,7 +33,15 @@ function luzDe(e: { perfume: Perfume } | null) {
 }
 
 export async function montarInicio(outra = 0) {
-  const acervo = await carregarAcervo();
+  // aba Início: o frasco aparece recortado, com luz e sombra; no resto do sistema ele é o rótulo (docs/DECISOES.md §27)
+  const bruto = await carregarAcervo();
+  const rec = <T extends { imagem?: string | null }>(p: T): T => ({ ...p, imagem: recorte(p.imagem) });
+  const acervo = {
+    ...bruto,
+    colecao: bruto.colecao.map((e) => ({ ...e, perfume: rec(e.perfume) })),
+    lancamentos: bruto.lancamentos.map((l) => ({ ...l, perfume: rec(l.perfume) })),
+    perfumes: new Map([...bruto.perfumes].map(([k, p]) => [k, rec(p)])),
+  };
   const clima = await obterClima();
   const itens = naColecao(acervo.colecao);
   const temp = clima.agora.temp, umid = clima.agora.umidade;

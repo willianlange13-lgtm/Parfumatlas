@@ -3,7 +3,7 @@ import { createClient, supabaseConfigurado } from "@/lib/supabase/server";
 import { clienteServico } from "@/lib/supabase/servico";
 import { completarAcervo, situacaoDoAcervo } from "@/lib/acervo-completar";
 
-/** Completar o acervo com IA, um lote pequeno por chamada (docs/DECISOES.md §25). A tela chama de novo até acabar. */
+/** Completar o acervo com IA, um lote pequeno por chamada (docs/DECISOES.md §27). A tela chama de novo até acabar. */
 export const maxDuration = 300;
 
 const json = (x: unknown, status = 200) => NextResponse.json(x, { status, headers: { "Cache-Control": "no-store" } });
