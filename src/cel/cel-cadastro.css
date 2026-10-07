@@ -1,0 +1,8 @@
+/* Adicionar no celular (Atlas Vivo). */
+.cad-tit { margin: 4px 0 0; font-family: var(--marca); font-size: 44px; font-weight: 600; letter-spacing: -0.045em; line-height: 0.95; }
+.cad-tit em { font-style: normal; color: var(--acento); }
+/* visor da câmera: linha de leitura percorrendo o quadro */
+.cad-visor::after { content: ""; position: absolute; left: 18px; right: 18px; top: 18px; height: 2px; border-radius: 1px; background: linear-gradient(90deg, transparent, var(--acento), transparent); box-shadow: 0 0 18px var(--acento); animation: cad-varre 2.8s var(--ease) infinite alternate; pointer-events: none; }
+.cad-visor:has(img)::after { display: none; }
+@keyframes cad-varre { to { transform: translateY(240px); } }
+@media (prefers-reduced-motion: reduce) { .cad-visor::after { animation: none; opacity: .5; } }

@@ -1,4 +1,5 @@
 "use client";
+import "./cel-cadastro.css";
 import { useEffect, useRef, useState } from "react";
 import { Icone } from "@/components/Icone";
 import { Frasco } from "@/components/Frasco";
@@ -244,6 +245,7 @@ export function CelCadastro({ c, modoInicial }: { c: CadCel; modoInicial?: strin
       <input id="foto-frasco-cel" type="file" accept="image/*" capture="environment" hidden onChange={c.fotoEscolhida} />
       <div className="c-topo"><Circ icone="voltar" href="/" tamanho={36} rotulo="Voltar" /><span className="c-topo-tit">{TIT[c.modo]}</span><span style={{ width: 36 }} /></div>
       {c.modo !== "voz" && <Passos n={etapa} txt={etapa === 1 ? "Identificar" : "Confirmar"} />}
+      {etapa === 1 && <h1 className="cad-tit">Foto, link,<br /><em>nome ou voz.</em></h1>}
       <div className="c-seg">
         {MODOS.map(([m, nome, ic]) => (
           <button key={m} type="button" className={c.modo === m ? "on" : ""} style={{ fontSize: 13, gap: 5 }} onClick={() => { c.setModo(m); if (m === "voz") c.ouvir(); if (m === "foto" && !c.foto) fotografar(); }}>
@@ -254,7 +256,7 @@ export function CelCadastro({ c, modoInicial }: { c: CadCel; modoInicial?: strin
 
       {c.modo === "foto" && (
         <>
-          <button type="button" onClick={fotografar} style={{ position: "relative", height: 240, borderRadius: "var(--r-ed)", border: "1px solid var(--line)", background: "radial-gradient(ellipse at 50% 70%, rgba(127,227,196,.14) 0%, var(--surface) 75%)", overflow: "hidden", flexShrink: 0, color: "var(--ink)", padding: 0 }}>
+          <button type="button" onClick={fotografar} className="cad-visor" style={{ position: "relative", height: 280, borderRadius: "var(--r-ed)", border: "1px solid var(--line)", background: "radial-gradient(ellipse at 50% 70%, rgba(127,227,196,.14) 0%, var(--surface) 75%)", overflow: "hidden", flexShrink: 0, color: "var(--ink)", padding: 0 }}>
             {c.foto ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={c.foto} alt="Foto do frasco" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
