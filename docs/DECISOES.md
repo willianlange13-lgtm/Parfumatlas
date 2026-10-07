@@ -401,3 +401,8 @@ Pedido do Willian: direção nova e ousada, com personalidade e animação, sem 
 
 - Computador (`src/desenho/DesLancamentos.tsx` legível + `lancamentos.css`): número de novidades em contorno menta gigante ao lado da frase em tamanho de cartaz; destaque em palco com luz menta, frasco flutuando, nome grande e anel de afinidade que se desenha; cartões com nome e porcentagem grandes, sobem no hover.
 - Celular (`CelNovidades`): mesmo número em contorno ao lado da frase, nome do destaque e porcentagens maiores.
+
+## 29. Segurança das rotas públicas (out/2026)
+
+- `/api/avisos` e o GET de `/api/lancamentos/buscar` exigem sempre o `CRON_SECRET` (antes, sem a variável na Vercel, a rota ficava aberta e usava a chave de serviço). A Vercel manda o segredo sozinha no agendador quando `CRON_SECRET` está configurado.
+- `/api/alexa` confere a assinatura de cada pedido (`src/lib/alexa-assinatura.ts`): URL da cadeia em s3.amazonaws.com/echo.api, certificado válido para echo-api.amazon.com, cadeia até uma raiz confiável e assinatura `Signature-256` (ou `Signature`) sobre o corpo exato. O ID da skill sozinho não é segredo.
