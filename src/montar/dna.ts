@@ -2,7 +2,6 @@ import { carregarAcervo } from "@/lib/dados";
 import { dna, fluxo, naColecao } from "@/lib/analise";
 import { nota as refNota, tipoNota } from "@/data/referencia";
 import { corDoAcorde } from "@/lib/cores";
-import base from "@/data/desenho/DNAPreto.json";
 import { FAMCOR, glifo, hexA, P, t } from "@/desenho/h2";
 
 const EIXO_COR: Record<string, string> = { ...FAMCOR, Floral: corDoAcorde("Floral") };
@@ -42,7 +41,6 @@ export async function montarDNA() {
   const c = d.carater;
 
   return {
-    ...base,
     t,
     demo: acervo.demo,
     tit: { a: d.titulo[0], b: d.titulo[1], texto: d.texto },

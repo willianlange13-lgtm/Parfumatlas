@@ -36,7 +36,7 @@ export const obterConfig = cache(async (): Promise<Config> => {
   }
 });
 
-export const iniciais = (nome: string) => nome.split(" ").filter(Boolean).map((p) => p[0]).filter((_, i, a) => i === 0 || i === a.length - 1).join("").toUpperCase();
+export const iniciais = (nome: string) => nome.split(" ").filter(Boolean).slice(0, 2).map((p) => p[0]).join("").toUpperCase(); // mesma regra de Configurações
 
 /** Nomes das colunas no banco para cada campo editável. */
 export const COLUNA: Record<string, string> = {

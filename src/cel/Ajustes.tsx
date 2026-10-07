@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useEffect, useState, type ReactNode } from "react";
 import { Icone } from "@/components/Icone";
 import type { Config } from "@/lib/config";
-import { Card, Circ, MONO, OURO, Rot } from "./kit";
+import { Card, Cartaz, Circ, MONO, OURO, Rot } from "./kit";
 import { ativarAvisos, avisosAtivos, erroAvisos } from "./push";
 
 type Props = { cfg: Config; classe: string; total: number; pcts: number[]; podeSalvar: boolean; sair: () => void };
@@ -93,6 +93,7 @@ export function Ajustes({ cfg, classe, total, pcts, podeSalvar, sair }: Props) {
   return (
     <div className="c-tela sem-barra" style={{ maxWidth: 620, margin: "0 auto" }}>
       <div className="c-topo"><Circ icone="voltar" href="/" tamanho={36} rotulo="Voltar" /><span className="c-topo-tit">Configurações</span><span style={{ width: 36 }} /></div>
+      <Cartaz a="Seu Atlas," b="do seu jeito." />
       <Card fundo="destaque" pad={14}>
         <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
           <span style={{ width: 52, height: 52, borderRadius: "var(--r-ctl)", background: "var(--btn)", color: "var(--on-btn)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 600, fontSize: 17, flexShrink: 0 }}>{c.nome.split(" ").filter(Boolean).slice(0, 2).map((p) => p[0]).join("").toUpperCase()}</span>
