@@ -7,7 +7,7 @@
 
 .df-palco { position: relative; display: grid; grid-template-columns: 320px minmax(0, 1fr) 500px; gap: 48px; align-items: center; min-height: 520px; }
 .df-palco::before { content: ""; position: absolute; left: -64px; right: -64px; top: -40px; bottom: -40px; z-index: -1; background: radial-gradient(ellipse 30% 70% at 12% 50%, color-mix(in oklab, var(--terr) 22%, transparent), transparent 70%); pointer-events: none; }
-.df-figura { border-radius: 36px !important; box-shadow: 0 40px 70px -40px color-mix(in oklab, var(--terr) 70%, black); animation: flutua 8s ease-in-out infinite; }
+.df-figura { border-radius: 36px !important; box-shadow: 0 40px 70px -40px color-mix(in oklab, var(--terr) 70%, black); }
 .df-desc { font-size: 20px; line-height: 1.5; color: var(--ink-2); max-width: 30ch; }
 .df-palco .btn { border-radius: var(--r-pill) !important; padding: 0 28px !important; white-space: nowrap; }
 .df-palco form button { border-radius: var(--r-pill) !important; transition: background-color .25s var(--ease), color .25s; }

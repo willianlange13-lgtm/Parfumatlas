@@ -5,7 +5,6 @@
 .dl-topo h1 { margin: 0; font-family: var(--marca); font-size: 76px; font-weight: 600; letter-spacing: -0.045em; line-height: 0.92; max-width: 19ch; }
 .dl-destaque { position: relative; border-radius: 44px !important; overflow: hidden; background: radial-gradient(ellipse 40% 80% at 15% 60%, color-mix(in oklab, var(--acento) 22%, transparent), transparent 70%), var(--surface) !important; box-shadow: var(--sombra); min-height: 460px; }
 .dl-destaque > div:first-child { height: 400px !important; }
-.dl-destaque > div:first-child img { animation: flutua 7s ease-in-out infinite; }
 .dl-nome { margin: 0; font-family: var(--marca); font-size: 64px; font-weight: 600; letter-spacing: -0.045em; line-height: 0.92; }
 .dl-destaque svg path:last-of-type { stroke-dasharray: 1000; animation: desenha 1.8s var(--ease) both .3s; --comp: 1000; }
 .dl-cards article { border-radius: 36px !important; transition: transform .6s var(--ease), border-color .3s, box-shadow .6s var(--ease); }

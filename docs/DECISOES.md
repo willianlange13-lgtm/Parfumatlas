@@ -439,3 +439,5 @@ Pedido do Willian: "ainda muito básico, sem animações, cores lineares demais"
 - `src/app/vida.css`: céu de malha com três luzes (menta, petróleo e a do território) derivando atrás de tudo; bordas em degradê menta→âmbar nos cartões; títulos com brilho que atravessa as letras (o degradê vai em cada palavra animada, por causa do Safari) e parte em destaque em degradê menta→âmbar; botão principal com degradê que respira e o + da barra com pulso.
 - Segundo tom (`--ambar` #FFB86B) só em degradês, nunca como cor de botão: o acento continua o menta.
 - JSON das pranchas: removidas as chaves que nenhum código lê.
+
+- Frasco flutuando (sobe e desce) removido de todas as telas: Willian achou com cara de apresentação de slides. Não religar.
