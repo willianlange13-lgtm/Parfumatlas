@@ -441,12 +441,3 @@ Pedido do Willian: "ainda muito básico, sem animações, cores lineares demais"
 - JSON das pranchas: removidas as chaves que nenhum código lê.
 
 - Frasco flutuando (sobe e desce) removido de todas as telas: Willian achou com cara de apresentação de slides. Não religar.
-
-## 32. Frascos recortados por IA (out/2026)
-
-Pedido do Willian: recorte melhor dos frascos, a partir do catálogo de perfumes árabes (PDF da Star Company, 564 itens de 26 casas). Preços ficam de fora.
-- O recorte automático (§17) só apaga fundo branco ligado à borda: falha com vidro claro e não separa a caixa do frasco. As fotos do catálogo trazem quase sempre a caixa junto.
-- Novo recorte, feito uma vez fora da Vercel (`scripts/frascos/`): a IA de primeiro plano (isnet) tira o fundo e o SAM, guiado por pontos no frasco e na caixa, deixa só o frasco. Resultado em `public/frascos/<código>.webp` (transparente, recorte justo).
-- `src/lib/frasco-catalogo.ts` casa casa + nome de forma estrita (ignora "Perfumes", acentos, EDP e a cor entre parênteses). Kits ficam de fora.
-- Onde entra: na aba Início o frasco do catálogo tem prioridade sobre o recorte automático; no resto do sistema continua o rótulo (§27), e o frasco do catálogo só aparece quando o perfume não tem foto oficial.
-- Primeira leva: 518 fotos com imagem; revisão visual de todas, 98 refeitas com outros pontos; ficaram 438 frascos aprovados (3,8 MB). Kits e os recortes que não ficaram limpos ficaram de fora e seguem com o recorte automático.
