@@ -12,7 +12,6 @@ import { territorio } from "@/lib/territorio";
 import { coordenadas, paisDaCasa } from "@/data/casas";
 import { hexA } from "@/desenho/h2";
 import { recorte } from "@/lib/sem-fundo";
-import { frascoDoCatalogo } from "@/lib/frasco-catalogo";
 
 // No Início, sempre que houver, vale a foto oficial recortada (só o frasco, com sombra e luz; decisão do Willian,
 // docs/DECISOES.md §17). A sua foto só entra quando não há a oficial; sem nenhuma, o desenho.
@@ -39,8 +38,7 @@ export async function montarInicio(outra = 0) {
   const primeiroNome = cfg.nome.split(" ")[0] || "você";
   // aba Início: o frasco aparece recortado, com luz e sombra; no resto do sistema ele é o rótulo (docs/DECISOES.md §27)
   const bruto = await carregarAcervo();
-  // frasco recortado por IA (catálogo) quando existe; senão, o recorte automático da foto oficial
-  const rec = <T extends { imagem?: string | null; casa: string; nome: string }>(p: T): T => ({ ...p, imagem: frascoDoCatalogo(p.casa, p.nome) ?? recorte(p.imagem) });
+  const rec = <T extends { imagem?: string | null }>(p: T): T => ({ ...p, imagem: recorte(p.imagem) });
   const acervo = {
     ...bruto,
     colecao: bruto.colecao.map((e) => ({ ...e, perfume: rec(e.perfume) })),
