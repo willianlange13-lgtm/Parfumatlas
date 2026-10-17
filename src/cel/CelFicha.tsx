@@ -3,8 +3,9 @@ import type React from "react";
 import "./cel-ficha.css";
 import { Icone } from "@/components/Icone";
 import type { montarFicha } from "@/montar/ficha";
-import { Barra, Bloco, Btn, Camadas, Card, Demo, MONO, NotaChip, OURO, PalcoC, Rot, Topo } from "./kit";
+import { Barra, Btn, Camadas, Card, Demo, MONO, OURO, PalcoC, Rot, Topo } from "./kit";
 import { OpcoesPerfume } from "./OpcoesPerfume";
+import { ClassificacaoGuia, DiaNoiteGuia, OcasioesGuia, PerformanceGuia, PiramideGuia } from "@/components/ficha/Guia";
 import type { Perfume } from "@/lib/tipos";
 
 type V = NonNullable<Awaited<ReturnType<typeof montarFicha>>>;
@@ -80,78 +81,16 @@ export function CelFicha({ v, x }: { v: V; x: ExtraFicha }) {
         ))}
       </div>
 
-      {/* 03 · pirâmide */}
-      <Card pad={16}>
-        <Rot>Pirâmide olfativa</Rot>
-        <div style={{ fontSize: 19, lineHeight: 1.3 }}>{cab.frase}</div>
-        <span style={{ fontFamily: MONO, fontSize: 9, letterSpacing: ".1em", color: "var(--ink-3)" }}>FOTOS REAIS · ÍCONE ONDE AINDA FALTA FOTO</span>
-        {v.piramide.map((nv, i) => (
-          <div key={nv.nome} style={{ display: "flex", flexDirection: "column", gap: 12, paddingTop: i ? 14 : 4, borderTop: i ? "1px solid var(--line)" : "none" }}>
-            <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}><span style={{ fontSize: 17 }}>{nv.nome}</span><span style={{ fontFamily: MONO, fontSize: 9.5, letterSpacing: ".1em", color: "var(--ink-3)" }}>{nv.tempo}</span></div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: 8 }}>
-              {nv.notas.map((nt) => (
-                <div key={nt.nome} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, textAlign: "center" }}>
-                  <span style={{ width: 58, height: 58, borderRadius: "50%", padding: 2, border: `1px solid ${nt.borda}`, display: "flex" }}><NotaChip nome={nt.nome} tam={52} rotulo={false} /></span>
-                  <span style={{ fontSize: 11.5, lineHeight: 1.2 }}>{nt.nome}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        ))}
+      {/* 03 · formato guia: pirâmide, performance, dia ou noite, classificação e ocasiões */}
+      <Card pad={16}><PiramideGuia niveis={v.guia.piramide} tam={44} /></Card>
+      <Card pad={16} gap={18}>
+        <PerformanceGuia g={v.guia} />
+        <DiaNoiteGuia g={v.guia} />
       </Card>
+      <Card pad={16}><ClassificacaoGuia g={v.guia} /></Card>
+      {v.guia.marcadas.length > 0 && <Card pad={16}><OcasioesGuia g={v.guia} /></Card>}
 
-      {/* 04 · desempenho e acordes */}
-      <Bloco titulo="Desempenho · comunidade">
-        <div className="c-grade2" style={{ gap: 8 }}>
-          {v.gauges.map((g) => (
-            <div key={g.nome} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 3, textAlign: "center", minWidth: 0 }}>
-              <div style={{ position: "relative", width: "100%", maxWidth: 150 }}>
-                <svg viewBox="0 0 240 132" style={{ width: "100%", display: "block" }}>
-                  <path d={g.trilho} style={{ fill: "none", stroke: "var(--chip-2)", strokeWidth: 14, strokeLinecap: "round" }} />
-                  <path d={g.valor} style={{ fill: "none", stroke: g.cor, strokeWidth: 14, strokeLinecap: "round" }} />
-                  <path d={g.marca} style={{ fill: "none", stroke: "var(--ink)", strokeWidth: 3, strokeLinecap: "round" }} />
-                </svg>
-                <div style={{ position: "absolute", left: 0, right: 0, top: "46%", fontSize: 22, fontWeight: 500 }}>{g.txt}</div>
-              </div>
-              <span style={{ fontSize: 15 }}>{g.nome}</span>
-              <span style={{ fontSize: 11, color: "var(--ink-3)", lineHeight: 1.3 }}>{g.sub}</span>
-              <span style={{ fontSize: 11, color: "var(--ink-3)", lineHeight: 1.3 }}>{g.ref}</span>
-            </div>
-          ))}
-        </div>
-      </Bloco>
-      <Bloco titulo="Acordes principais">
-        <div style={{ display: "flex", gap: 6, alignItems: "flex-end", height: 230, paddingTop: 10 }}>
-          {v.espectro.map((a) => (
-            <div key={a.curto} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 6, minWidth: 0, height: "100%", justifyContent: "flex-end" }}>
-              <span style={{ fontFamily: MONO, fontSize: 10 }}>{a.v}</span>
-              <span style={{ width: "100%", height: Math.round(a.h * 0.68), borderRadius: "6px 6px 2px 2px", background: a.cor === OURO ? "var(--pico)" : a.cor }} />
-              <span style={{ height: 52, writingMode: "vertical-rl", transform: "rotate(180deg)", fontSize: 10.5, color: "var(--ink-2)", whiteSpace: "nowrap", overflow: "hidden" }}>{a.curto}</span>
-            </div>
-          ))}
-        </div>
-      </Bloco>
-
-      {/* 06 · quando funciona e votos */}
-      <Card fundo="vinho" pad={16}>
-        <Rot>{v.quandoEst ? "Quando funciona · estimativa" : "Quando funciona"}</Rot>
-        <div style={{ position: "relative", width: 280, height: 260, alignSelf: "center" }}>
-          <svg viewBox="0 0 280 260" style={{ position: "absolute", inset: 0, width: 280, height: 260 }}>
-            <path d={v.roda.guia} style={{ fill: "none", stroke: "var(--line-2)" }} />
-            {v.roda.seg.map((s) => <path key={s.nome} d={s.d} style={{ fill: s.cor, stroke: "var(--surface-2)", strokeWidth: 3 }} />)}
-          </svg>
-          {v.roda.seg.map((s) => (
-            <div key={s.nome} style={{ position: "absolute", left: Number(s.lx), top: Number(s.ly), transform: "translate(-50%, -50%)", textAlign: "center", fontSize: 11.5, color: "var(--ink-2)", whiteSpace: "nowrap", lineHeight: 1.2 }}>
-              {s.nome}<br /><span style={{ fontFamily: MONO, fontSize: 12.5, color: "var(--ink)" }}>{s.v}</span>
-            </div>
-          ))}
-        </div>
-        <div className="c-grade2" style={{ gap: 8 }}>
-          {[["Dia", cab.dia], ["Noite", cab.noite]].map(([l, val]) => (
-            <div key={l} style={{ borderRadius: 16, background: "var(--chip)", padding: "11px 14px", display: "flex", justifyContent: "space-between", fontSize: 14 }}><span>{l}</span><span style={{ fontFamily: MONO }}>{val}</span></div>
-          ))}
-        </div>
-      </Card>
+      {/* 06 · votos */}
       <Card pad={16} gap={12}>
         <Rot>Votos</Rot>
         {v.votos.map((g) => (
