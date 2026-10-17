@@ -8,6 +8,7 @@ import { corDoAcorde } from "@/lib/cores";
 import base from "@/data/desenho/FichaAzulPreto.json";
 import { arc, circ, glifo, hexA, P, t } from "@/desenho/h2";
 import type { Entrada, Perfume } from "@/lib/tipos";
+import type { DadosGuia } from "@/components/ficha/Guia";
 
 const PALETA = ["#7FE3C4", "#E6EFEA", "#8AA094", "#AFC2B8", "#7A9184", "#9DB2A7", "#6A8175", "#C9D6CF"];
 const dominio = (u?: string | null) => { try { return u ? new URL(u).hostname.replace(/^www\./, "") : ""; } catch { return ""; } };
@@ -196,8 +197,33 @@ export async function montarFicha(id: string) {
   const perguntas = ["Faz layering com o que eu tenho?", s.inspirados.length ? "Qual inspirado chega mais perto?" : "O que combina com ele?", melhorFora ? `Vale comprar o ${melhorFora}?` : "Para que ocasião ele vai melhor?"];
 
   const dia = p.votos?.dia ?? 70, noite = p.votos?.noite ?? 60;
+
+  // formato guia: pirâmide, performance, dia ou noite, classificação e ocasiões
+  const ocs = p.votos?.ocasioes ?? base.ocasioes.map((o) => ({ nome: o.nome, v: o.v }));
+  const posNoite = Math.round((noite / Math.max(1, dia + noite)) * 100);
+  const guia: DadosGuia = {
+    piramide: [
+      { nome: "Topo", notas: p.notas.saida.slice(0, 8) },
+      { nome: "Coração", notas: p.notas.coracao.slice(0, 8) },
+      { nome: "Base", notas: p.notas.fundo.slice(0, 8) },
+    ],
+    fixacao: horas > 0 ? hm(horas) : "—",
+    projecao: metros < 0.6 ? 1 : metros < 1.1 ? 2 : metros < 1.7 ? 3 : metros < 2.4 ? 4 : 5,
+    periodo: noite - dia > 10 ? "Noturno" : dia - noite > 10 ? "Diurno" : "Dia e noite",
+    diaNoite: { pos: posNoite, legenda: posNoite >= 62 ? "mais para a noite" : posNoite <= 38 ? "mais para o dia" : "dia e noite" },
+    classif: {
+      tipo: AC.filter((a) => a.nome !== "—").map((a, i) => ({ nome: a.nome, v: a.valor, cor: cores[i] })),
+      ocasiao: ocs.map((o, i) => ({ nome: o.nome, v: o.v, cor: i < 2 ? t.sup[0] : i < 4 ? t.sup[1] : t.sup[2] })),
+      estacao: saz.map(([nome, v, cor]) => ({ nome, v, cor })),
+      publico: p.genero ?? null,
+    },
+    marcadas: (() => { const ord = [...ocs].sort((a, b) => b.v - a.v); const altas = ord.filter((o) => o.v >= 55).slice(0, 3); return (altas.length ? altas : ord.slice(0, 2)).map((o) => o.nome); })(),
+    fonte: acervo.demo ? "votos ilustrativos" : "segundo os votos da comunidade",
+  };
+
   return {
     ...base,
+    guia,
     t,
     demo: acervo.demo,
     clima,
