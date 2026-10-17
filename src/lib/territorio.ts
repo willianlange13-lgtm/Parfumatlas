@@ -7,7 +7,7 @@ export type Territorio = { nome: string; a: string; b: string; glow: string };
 
 const T: Record<string, Territorio> = {
   marinho: { nome: "mineral", a: "#5f8fa0", b: "#3f6f78", glow: "rgba(95,143,160,.16)" },        // cítrico, aquático, fresco
-  verde: { nome: "verde frio", a: "#7f9d86", b: "#4f6f5c", glow: "rgba(127,157,134,.15)" },       // aromático
+  verde: { nome: "oliva", a: "#9a925f", b: "#5f5a38", glow: "rgba(154,146,95,.15)" },             // aromático
   floral: { nome: "rosa queimado", a: "#b98288", b: "#7a3a48", glow: "rgba(185,130,136,.15)" },   // floral
   frutal: { nome: "ameixa", a: "#c08a72", b: "#8a4a5a", glow: "rgba(192,138,114,.15)" },          // frutal
   ambar: { nome: "âmbar queimado", a: "#c58a4a", b: "#6a2a34", glow: "rgba(197,138,74,.16)" },    // oriental, âmbar
@@ -15,7 +15,7 @@ const T: Record<string, Territorio> = {
   madeira: { nome: "castanho", a: "#a88462", b: "#3f5a48", glow: "rgba(168,132,98,.14)" },        // amadeirado
   chipre: { nome: "musgo", a: "#9a9a6a", b: "#5d6b4a", glow: "rgba(154,154,106,.14)" },           // chipre
   oud: { nome: "bronze", a: "#b08a52", b: "#2f4a3a", glow: "rgba(176,138,82,.16)" },              // oud
-  neutro: { nome: "menta", a: "#F2949A", b: "#8FB5A2", glow: "rgba(127,227,196,.10)" },
+  neutro: { nome: "dourado", a: "#d8b878", b: "#b9935a", glow: "rgba(216,184,120,.12)" },
 };
 
 const sem = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();

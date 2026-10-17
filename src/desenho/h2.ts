@@ -1,9 +1,9 @@
 /** Funções de desenho compartilhadas pelas pranchas (porte do h2.js do desenho). */
 import base from "@/data/desenho/InicioPreto.json";
 
-export const OURO = "#7FE3C4";
+export const OURO = "var(--acento)";
 /** Tokens das pranchas do computador: o acento (amber) é o menta do Atlas Vivo, igual ao celular (docs/DECISOES.md §28). */
-export const t = { ...(base.t as unknown as Record<string, string>), amber: OURO, amberTxt: "#A8EFD9" } as unknown as Record<string, string> & { sup: string[]; fam: string[]; saz: string[] };
+export const t = { ...(base.t as unknown as Record<string, string>), amber: OURO, amberTxt: "#ECD4A0" } as unknown as Record<string, string> & { sup: string[]; fam: string[]; saz: string[] };
 
 export const P = (x: number) => (+x).toFixed(1);
 export const hexA = (h: string, a: number) => `rgba(${parseInt(h.slice(1, 3), 16)},${parseInt(h.slice(3, 5), 16)},${parseInt(h.slice(5, 7), 16)},${a})`;

@@ -32,10 +32,6 @@ export default function DesInicio({ v }: { v: V }) {
       <section className="vivo-palco">
         <div className="vivo-palco-luz" aria-hidden="true" />
         <div className="vivo-anel" aria-hidden="true"><Camadas camadas={v.anel} tam={760} op={0.12} /></div>
-        <div className="vivo-letreiro" aria-hidden="true">
-          <div>{Array.from({ length: 4 }, (_, k) => <span key={k}>{h.nome}&nbsp;·&nbsp;</span>)}</div>
-        </div>
-
         <div className="vivo-palco-txt">
           <div className="vivo-saudacao">{c.saudacao}, {c.nome} <span>·</span> {c.data}</div>
           {h.selo ? <span className="vivo-selo">{h.selo}</span> : null}

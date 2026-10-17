@@ -5,40 +5,40 @@
  * Território olfativo: --terr-a / --terr-b / --terr-glow vêm da família do perfume (src/lib/territorio.ts)
  * e aparecem como atmosfera (luz, brilho, barras, bordas especiais), nunca como card pintado. */
 :root {
-  --bg: #0b110f;
-  --surface: #121a17;
-  --surface-2: #18231f;
-  --surface-3: #1f2d28;
-  --line: rgba(242, 238, 227, 0.08);
-  --line-2: rgba(242, 238, 227, 0.18);
-  --ink: #f2eee3;
-  --ink-2: rgba(242, 238, 227, 0.78);
-  --ink-3: rgba(242, 238, 227, 0.58);
+  --bg: #0c0a08;
+  --surface: #15120e;
+  --surface-2: #1c1813;
+  --surface-3: #241f18;
+  --line: rgba(240, 234, 222, 0.08);
+  --line-2: rgba(240, 234, 222, 0.18);
+  --ink: #f1ebdf;
+  --ink-2: rgba(241, 235, 223, 0.78);
+  --ink-3: rgba(241, 235, 223, 0.56);
 
-  --acento: #7fe3c4;
-  --acento-claro: #a8efd9;
-  --on-acento: #04140f;
-  --musgo: #8fb5a2;
+  --acento: #d8b878;
+  --acento-claro: #ecd4a0;
+  --on-acento: #1a1408;
+  --musgo: #b9a67e;
 
   /* nomes antigos (usados em todo o app) apontam para o sistema novo */
   --prata: #c9d6cf;
   --prata-txt: #e6ebe7;
   --ouro: var(--acento);
-  --ouro-bg: rgba(127, 227, 196, 0.14);
+  --ouro-bg: rgba(216, 184, 120, 0.14);
   --ouro-txt: var(--acento-claro);
-  --ouro-linha: rgba(127, 227, 196, 0.34);
+  --ouro-linha: rgba(216, 184, 120, 0.34);
   --erro: #ff8c7a;
   --pill: rgba(242, 238, 227, 0.06);
   --chip: rgba(242, 238, 227, 0.08);
   --chip-2: rgba(242, 238, 227, 0.12);
-  --btn: linear-gradient(135deg, #b5f2df 0%, #7fe3c4 52%, #4fcfaa 100%);
+  --btn: linear-gradient(135deg, #ecd4a0 0%, #d8b878 52%, #c2a05a 100%);
   --on-btn: var(--on-acento);
-  --tile: linear-gradient(160deg, #121a17 0%, #18231f 58%, #22332c 100%);
-  --tile-2: linear-gradient(160deg, #121a17 0%, #1a211c 58%, #2a2620 100%);
-  --barra: linear-gradient(180deg, #e9efe9 0%, #8fb5a2 100%);
-  --pico: linear-gradient(180deg, #d3f7ec 0%, #7fe3c4 100%);
-  --glow: rgba(127, 227, 196, 0.09);
-  --vidro: rgba(18, 26, 23, 0.72);
+  --tile: linear-gradient(160deg, #15120e 0%, #1c1813 58%, #2a2217 100%);
+  --tile-2: linear-gradient(160deg, #15120e 0%, #1c1813 58%, #2a2015 100%);
+  --barra: linear-gradient(180deg, #f0ead9 0%, #b9a67e 100%);
+  --pico: linear-gradient(180deg, #f0dcab 0%, #d8b878 100%);
+  --glow: rgba(216, 184, 120, 0.09);
+  --vidro: rgba(21, 18, 14, 0.72);
   --sombra: 0 1px 0 rgba(242, 238, 227, 0.04) inset, 0 24px 48px -28px rgba(0, 0, 0, 0.8);
 
   --sans: var(--f-texto), "Geist", system-ui, sans-serif;
@@ -283,7 +283,7 @@ p { text-wrap: pretty; }
 .so-computador a[style*="r-pill"], .so-computador button[style*="r-pill"] { white-space: nowrap; }
 
 /* esfera viva (Sommelier, Entrar) */
-.so-orbe { position: relative; flex-shrink: 0; width: 64px; height: 64px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #d3f7ec 0%, var(--acento) 35%, #2a8f74 70%, #0b3a2e 100%); box-shadow: 0 0 0 6px color-mix(in oklab, var(--acento) 12%, transparent), 0 18px 40px -12px color-mix(in oklab, var(--acento) 70%, transparent); animation: so-respira 4.5s ease-in-out infinite; }
+.so-orbe { position: relative; flex-shrink: 0; width: 64px; height: 64px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #f6e6bf 0%, var(--acento) 38%, #9c7c3a 72%, #3a2c12 100%); box-shadow: 0 0 0 6px color-mix(in oklab, var(--acento) 12%, transparent), 0 18px 40px -12px color-mix(in oklab, var(--acento) 70%, transparent); animation: so-respira 4.5s ease-in-out infinite; }
 .so-orbe::after { content: ""; position: absolute; inset: -10px; border-radius: 50%; border: 1px solid color-mix(in oklab, var(--acento) 35%, transparent); animation: so-onda 4.5s ease-out infinite; }
 @keyframes so-respira { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.06); } }
 @keyframes so-onda { from { transform: scale(0.9); opacity: 1; } to { transform: scale(1.5); opacity: 0; } }
