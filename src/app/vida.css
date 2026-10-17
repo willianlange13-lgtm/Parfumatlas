@@ -46,7 +46,7 @@ body::after { width: 56vmax; height: 56vmax; right: -16vmax; bottom: -24vmax; ba
 
 /* ---------- botão principal: degradê que respira e halo ---------- */
 .btn:not(.ghost):not(.perigo):not(.btn-sec), .c-btn:not(.sec), .barra-app .mais {
-  background: linear-gradient(120deg, #b5f2df, #7fe3c4 35%, #4fcfaa 60%, #9be8d0 100%) !important; background-size: 220% 100% !important;
+  background: linear-gradient(120deg, #f0dcab, #d8b878 35%, #c2a05a 60%, #e6cfa0 100%) !important; background-size: 220% 100% !important;
   animation: respira-btn 6s ease-in-out infinite;
 }
 @keyframes respira-btn { 0%, 100% { background-position: 0% 0; } 50% { background-position: 100% 0; } }

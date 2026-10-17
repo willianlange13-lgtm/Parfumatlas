@@ -7,7 +7,7 @@ import { nota as refNota } from "@/data/referencia";
 import { corDoAcorde, hexA } from "@/lib/cores";
 import { VoltarHist } from "./VoltarHist";
 
-export const OURO = "#7FE3C4";
+export const OURO = "var(--acento)";
 export const MONO = "var(--mono)";
 
 export function Rot({ children, cor, style }: { children: ReactNode; cor?: string; style?: CSSProperties }) {

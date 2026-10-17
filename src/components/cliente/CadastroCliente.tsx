@@ -16,7 +16,7 @@ type Modo = "foto" | "link" | "nome" | "voz";
 type Cand = { nome: string; casa: string; concentracao: string; por: string; pct: number; link?: string; imagem?: string | null };
 type Ficha = Omit<Perfume, "id" | "clima"> & { revisar: string[]; completar?: boolean; fragrantica?: string };
 
-const OURO = "#7FE3C4";
+const OURO = "var(--acento)";
 const CORES = ["#7A9184", "#AFC2B8", "#8AA094"];
 const ROT: Record<Modo, string> = { foto: "Foto", link: "Link", nome: "Nome", voz: "Voz" };
 const PH: Record<Modo, string> = { foto: "Ou cole o link de qualquer site de perfume", link: "Cole o link do Fragrantica, Parfumo ou do site da marca", nome: "Digite o nome e a casa, ex.: Aventus Creed", voz: "Ou digite o nome do perfume" };
@@ -38,7 +38,7 @@ async function reduzir(f: File) {
 
 export function CadastroCliente({ base, modoInicial }: { base: Record<string, unknown> & { t: Record<string, string> }; modoInicial?: string }) {
   // mesmo dourado do celular no acento e nos títulos (src/desenho/h2.ts)
-  const t: Record<string, string> = { ...base.t, ouro: OURO, amber: "#7FE3C4", amberTxt: "#A8EFD9" };
+  const t: Record<string, string> = { ...base.t, ouro: OURO, amber: "var(--acento)", amberTxt: "#ECD4A0" };
   const router = useRouter();
   const [modo, setModo] = useState<Modo>((["foto", "link", "nome", "voz"].includes(modoInicial ?? "") ? modoInicial : "foto") as Modo);
   const [foto, setFoto] = useState<{ url: string; mime: string; base64: string } | null>(null);
