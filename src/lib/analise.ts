@@ -101,7 +101,7 @@ export function dna(colecao: Entrada[]) {
   if (!itens.some((e) => e.perfume.acorde === "Verde")) lacunas.push({ falta: "Verde", perfumeId: SUGESTAO_LACUNA.Verde, por: "folhas e violeta" });
   if (!itens.some((e) => (e.perfume.ano ?? 2020) < 2000)) lacunas.push({ falta: "Clássico antes de 2000", perfumeId: SUGESTAO_LACUNA.Clássico, por: "cítrico de 1966" });
 
-  const est = (k: "primavera" | "verao" | "outono" | "inverno") => itens.filter((e) => (e.perfume.votos?.estacoes[k] ?? 0) >= 60).length;
+  const est = (k: "primavera" | "verao" | "outono" | "inverno") => itens.filter((e) => (e.perfume.votos?.estacoes?.[k] ?? 0) >= 60).length;
   const estacoes = [
     { nome: "Primavera", n: est("primavera") },
     { nome: "Verão", n: est("verao") },
