@@ -85,9 +85,10 @@ export async function montarFicha(id: string) {
   const n = AC.length;
   const eixos = AC.map((a, i) => { const an = (i * 2 * Math.PI) / n - Math.PI / 2; return { x: P(250 + Math.cos(an) * 232), y: P(250 + Math.sin(an) * 226), nome: a.nome.toUpperCase(), v: a.valor, cor: cores[i] }; });
 
-  // desempenho
-  const VF = p.votos?.fixacao ?? [3, 8, 32, 41, 16], HF = [1, 2.5, 5, 9, 13];
-  const VP = p.votos?.projecao ?? [10, 46, 34, 10], MP = [0.3, 1, 2, 3];
+  // desempenho — nunca mostrar zerado: votos vazios ou todos em zero caem na estimativa
+  const comValor = (a?: number[] | null) => (a && a.some((x) => x > 0) ? a : null);
+  const VF = comValor(p.votos?.fixacao) ?? [3, 8, 32, 41, 16], HF = [1, 2.5, 5, 9, 13];
+  const VP = comValor(p.votos?.projecao) ?? [10, 46, 34, 10], MP = [0.3, 1, 2, 3];
   const horas = p.fixacaoH ?? VF.reduce((s, v, i) => s + (v / 100) * HF[i], 0);
   const metros = p.projecaoM ?? VP.reduce((s, v, i) => s + (v / 100) * MP[i], 0);
   const mesmaFam = todos.filter((x) => x.familia.split(" ")[0] === p.familia.split(" ")[0] && x.fixacaoH);
@@ -106,7 +107,8 @@ export async function montarFicha(id: string) {
   const g1 = gauge((minhaF?.h ?? horas) / 12, hFam / 12, terr.a), g2 = gauge((minhaP?.m ?? metros) / 3, mFam / 3, terr.b);
 
   // quando funciona
-  const e = p.votos?.estacoes ?? { primavera: 60, verao: 50, outono: 60, inverno: 50 };
+  const estVotos = p.votos?.estacoes;
+  const e = estVotos && Object.values(estVotos).some((x) => x > 0) ? estVotos : { primavera: 60, verao: 50, outono: 60, inverno: 50 };
   const rc = 140, rcy = 130, ri = 34, rmax = 104;
   const saz: [string, number, string][] = [["Primavera", e.primavera, t.saz[0]], ["Verão", e.verao, t.saz[1]], ["Outono", e.outono, t.saz[2]], ["Inverno", e.inverno, t.saz[3]]];
   const seg = saz.map((s, i) => {
@@ -199,7 +201,8 @@ export async function montarFicha(id: string) {
   const dia = p.votos?.dia ?? 70, noite = p.votos?.noite ?? 60;
 
   // formato guia: pirâmide, performance, dia ou noite, classificação e ocasiões
-  const ocs = p.votos?.ocasioes ?? base.ocasioes.map((o) => ({ nome: o.nome, v: o.v }));
+  const ocsVotos = p.votos?.ocasioes;
+  const ocs = ocsVotos && ocsVotos.some((o) => o.v > 0) ? ocsVotos : base.ocasioes.map((o) => ({ nome: o.nome, v: o.v }));
   const posNoite = Math.round((noite / Math.max(1, dia + noite)) * 100);
   const guia: DadosGuia = {
     piramide: [
