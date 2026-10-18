@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Icone } from "@/components/Icone";
 import type { montarLancamentos } from "@/montar/lancamentos";
 import { Anel, Btn, Card, Circ, Demo, FrascoMedidas, MONO, NotaChip, OURO, Pill, Rolar, Rot, TituloAba } from "./kit";
+import { LogoMarca } from "@/components/LogoMarca";
 
 type V = Awaited<ReturnType<typeof montarLancamentos>>;
 
@@ -68,7 +69,10 @@ export function CelNovidades({ v, limite }: { v: V; limite: number }) {
             </Link>
             <div style={{ display: "flex", flexDirection: "column", gap: 5, minWidth: 0, flexGrow: 1 }}>
               <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 6 }}>
-                <span style={{ fontFamily: MONO, fontSize: 9, letterSpacing: ".1em", color: "var(--ink-3)", paddingTop: 4 }}>{c.casaUp}{c.ano ? ` · ${c.ano}` : ""}</span>
+                <span style={{ display: "flex", alignItems: "center", gap: 6, paddingTop: 2, minWidth: 0 }}>
+                  <LogoMarca casa={c.casaUp} tam={16} />
+                  <span style={{ fontFamily: MONO, fontSize: 9, letterSpacing: ".1em", color: "var(--ink-3)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{c.casaUp}{c.ano ? ` · ${c.ano}` : ""}</span>
+                </span>
                 <span style={{ fontSize: 28, fontFamily: "var(--marca)", fontWeight: 600, letterSpacing: "-.04em", color: c.pct >= 90 ? OURO : "var(--ink)", lineHeight: 1 }}>{c.pct}<span style={{ fontSize: 11 }}>%</span></span>
               </div>
               <span style={{ fontSize: 16, fontWeight: 500, lineHeight: 1.15 }}>{c.nome}</span>
@@ -89,6 +93,7 @@ export function CelNovidades({ v, limite }: { v: V; limite: number }) {
           <Rot style={{ marginBottom: 10 }}>Das casas que você tem</Rot>
           {v.casas.map((c) => (
             <div key={c.casa} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 0", borderTop: "1px solid var(--line)" }}>
+              <LogoMarca casa={c.casa} tam={28} />
               <div style={{ flexGrow: 1, display: "flex", flexDirection: "column", gap: 2 }}><span style={{ fontSize: 15 }}>{c.casa}</span><span style={{ fontSize: 12, color: "var(--ink-3)" }}>{c.txt}</span></div>
               <span style={{ fontFamily: MONO, fontSize: 11 }}>{c.n}</span>
             </div>
