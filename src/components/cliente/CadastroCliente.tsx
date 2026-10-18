@@ -6,7 +6,8 @@ import { CelCadastro } from "@/cel/CelCadastro";
 import { nota as refNota } from "@/data/referencia";
 import { hexA } from "@/lib/cores";
 import type { Perfume } from "@/lib/tipos";
-import { CONCENTRACOES, GENEROS, NIVEIS_FIXACAO, NIVEIS_PROJECAO } from "@/lib/normalizar";
+import { CONCENTRACOES, FAMILIAS, GENEROS, NIVEIS_FIXACAO, NIVEIS_PROJECAO, familiaAtlas } from "@/lib/normalizar";
+import { MARCAS } from "@/data/casas";
 import { semFundo } from "@/lib/sem-fundo";
 import { EditorAcordes, EditorNota, EditorQuando } from "@/cel/EditoresFicha";
 import { seloBusca, seloFicha } from "@/lib/selo-fonte";
@@ -183,7 +184,9 @@ export function CadastroCliente({ base, modoInicial }: { base: Record<string, un
     if (!ficha) return;
     if (!ficha.nome.trim() || !ficha.casa.trim()) { setErro("Preencha o nome e a casa do perfume."); return; }
     setOcupado("salvando"); setErro("");
-    const r = await fetch("/api/salvar", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ficha, situacao, anotacao, minhaFixacao, minhaProjecao, minhaNota, foto: foto ? { mime: foto.mime, base64: foto.base64 } : undefined }) });
+    // família sempre numa das 8 canônicas (agrupa certo), mesmo que a IA tenha trazido um nome parcial
+    const fichaSalvar = { ...ficha, familia: familiaAtlas(ficha.familia, ficha.acorde) };
+    const r = await fetch("/api/salvar", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ficha: fichaSalvar, situacao, anotacao, minhaFixacao, minhaProjecao, minhaNota, foto: foto ? { mime: foto.mime, base64: foto.base64 } : undefined }) });
     const j = await r.json();
     setOcupado("");
     if (!r.ok) setErro(j.erro ?? "Não consegui salvar.");
@@ -208,8 +211,10 @@ export function CadastroCliente({ base, modoInicial }: { base: Record<string, un
     return { n: feito ? "✓" : String(n), nome, bg: feito ? t.amber : atual ? OURO : "transparent", cor: feito ? t.onBtn : atual ? "#04140F" : t.ink3, borda: feito ? t.amber : atual ? OURO : t.line2, txt: atual ? t.ink : feito ? t.ink2 : t.ink3, linha: n < 4 ? "block" : "none" };
   };
   const rev = (l: string) => Boolean(ficha?.revisar.some((r) => r.toLowerCase().slice(0, 4) === l.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").slice(0, 4) || r.toLowerCase().slice(0, 4) === l.toLowerCase().slice(0, 4)));
-  const campo = (l: string, v: string | undefined, opcoes?: readonly string[]) => { const r = rev(l) || !v; return { l, v: v || "a confirmar", st: r ? "REVISAR" : "✓", stCor: r ? OURO : t.ink3, borda: r ? OURO : t.line, mudar: muda(l), opcoes: opcoes ? [...opcoes] : undefined }; };
-  const campos = ficha ? [campo("NOME", ficha.nome), campo("CASA", ficha.casa), campo("CONCENTRAÇÃO", ficha.concentracao, CONCENTRACOES), campo("ANO", ficha.ano ? String(ficha.ano) : ""), campo("FAMÍLIA", ficha.familia), campo("GÊNERO", ficha.genero, GENEROS), campo("PAÍS", ficha.pais)] : [];
+  const campo = (l: string, v: string | undefined, opcoes?: readonly string[], lista?: readonly string[]) => { const r = rev(l) || !v; return { l, v: v || "a confirmar", st: r ? "REVISAR" : "✓", stCor: r ? OURO : t.ink3, borda: r ? OURO : t.line, mudar: muda(l), opcoes: opcoes ? [...opcoes] : undefined, lista: lista ? [...lista] : undefined }; };
+  // família sempre numa das 8 canônicas (evita "parte do nome" da IA agrupar errado); marca com sugestões (datalist)
+  const familiaCanon = ficha ? (ficha.familia && (FAMILIAS as readonly string[]).includes(ficha.familia) ? ficha.familia : (ficha.familia || ficha.acorde ? familiaAtlas(ficha.familia, ficha.acorde) : "")) : "";
+  const campos = ficha ? [campo("NOME", ficha.nome), campo("CASA", ficha.casa, undefined, MARCAS), campo("CONCENTRAÇÃO", ficha.concentracao, CONCENTRACOES), campo("ANO", ficha.ano ? String(ficha.ano) : ""), campo("FAMÍLIA", familiaCanon, FAMILIAS), campo("GÊNERO", ficha.genero, GENEROS), campo("PAÍS", ficha.pais)] : [];
   const checks = ficha ? [ficha.nome, ficha.casa, ficha.concentracao, ficha.ano, ficha.familia, ficha.genero, ficha.pais, ficha.descricao, ficha.notas.saida.length, ficha.notas.coracao.length, ficha.notas.fundo.length, ficha.acordes.length, ficha.fixacaoH, ficha.projecaoM, ficha.votos?.estacoes, ficha.votos?.dia, ficha.acorde] : [];
   const pend = campos.filter((c) => c.st === "REVISAR").length;
   const ok = Math.max(0, checks.filter(Boolean).length - pend);
