@@ -217,7 +217,7 @@ function minimo(v: Uint8Array, W: number, H: number, r: number): Uint8Array {
 }
 
 /** Cor do papel do rótulo (docs/DECISOES.md §27). */
-export const PAPEL = { r: 232, g: 223, b: 207 }; // #E8DFCF
+export const PAPEL = { r: 255, g: 255, b: 255 }; // #FFFFFF — branco com branco, sem fundo bege
 
 /**
  * Rótulo: a foto oficial inteira sobre papel. O branco vira papel por multiplicação (nada é apagado, então
