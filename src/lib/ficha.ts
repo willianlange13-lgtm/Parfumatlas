@@ -229,10 +229,11 @@ function finalizar(f: FichaIA): FichaIA {
 export let ultimoErroFicha = "";
 
 export async function gerarFicha(c: { nome: string; casa: string; concentracao?: string; link?: string }): Promise<FichaIA | null> {
-  const { perfumes } = await carregarAcervo();
-  const local = [...perfumes.values()].find((p) => normal(p.nome) === normal(c.nome) && normal(p.casa) === normal(c.casa));
+  // ficha salva primeiro (caminho rápido): se já existe, devolve sem carregar o acervo inteiro
   const salva = await fichaSalva(c.nome, c.casa);
   if (salva) return { ...salva, reaproveitada: true };
+  const { perfumes } = await carregarAcervo();
+  const local = [...perfumes.values()].find((p) => normal(p.nome) === normal(c.nome) && normal(p.casa) === normal(c.casa));
   // acervo global: ficha sem IA (só traduz nota que sobrou em inglês, com o modelo leve)
   const doAcervo = await acharNoAcervo(c.nome, c.casa);
   const fa = doAcervo ? fichaDoAcervo(doAcervo) : null;
