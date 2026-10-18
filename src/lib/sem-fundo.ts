@@ -11,7 +11,7 @@ const idDe = (url?: string | null) =>
 export function semFundo(url?: string | null): string | null {
   if (!url) return null;
   const id = idDe(url);
-  return id ? `/api/frasco?id=${id}&modo=rotulo&v=2` : url; // v sobe quando o desenho do rótulo muda (v2: papel branco)
+  return id ? `/api/frasco?id=${id}&modo=rotulo&v=3` : url; // v sobe quando o desenho do rótulo muda (v3: papel branco, sem moldura)
 }
 
 /** Frasco recortado (sem fundo), só para a aba Início. */
