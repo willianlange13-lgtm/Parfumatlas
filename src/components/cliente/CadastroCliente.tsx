@@ -218,7 +218,7 @@ export function CadastroCliente({ base, modoInicial }: { base: Record<string, un
   const checks = ficha ? [ficha.nome, ficha.casa, ficha.concentracao, ficha.ano, ficha.familia, ficha.genero, ficha.pais, ficha.descricao, ficha.notas.saida.length, ficha.notas.coracao.length, ficha.notas.fundo.length, ficha.acordes.length, ficha.fixacaoH, ficha.projecaoM, ficha.votos?.estacoes, ficha.votos?.dia, ficha.acorde] : [];
   const pend = campos.filter((c) => c.st === "REVISAR").length;
   const ok = Math.max(0, checks.filter(Boolean).length - pend);
-  const tot = 20;
+  const tot = Math.max(1, checks.length); // total real de itens contados (não um número fixo)
   const arco = (fr: number) => { const c = 42, r = 34, a0 = -Math.PI / 2, a1 = a0 + Math.max(0.01, fr) * 2 * Math.PI * 0.9999; return `M ${(c + Math.cos(a0) * r).toFixed(1)} ${(c + Math.sin(a0) * r).toFixed(1)} A ${r} ${r} 0 ${a1 - a0 > Math.PI ? 1 : 0} 1 ${(c + Math.cos(a1) * r).toFixed(1)} ${(c + Math.sin(a1) * r).toFixed(1)}`; };
   const seg = (n: number) => Array.from({ length: 5 }, (_, i) => (i < n ? t.amber : t.chip2));
   const nivelF = ficha?.votos?.fixacao?.some((x) => x > 0) ? ficha.votos.fixacao.indexOf(Math.max(...ficha.votos.fixacao)) : -1;
