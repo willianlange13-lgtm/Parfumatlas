@@ -97,10 +97,9 @@ const BANCO_SLUG: Record<string, string> = Object.fromEntries(Object.entries(BAN
 /** Imagem do banco local (webp em public/notas): nome exato, depois normalizado (acentos/maiúsculas). */
 export const fotoLocalNota = (nome: string): string | null => BANCO_NOTAS[nome] ?? BANCO_SLUG[slug(nome)] ?? null;
 
-/** Imagem da nota: foto real de domínio público via /api/nota; a rota cai para o banco local
- *  se não achar, e o chip mostra o glifo se tudo falhar. */
+/** Imagem da nota: foto do banco do usuário (public/notas); sem foto, o chip mostra o glifo. */
 function imagemNota(nome: string): string | null {
-  return `/api/nota?n=${encodeURIComponent(nome)}&v=5`; // v sobe quando a busca/termos mudam
+  return fotoLocalNota(nome);
 }
 
 export function nota(nome: string) {
