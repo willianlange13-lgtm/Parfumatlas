@@ -10,7 +10,10 @@ export type DadosGuia = {
   projecao: number;
   periodo: "Diurno" | "Noturno" | "Dia e noite";
   diaNoite: { pos: number; legenda: string };
-  classif: { tipo: EixoGuia[]; ocasiao: EixoGuia[]; estacao: EixoGuia[]; publico: string | null };
+  classif: {
+    tipo: EixoGuia[]; ocasiao: EixoGuia[]; estacao: EixoGuia[]; publico: string | null;
+    ficha?: { familia?: string | null; acorde?: string | null; subfamilias?: string[]; concentracao?: string | null; genero?: string | null; origem?: string | null; casa?: string | null; ano?: number | null; perfumista?: string | null };
+  };
   marcadas: string[];
   fonte: string;
 };
@@ -189,6 +192,46 @@ export function ClassificacaoGuia({ g }: { g: DadosGuia }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12, width: "100%" }}>
       <Titulo>Classificação</Titulo>
+      {c.ficha && (() => {
+        const f = c.ficha;
+        const linhas: [string, string][] = [];
+        if (f.concentracao) linhas.push(["Concentração", f.concentracao]);
+        if (f.genero) linhas.push(["Gênero", f.genero]);
+        if (f.origem) linhas.push(["Origem", f.origem]);
+        else if (f.casa) linhas.push(["Casa", f.casa]);
+        if (f.ano) linhas.push(["Lançamento", String(f.ano)]);
+        if (f.perfumista) linhas.push(["Perfumista", f.perfumista]);
+        if (!f.familia && linhas.length === 0) return null;
+        return (
+          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+            {f.familia ? (
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 10 }}>
+                  <span style={{ fontFamily: MONO, fontSize: 10, letterSpacing: ".12em", color: "var(--ink-3)", textTransform: "uppercase" }}>Família olfativa</span>
+                  <span style={{ fontSize: 16, color: "var(--ink)" }}>{f.familia}</span>
+                </div>
+                {(f.acorde || (f.subfamilias && f.subfamilias.length > 0)) ? (
+                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "flex-end" }}>
+                    {f.acorde ? <span style={{ padding: "4px 12px", borderRadius: "var(--r-ctl)", fontSize: 12.5, border: `1px solid ${OURO}`, background: tr(OURO, 0.16), color: "var(--ink)" }}>{f.acorde}</span> : null}
+                    {(f.subfamilias ?? []).map((s) => <span key={s} style={{ padding: "4px 12px", borderRadius: "var(--r-ctl)", fontSize: 12.5, border: "1px solid var(--line-2)", color: "var(--ink-2)" }}>{s}</span>)}
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
+            {linhas.length > 0 ? (
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px 16px" }}>
+                {linhas.map(([l, v]) => (
+                  <div key={l} style={{ display: "flex", flexDirection: "column", gap: 3, minWidth: 0 }}>
+                    <span style={{ fontFamily: MONO, fontSize: 9.5, letterSpacing: ".12em", color: "var(--ink-3)", textTransform: "uppercase" }}>{l}</span>
+                    <span style={{ fontSize: 14, color: "var(--ink)", lineHeight: 1.3, overflowWrap: "anywhere" }}>{v}</span>
+                  </div>
+                ))}
+              </div>
+            ) : null}
+            <div style={{ height: 1, background: "var(--line)" }} />
+          </div>
+        );
+      })()}
       <div role="tablist" aria-label="Classificação" className="c-seg" style={{ width: "100%" }}>
         {([["tipo", "Tipo"], ["ocasiao", "Ocasião"], ["estacao", "Estação"], ["publico", "Público"]] as [Aba, string][]).map(([k, nome]) => (
           <button key={k} type="button" role="tab" aria-selected={aba === k} className={aba === k ? "on" : ""} onClick={() => setAba(k)} style={aba === k ? { background: OURO, color: "var(--on-acento, var(--on-btn))", fontSize: 13 } : { fontSize: 13 }}>
