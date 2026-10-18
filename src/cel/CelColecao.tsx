@@ -76,12 +76,9 @@ export function CelColecao({ d, s }: { d: DadosColecao; s: EstadoColecao }) {
         <div style={{ display: "flex", gap: 5, flexWrap: "wrap" }}>
           {d.resumo.map((r) => <span key={r.l} style={{ padding: "4px 9px", borderRadius: 10, background: "var(--chip)", fontSize: 11.5, whiteSpace: "nowrap" }}><b>{r.v}</b> {r.l}</span>)}
         </div>
-        <div style={{ display: "flex", gap: 4 }}>
+        <div style={{ display: "flex", gap: 3 }} title={c.niveis.map((n) => n.nome).join(" · ")}>
           {c.niveis.map((n) => (
-            <div key={n.nome} style={{ flex: 1, display: "flex", flexDirection: "column", gap: 5, minWidth: 0 }}>
-              <span style={{ height: 4, borderRadius: 2, background: n.cor }} />
-              <span style={{ fontSize: 9.5, color: n.txt, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{n.nome}</span>
-            </div>
+            <span key={n.nome} aria-label={n.nome} style={{ flex: 1, height: 5, borderRadius: 3, background: n.cor, minWidth: 0 }} />
           ))}
         </div>
       </Card>

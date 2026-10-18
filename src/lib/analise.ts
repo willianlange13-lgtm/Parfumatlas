@@ -180,7 +180,11 @@ export function fluxo(colecao: Entrada[], W = 1000, H = 230, x0 = 30, y0 = 6) {
 }
 
 // ---------------- Coleção ----------------
-const NIVEIS: [string, number][] = [["Iniciante", 1], ["Entusiasta", 10], ["Colecionador", 25], ["Aficionado", 50], ["Connoisseur", 100]];
+const NIVEIS: [string, number][] = [
+  ["Iniciante", 1], ["Curioso", 3], ["Entusiasta", 6], ["Explorador", 10], ["Apreciador", 15],
+  ["Colecionador", 22], ["Aficionado", 32], ["Conhecedor", 45], ["Connoisseur", 65], ["Curador", 90],
+  ["Mestre Perfumista", 120], ["Lenda", 160],
+];
 const NICHO = new Set(["Creed", "Ex Nihilo", "Xerjoff", "Parfums de Marly", "Maison Francis Kurkdjian", "Tom Ford", "Kilian", "Frédéric Malle"]);
 
 export function classe(colecao: Entrada[]) {
