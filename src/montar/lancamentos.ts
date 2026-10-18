@@ -23,7 +23,9 @@ export async function montarLancamentos(filtro = "voce", limite = 80) {
   const casasMinhas = new Set(meus.map((e) => e.perfume.casa));
   const quero = new Set(acervo.colecao.filter((e) => e.situacao === "quero").map((e) => e.perfumeId));
 
-  let lista = acervo.lancamentos.map((l) => ({ ...l, pct: afinidade(l.perfume, acervo.colecao) }));
+  // novidade é o que você NÃO tem: tira da lista os que já estão na coleção (tenho/assinatura)
+  const tenhoIds = new Set(meus.map((e) => e.perfume.id));
+  let lista = acervo.lancamentos.filter((l) => !tenhoIds.has(l.perfume.id)).map((l) => ({ ...l, pct: afinidade(l.perfume, acervo.colecao) }));
   lista = lista.filter((l) => filtro === "todos" || (filtro === "voce" ? l.pct >= 70 : filtro === "casas" ? casasMinhas.has(l.perfume.casa) : filtro === "nicho" ? NICHO.has(l.perfume.casa) : filtro === "arabe" ? ARABE.has(l.perfume.casa) : !NICHO.has(l.perfume.casa) && !ARABE.has(l.perfume.casa)));
   lista.sort((a, b) => b.pct - a.pct);
   const [d, ...resto] = lista;
