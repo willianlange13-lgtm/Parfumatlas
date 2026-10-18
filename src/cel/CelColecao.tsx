@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useState, type CSSProperties } from "react";
 import "./cel-colecao.css";
 import { Icone } from "@/components/Icone";
+import { LogoMarca } from "@/components/LogoMarca";
 import { Anel, Btn, Card, Circ, MONO, PalcoC, Pill, Qtd, Rolar, Rot } from "./kit";
 import type { DadosColecao } from "@/montar/colecao";
 import { ouvirUmaVez } from "./voz";
@@ -31,7 +32,7 @@ function CardP({ p, grande }: { p: Item; grande?: boolean }) {
         {p.assin ? <span className="cc-assin"><Icone nome="estrela" tamanho={15} /></span> : null}
       </div>
       <strong>{p.nome}</strong>
-      <span className="cc-marca">{p.marcaUp}</span>
+      <span className="cc-marca" style={{ display: "inline-flex", alignItems: "center", gap: 6 }}><LogoMarca casa={p.marca} tam={16} />{p.marcaUp}</span>
       <span className="cc-fam"><i style={{ background: p.corFam }} />{p.fam}</span>
       {grande && p.notas ? <span className="cc-notas">{p.notas}</span> : null}
     </Link>
