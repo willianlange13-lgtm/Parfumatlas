@@ -1,4 +1,5 @@
 /** Dados de referência: notas, casas, lições e ícones. */
+import { BANCO_NOTAS } from "@/data/banco-notas";
 
 export const ICONE_NOTA: Record<string, string> = {
   fruta: "M12 8c-4 0-7 3-7 7s3 6 7 6 7-2 7-6-3-7-7-7z M12 8c0-2 1-4 3-5",
@@ -89,12 +90,17 @@ function categoria(nome: string): string {
   return "almiscar"; // padrão discreto (aura), nunca a nuvem genérica
 }
 
-/** Banco de imagens das notas (nome -> URL). Preencher quando o banco estiver pronto. */
-export const BANCO_IMG: Record<string, string> = {};
+/** Banco de imagens das notas (nome -> caminho em /public/notas), gerado do banco consolidado. */
+const slug = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
+const BANCO_SLUG: Record<string, string> = Object.fromEntries(Object.entries(BANCO_NOTAS).map(([n, c]) => [slug(n), c]));
+
+/** Imagem da nota: casa pelo nome exato, depois por nome normalizado (acentos/maiúsculas). */
+function imagemNota(nome: string): string | null {
+  return BANCO_NOTAS[nome] ?? BANCO_SLUG[slug(nome)] ?? null;
+}
 
 export function nota(nome: string) {
-  // banco de imagens será ligado aqui (nome -> url). Enquanto não existe, usa o glifo sem chamar a IA (sem lentidão).
-  return { nome, foto: BANCO_IMG[nome] ?? null, icone: ICONE_NOTA[categoria(nome)] };
+  return { nome, foto: imagemNota(nome), icone: ICONE_NOTA[categoria(nome)] };
 }
 
 export const ENCICLOPEDIA: Record<string, { tipo: string; origem: string; como: string; conhecer: string[] }> = {
