@@ -225,7 +225,7 @@ export const PAPEL = { r: 255, g: 255, b: 255 }; // #FFFFFF — branco com branc
  * igual, cantos arredondados e um fio fino na borda, como etiqueta impressa.
  */
 export async function rotulo(entrada: Buffer): Promise<Buffer> {
-  const W = 600, H = 800, M = 64, R = 26;
+  const W = 600, H = 800, M = 64;
   // frasco justo (corta a sobra branca) e redimensionado para caber na área útil
   // fundo cinza-claro (algumas fotos) vira branco antes de multiplicar, senão sobra um retângulo no papel
   const { data, info } = await sharp(entrada).flatten({ background: "#ffffff" }).removeAlpha().raw().toBuffer({ resolveWithObject: true });
@@ -238,11 +238,10 @@ export async function rotulo(entrada: Buffer): Promise<Buffer> {
   const frasco = await sharp(justo).resize({ width: W - 2 * M, height: H - 2 * M, fit: "inside", withoutEnlargement: false }).toBuffer({ resolveWithObject: true });
   const { width: fw, height: fh } = frasco.info;
   const papel = sharp({ create: { width: W, height: H, channels: 3, background: PAPEL } });
-  const composto = await papel
+  // retângulo branco cheio, sem moldura nem cantos arredondados: o quadro do app já faz borda e cantos.
+  // Assim não aparece um segundo cartão (a linha) dentro do quadro.
+  return papel
     .composite([{ input: frasco.data, left: Math.round((W - fw) / 2), top: Math.round((H - fh) / 2), blend: "multiply" }])
-    .png().toBuffer();
-  const moldura = Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}"><rect x="0.5" y="0.5" width="${W - 1}" height="${H - 1}" rx="${R}" ry="${R}" fill="none" stroke="rgba(60,45,30,.18)" stroke-width="1.5"/></svg>`);
-  const mascara = Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}"><rect width="${W}" height="${H}" rx="${R}" ry="${R}" fill="#fff"/></svg>`);
-  return sharp(composto).ensureAlpha().composite([{ input: moldura }, { input: mascara, blend: "dest-in" }]).png({ compressionLevel: 9 }).toBuffer();
+    .png({ compressionLevel: 9 }).toBuffer();
 }
 
