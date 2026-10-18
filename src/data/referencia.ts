@@ -100,7 +100,7 @@ export const fotoLocalNota = (nome: string): string | null => BANCO_NOTAS[nome] 
 /** Imagem da nota: foto real de domínio público via /api/nota; a rota cai para o banco local
  *  se não achar, e o chip mostra o glifo se tudo falhar. */
 function imagemNota(nome: string): string | null {
-  return `/api/nota?n=${encodeURIComponent(nome)}`;
+  return `/api/nota?n=${encodeURIComponent(nome)}&v=2`; // v sobe quando a busca/termos mudam
 }
 
 export function nota(nome: string) {
