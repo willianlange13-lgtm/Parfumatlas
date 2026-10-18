@@ -5,6 +5,7 @@ import { Icone } from "@/components/Icone";
 import type { montarFicha } from "@/montar/ficha";
 import { Barra, Btn, Camadas, Card, Demo, MONO, OURO, PalcoC, Rot, Topo } from "./kit";
 import { OpcoesPerfume } from "./OpcoesPerfume";
+import { LogoMarca } from "@/components/LogoMarca";
 import { ClassificacaoGuia, DiaNoiteGuia, OcasioesGuia, PerformanceGuia, PiramideGuia } from "@/components/ficha/Guia";
 import type { Perfume } from "@/lib/tipos";
 
@@ -30,7 +31,10 @@ export function CelFicha({ v, x }: { v: V; x: ExtraFicha }) {
       </PalcoC>
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 8, flexShrink: 0 }}>
-        <Rot style={{ color: "var(--ink-2)" }}>{cab.casaCidade}</Rot>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <LogoMarca casa={p.casa} tam={26} />
+          <Rot style={{ color: "var(--ink-2)" }}>{cab.casaCidade}</Rot>
+        </div>
         <h1 className="cf-nome palavras">{p.nome.split(" ").map((w, k) => <span key={k} style={{ ["--i" as string]: k } as React.CSSProperties}>{w}&nbsp;</span>)}</h1>
         <p style={{ margin: 0, fontSize: 16, lineHeight: 1.5, color: "var(--ink-2)" }}>{cab.desc}</p>
       </div>
