@@ -77,6 +77,19 @@ export function CelBuscar({ lista, modoInicial }: { lista: ItemBusca[]; modoInic
   }, [chaveAcervo, aba]);
   const doAcervo = acervoQ.chave === chaveAcervo && chaveAcervo ? acervoQ.itens.filter((a) => !lista.some((p) => mesmo(p, a))) : [];
   const buscandoAcervo = Boolean(chaveAcervo) && acervoQ.chave !== chaveAcervo;
+  // busca automática na internet (IA): só quando banco + acervo global (grátis) não acharam nada, uma vez por termo
+  const autoWeb = useRef("");
+  useEffect(() => {
+    if (aba !== "perfume") return;
+    const t = q.trim();
+    if (t.length < 3 || /^https?:\/\//.test(t)) return;
+    if (!chaveAcervo || acervoQ.chave !== chaveAcervo || buscandoAcervo) return; // espera a busca grátis terminar
+    if (achados.length > 0 || doAcervo.length > 0 || cands.length > 0 || lendo) return;
+    if (autoWeb.current === normal(t)) return;
+    autoWeb.current = normal(t);
+    identificar("nome", t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [aba, q, chaveAcervo, acervoQ.chave, buscandoAcervo, achados.length, doAcervo.length, cands.length, lendo]);
   const listaAcervo = (titulo: string) => (doAcervo.length > 0 || buscandoAcervo) && (
     <Card pad={16} gap={0}>
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}><Rot>{titulo}</Rot><span style={{ fontSize: 12, color: "var(--ink-3)" }}>{buscandoAcervo ? "procurando…" : "sem pesquisa paga"}</span></div>
@@ -152,7 +165,7 @@ export function CelBuscar({ lista, modoInicial }: { lista: ItemBusca[]; modoInic
       <input id="escanear" type="file" accept="image/*" capture="environment" hidden onChange={fotoEscolhida} />
       <form className="c-campo" style={{ height: 52, borderRadius: "var(--r-ctl)", border: "1px solid var(--line-2)" }} onSubmit={(e) => { e.preventDefault(); if (q.trim()) identificar(/^https?:\/\//.test(q) ? "link" : "nome", q.trim()); }}>
         <Icone nome="busca" tamanho={18} />
-        <input value={q} onChange={(e) => { setQ(e.target.value); if (aba !== "perfume") setAba("perfume"); }} placeholder="Nome, marca ou nota" aria-label="Buscar perfume" enterKeyHint="search" />
+        <input value={q} onChange={(e) => { setQ(e.target.value); if (aba !== "perfume") setAba("perfume"); if (cands.length) setCands([]); if (erro) setErro(""); }} placeholder="Nome, marca ou nota" aria-label="Buscar perfume" enterKeyHint="search" />
         <button type="button" className="c-circ" style={{ width: 36, height: 36, background: "var(--chip-2)" }} onClick={escanear} aria-label="Escanear frasco"><Icone nome="camera" tamanho={16} /></button>
         <button type="button" className="c-circ" style={{ width: 38, height: 38, background: "var(--btn)", color: "var(--on-btn)" }} onClick={falar} aria-label="Falar"><Icone nome="mic" tamanho={16} /></button>
       </form>
