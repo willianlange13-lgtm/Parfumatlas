@@ -13,7 +13,7 @@ import type { Selo } from "@/lib/selo-fonte";
 type Modo = "foto" | "link" | "nome" | "voz";
 type Cand = { nome: string; casa: string; concentracao: string; por: string; pct: number; link?: string; imagem?: string | null };
 type Ficha = Omit<Perfume, "id" | "clima"> & { revisar: string[]; completar?: boolean; fragrantica?: string };
-type Campo = { l: string; v: string; st: string; mudar: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void; opcoes?: string[] };
+type Campo = { l: string; v: string; st: string; mudar: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void; opcoes?: string[]; lista?: string[] };
 export type CadCel = {
   modo: Modo; setModo: (m: Modo) => void; foto: string | null; lido: string[]; cands: Cand[]; sel: number; ficha: Ficha | null; setFicha: (f: Ficha) => void;
   situacao: string; setSituacao: (s: string) => void; anotacao: string; setAnotacao: (s: string) => void; minhaFixacao: number | null; setMinhaFixacao: (n: number | null) => void; minhaProjecao: number | null; setMinhaProjecao: (n: number | null) => void; minhaNota: number | null; setMinhaNota: (n: number | null) => void; ocupado: string; ouvindo: boolean; fala: string; erro: string;
@@ -153,7 +153,10 @@ export function CelCadastro({ c, modoInicial }: { c: CadCel; modoInicial?: strin
                     {x.opcoes.map((o) => <option key={o} value={o} style={{ color: "#000" }}>{o}</option>)}
                   </select>
                 ) : (
-                  <input value={x.v === "a confirmar" ? "" : x.v} placeholder="a confirmar" onChange={x.mudar} style={{ background: "transparent", border: "none", outline: "none", color: "var(--ink)", fontSize: 14, padding: 0, minWidth: 0 }} />
+                  <>
+                    <input list={x.lista ? `lista-${x.l}` : undefined} value={x.v === "a confirmar" ? "" : x.v} placeholder="a confirmar" onChange={x.mudar} style={{ background: "transparent", border: "none", outline: "none", color: "var(--ink)", fontSize: 14, padding: 0, minWidth: 0 }} />
+                    {x.lista ? <datalist id={`lista-${x.l}`}>{x.lista.map((o) => <option key={o} value={o} />)}</datalist> : null}
+                  </>
                 )}
               </label>
             );

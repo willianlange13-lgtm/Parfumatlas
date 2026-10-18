@@ -90,3 +90,16 @@ export function coordenadas(cidade?: string | null, pais?: string | null): strin
   const [nome, la, lo] = c;
   return `${nome} · ${Math.abs(la).toFixed(2)}° ${la >= 0 ? "N" : "S"} ${Math.abs(lo).toFixed(2)}° ${lo >= 0 ? "E" : "W"}`;
 }
+
+/** Sugestões de marcas para o cadastro (datalist): nomes canônicos, evitam variação/parte do nome. */
+export const MARCAS: string[] = [
+  "Lattafa", "Maison Alhambra", "Afnan", "Armaf", "Rasasi", "Al Haramain", "Rayhaan", "Swiss Arabian", "Ajmal", "Arabian Oud",
+  "French Avenue", "Fragrance World", "Khadlaj", "Paris Corner", "Orientica", "Al Wataniah", "Maison Asrar", "Zimaya", "Emper", "Riiffs",
+  "Nabeel", "Ard Al Zaafaran", "Bharara", "Gulf Orchid", "Jo Milano", "Le Chameau",
+  "Dior", "Chanel", "Creed", "Tom Ford", "Guerlain", "Hermès", "Yves Saint Laurent", "Giorgio Armani", "Prada", "Versace",
+  "Dolce & Gabbana", "Givenchy", "Jean Paul Gaultier", "Paco Rabanne", "Carolina Herrera", "Valentino", "Burberry", "Montblanc",
+  "Azzaro", "Hugo Boss", "Calvin Klein", "Bvlgari", "Cartier", "Gucci", "Lancôme", "Mugler", "Kenzo", "Issey Miyake", "Davidoff",
+  "Parfums de Marly", "Maison Francis Kurkdjian", "Initio", "Xerjoff", "Amouage", "Roja Parfums", "Byredo", "Le Labo", "Kilian",
+  "Nishane", "Frédéric Malle", "Diptyque", "Jo Malone", "Acqua di Parma", "Penhaligon's", "Memo Paris", "Mancera", "Montale",
+  "Louis Vuitton", "Zara", "O Boticário", "Natura", "Eudora",
+];
