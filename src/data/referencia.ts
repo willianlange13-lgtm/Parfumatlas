@@ -94,8 +94,14 @@ function categoria(nome: string): string {
 const slug = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
 const BANCO_SLUG: Record<string, string> = Object.fromEntries(Object.entries(BANCO_NOTAS).map(([n, c]) => [slug(n), c]));
 
-/** Imagem do banco local (webp em public/notas): nome exato, depois normalizado (acentos/maiúsculas). */
-export const fotoLocalNota = (nome: string): string | null => BANCO_NOTAS[nome] ?? BANCO_SLUG[slug(nome)] ?? null;
+// nota-base: tira o prefixo de variação (Flor de / Semente de / Folha de / Raiz de / Casca de / Óleo de / Broto de / Botão de)
+const semPrefixo = (n: string) => n.replace(/^(flor|semente|folha|raiz|casca|broto|bot[aã]o|[oó]leo) de /i, "");
+// base -> imagem: qualquer nota do mesmo tronco (base ou variação) empresta sua foto às outras
+const BANCO_BASE: Record<string, string> = Object.fromEntries(Object.entries(BANCO_NOTAS).map(([n, c]) => [slug(semPrefixo(n)), c]));
+
+/** Imagem do banco local: nome exato, normalizado, e por fim a foto da nota-base (variações reaproveitam). */
+export const fotoLocalNota = (nome: string): string | null =>
+  BANCO_NOTAS[nome] ?? BANCO_SLUG[slug(nome)] ?? BANCO_BASE[slug(semPrefixo(nome))] ?? null;
 
 /** Imagem da nota: foto do banco do usuário (public/notas); sem foto, o chip mostra o glifo. */
 function imagemNota(nome: string): string | null {
