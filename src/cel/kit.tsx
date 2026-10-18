@@ -120,10 +120,11 @@ export function Qtd({ n }: { n: number | string }) {
 /** Bolinha da nota (foto real ou ícone) com ou sem nome. */
 export function NotaChip({ nome, tam = 28, rotulo = true, fs = 13 }: { nome: string; tam?: number; rotulo?: boolean; fs?: number }) {
   const r = refNota(nome);
-  // linguagem única: glifo dourado sobre disco com leve tinta do acento
+  // imagem gerada por IA por cima; o glifo dourado fica por baixo como rede de segurança (se a imagem não carregar)
   const bola = (
     <span style={{ position: "relative", width: tam, height: tam, borderRadius: "50%", overflow: "hidden", background: "radial-gradient(circle at 38% 30%, color-mix(in oklab, var(--acento) 20%, var(--surface-2)) 0%, var(--surface-2) 72%)", boxShadow: "inset 0 0 0 1px var(--line-2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
       <svg viewBox="0 0 24 24" style={{ width: tam * 0.52, height: tam * 0.52, fill: "none", stroke: "var(--acento)", strokeWidth: 1.5, strokeLinecap: "round", strokeLinejoin: "round" }}><path d={r.icone} /></svg>
+      {r.foto ? <span aria-hidden="true" style={{ position: "absolute", inset: 0, backgroundImage: `url("${r.foto}")`, backgroundSize: "cover", backgroundPosition: "center" }} /> : null}
     </span>
   );
   if (!rotulo) return bola;
