@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import sharp from "sharp";
 import { NOTA_EN } from "@/data/notas-en";
+import { fotoLocalNota } from "@/data/referencia";
 
 /**
  * Foto real da nota/ingrediente, de domínio público (Openverse: licenças cc0 e pdm).
@@ -45,10 +46,13 @@ type OV = { results?: { url?: string; thumbnail?: string; license?: string; crea
 
 export async function GET(request: NextRequest) {
   const nome = (request.nextUrl.searchParams.get("n") ?? "").trim();
-  // sem foto de domínio público: 404 e o chip mostra o glifo dourado (mais limpo que a colagem do banco antigo).
-  // cache curto no CDN: evita martelar o Openverse em nota sem foto, mas permite nova tentativa no dia seguinte.
-  const semFoto = () => new NextResponse(null, { status: 404, headers: { "Cache-Control": "public, max-age=86400, s-maxage=86400" } });
-  if (!nome) return semFoto();
+  // sem foto de domínio público: cai para o banco local (bom nas notas abstratas); se não houver, 404 e o chip mostra o glifo.
+  // cache curto no 404: evita martelar o Openverse em nota sem foto, mas permite nova tentativa no dia seguinte.
+  const semFoto = () => {
+    const c = fotoLocalNota(nome);
+    return c ? NextResponse.redirect(new URL(c, request.url), { status: 302, headers: { "Cache-Control": "public, max-age=86400, s-maxage=86400" } }) : new NextResponse(null, { status: 404, headers: { "Cache-Control": "public, max-age=86400, s-maxage=86400" } });
+  };
+  if (!nome) return new NextResponse(null, { status: 404, headers: { "Cache-Control": "public, max-age=86400, s-maxage=86400" } });
 
   try {
     const q = encodeURIComponent(`${termo(nome)} ingredient`);
