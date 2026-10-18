@@ -7,7 +7,7 @@ import type { Perfume, Lancamento } from "@/lib/tipos";
 type Cliente = NonNullable<ReturnType<typeof import("@/lib/supabase/servico").clienteServico>>;
 
 /** Casas árabes grandes que sempre entram na busca, além das casas da coleção. */
-const ARABES_FIXAS = ["Lattafa", "Maison Alhambra", "Afnan", "Armaf", "Rasasi", "Al Haramain", "Rayhaan", "French Avenue", "Swiss Arabian", "Ajmal"];
+const ARABES_FIXAS = ["Lattafa", "Maison Alhambra", "Afnan", "Armaf", "Rasasi", "Al Haramain", "Rayhaan", "French Avenue", "Swiss Arabian", "Ajmal", "Orientica", "Khadlaj", "Paris Corner", "Al Wataniah", "Fragrance World", "Maison Asrar"];
 
 type Achado = {
   nome: string; casa: string; ano?: number | null; mes?: number | null;
@@ -42,8 +42,9 @@ export async function buscarLancamentos(sb: Cliente): Promise<{ novos: string[];
   const { data: col } = await sb.from("colecao").select("perfume:perfumes(casa)");
   const contagem = new Map<string, number>();
   for (const r of (col ?? []) as unknown as { perfume: { casa: string } | null }[]) if (r.perfume?.casa) contagem.set(r.perfume.casa, (contagem.get(r.perfume.casa) ?? 0) + 1);
-  const minhas = [...contagem.entries()].sort((a, b) => b[1] - a[1]).map(([c]) => c).slice(0, 10);
-  const casas = [...new Set([...minhas, ...ARABES_FIXAS])].slice(0, 12);
+  const minhas = [...contagem.entries()].sort((a, b) => b[1] - a[1]).map(([c]) => c).slice(0, 8);
+  // árabes grandes primeiro (de onde vêm os lançamentos recentes), depois as casas da coleção; teto maior
+  const casas = [...new Set([...ARABES_FIXAS, ...minhas])].slice(0, 20);
   const hoje = new Date();
   const desde = new Date(hoje.getFullYear(), hoje.getMonth() - 3, 1);
   const mesAno = (d: Date) => d.toLocaleDateString("pt-BR", { month: "long", year: "numeric" });
