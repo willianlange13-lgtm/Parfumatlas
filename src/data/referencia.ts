@@ -11,6 +11,13 @@ export const ICONE_NOTA: Record<string, string> = {
   especiaria: "M12 3l2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5z",
   resina: "M12 3l7.8 4.5v9L12 21l-7.8-4.5v-9z",
   baunilha: "M6 20C10 14 14 8 18 4 M9 20c4-5 8-11 11-15",
+  // abstratas: traço próprio, no lugar do antigo ícone de nuvem
+  almiscar: "M12 4c3 0 5 2 5 4.5 0 2-1.6 3-1.6 4.8 0 1.4 1.1 2 1.1 3.2A3.4 3.4 0 0 1 12 20a3.4 3.4 0 0 1-4.6-3.5c0-1.2 1.1-1.8 1.1-3.2 0-1.8-1.6-2.8-1.6-4.8C6.9 6 9 4 12 4z",
+  ambar: "M12 3l6.2 4v6.4L12 21l-6.2-7.6V7z M12 3v18 M5.8 7L12 10.2 18.2 7",
+  aquatico: "M3 9c2.2 0 2.2 2 4.5 2S9.7 9 12 9s2.2 2 4.5 2S18.7 9 21 9 M3 14c2.2 0 2.2 2 4.5 2s2.2-2 4.5-2 2.2 2 4.5 2 2.2-2 4.5-2",
+  fumaca: "M9 20c0-2 2-2 2-4s-2-2-2-4 2-2 2-4-1-2-1-4 M15 20c0-2 2-2 2-4s-2-2-2-4 2-2 2-4",
+  doce: "M12 7a5 5 0 0 1 5 5v1H7v-1a5 5 0 0 1 5-5z M12 7V4 M7 13h10l-1 6H8z",
+  po: "M8 8h.01 M12 7h.01 M16 8h.01 M7 12h.01 M12 11h.01 M17 12h.01 M9 16h.01 M12 15h.01 M15 16h.01",
   nuvem: "M7 17a4 4 0 0 1 0-8 5 5 0 0 1 9.5-1A4 4 0 0 1 17 17z",
 };
 
@@ -20,13 +27,33 @@ const TIPO: Record<string, string> = {
   Bergamota: "citrico", Toranja: "citrico", Laranja: "citrico", Limão: "citrico", Mandarina: "citrico", Tangerina: "citrico",
   Neroli: "flor", Jasmim: "flor", Rosa: "flor", "Flor de laranjeira": "flor", Gerânio: "flor", Violeta: "flor", Tuberosa: "flor", Peônia: "flor", Íris: "flor",
   Lavanda: "folha", Patchouli: "folha", "Musgo de carvalho": "folha", Hortelã: "folha", Alecrim: "folha", Cipreste: "folha", "Folhas de violeta": "folha", Vetiver: "folha", Musgo: "folha",
-  Bétula: "madeira", Cedro: "madeira", Oud: "madeira", Sândalo: "madeira", Madeiras: "madeira", Amberwood: "madeira", Carvalho: "madeira", "Resina de abeto": "madeira",
-  "Notas marinhas": "gota", Mel: "gota", Conhaque: "gota", Café: "gota",
+  Bétula: "madeira", Cedro: "madeira", Oud: "madeira", Sândalo: "madeira", Madeiras: "madeira", Carvalho: "madeira", "Resina de abeto": "madeira",
+  Mel: "gota", Conhaque: "gota", Café: "gota",
   Canela: "especiaria", Cardamomo: "especiaria", Gengibre: "especiaria", Açafrão: "especiaria", "Noz-moscada": "especiaria", Pimenta: "especiaria", "Pimenta-rosa": "especiaria", Alcaçuz: "especiaria",
-  Incenso: "resina", Benjoim: "resina", Mirra: "resina", Âmbar: "resina", Ambrofix: "resina", Ambroxan: "resina", Couro: "resina", Tabaco: "resina",
-  Baunilha: "baunilha", Tonka: "baunilha", Praliné: "baunilha",
-  Almíscar: "nuvem", "Âmbar cinzento": "nuvem",
+  Benjoim: "resina", Mirra: "resina", Âmbar: "resina", Couro: "resina",
+  Baunilha: "baunilha", Tonka: "baunilha", Praliné: "baunilha", Caramelo: "doce", Açúcar: "doce", Chocolate: "doce", Cacau: "doce", Amêndoa: "doce", Leite: "doce",
+  Almíscar: "almiscar", Cashmeran: "almiscar", "Semente de ambreta": "almiscar",
+  "Âmbar cinzento": "ambar", Ambroxan: "ambar", Ambrofix: "ambar", Amberwood: "ambar",
+  "Notas marinhas": "aquatico", Melancia: "aquatico", Pepino: "aquatico", Melão: "aquatico",
+  Tabaco: "fumaca", Incenso: "fumaca", Olíbano: "fumaca",
 };
+
+/** Categoria por palavra-chave, para notas fora da lista caírem num glifo com sentido (nunca a nuvem genérica). */
+const PISTAS: [RegExp, string][] = [
+  [/âmbar|ambar|ambro|ambre/i, "ambar"],
+  [/almíscar|almiscar|musk|cashmer/i, "almiscar"],
+  [/marinh|aqu[áa]tic|água|agua|mar\b|oz[ôo]nic|sal\b/i, "aquatico"],
+  [/fuma|incenso|defuma|tabaco|couro|betume|alcatr|queimad/i, "fumaca"],
+  [/baunilha|tonka|caramelo|açúcar|acucar|chocolate|cacau|praliné|praline|mel\b|doce|gourmand|amêndoa|amendoa|leite/i, "doce"],
+  [/madeira|cedro|sândalo|sandalo|oud|agarwood|vetiver|guaiac|pinho|abeto|carvalho|bétula|betula/i, "madeira"],
+  [/flor|rosa|jasmim|jasmin|neroli|violeta|íris|iris|peônia|peonia|tuberosa|lírio|lirio|magnólia|magnolia|gardênia|gardenia|osmanthus|ylang|mimosa|heliotrop/i, "flor"],
+  [/pimenta|canela|cardamomo|gengibre|açafrão|acafrao|noz|cravo|anis|cominho|especia|elemi/i, "especiaria"],
+  [/resina|incenso|benjoim|mirra|labdano|opopo|olíbano|olibano|bálsamo|balsamo/i, "resina"],
+  [/limão|limao|laranja|bergamota|toranja|mandarina|tangerina|cítric|citric|lima|yuzu|cidra|petitgrain/i, "citrico"],
+  [/folha|erva|hortelã|hortela|lavanda|alecrim|sálvia|salvia|tomilho|manjericão|manjericao|chá|cha\b|verde|eucalipto|artem[íi]sia|cipreste|patchouli|musgo/i, "folha"],
+  [/groselha|framboesa|morango|cereja|amora|baga/i, "baga"],
+  [/maçã|maca|pera|pêssego|pessego|damasco|ameixa|figo|manga|lichia|coco|abacaxi|maracujá|maracuja|frut/i, "fruta"],
+];
 
 /**
  * Foto real de cada nota: a imagem principal do artigo da Wikipédia (em inglês) sobre a planta ou a matéria-prima.
@@ -56,9 +83,15 @@ export const WIKI_NOTA: Record<string, string> = {
   Guaiaco: "Guaiacum_officinale", "Madeira de guaiaco": "Guaiacum_officinale", Cashmeran: "Cashmere_wool", Papiro: "Cyperus_papyrus", Labdano: "Labdanum", Olíbano: "Frankincense", Opoponax: "Opopanax",
 };
 
+function categoria(nome: string): string {
+  if (TIPO[nome]) return TIPO[nome];
+  for (const [re, cat] of PISTAS) if (re.test(nome)) return cat;
+  return "almiscar"; // padrão discreto (aura), nunca a nuvem genérica
+}
+
 export function nota(nome: string) {
   const wiki = WIKI_NOTA[nome];
-  return { nome, foto: wiki ? `/api/nota-foto?n=${encodeURIComponent(nome)}&v=3` : null, icone: ICONE_NOTA[TIPO[nome] ?? "nuvem"] };
+  return { nome, foto: wiki ? `/api/nota-foto?n=${encodeURIComponent(nome)}&v=3` : null, icone: ICONE_NOTA[categoria(nome)] };
 }
 
 export const ENCICLOPEDIA: Record<string, { tipo: string; origem: string; como: string; conhecer: string[] }> = {
@@ -125,4 +158,4 @@ export const ACORDE_EIXO: Record<string, (typeof EIXOS)[number]> = {
   Tropical: "Frutado", Lactônico: "Gourmand", Coco: "Gourmand", Cacau: "Gourmand", Caramelo: "Gourmand", Amendoado: "Gourmand",
 };
 
-export const tipoNota = (n: string) => TIPO[n] ?? "nuvem";
+export const tipoNota = (n: string) => categoria(n);
