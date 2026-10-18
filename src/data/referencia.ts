@@ -89,9 +89,12 @@ function categoria(nome: string): string {
   return "almiscar"; // padrão discreto (aura), nunca a nuvem genérica
 }
 
+/** Banco de imagens das notas (nome -> URL). Preencher quando o banco estiver pronto. */
+export const BANCO_IMG: Record<string, string> = {};
+
 export function nota(nome: string) {
-  // imagem gerada por IA, num estilo único (a rota /api/nota-foto gera e o CDN guarda); o glifo é a rede de segurança
-  return { nome, foto: `/api/nota-foto?n=${encodeURIComponent(nome)}&v=4`, icone: ICONE_NOTA[categoria(nome)] };
+  // banco de imagens será ligado aqui (nome -> url). Enquanto não existe, usa o glifo sem chamar a IA (sem lentidão).
+  return { nome, foto: BANCO_IMG[nome] ?? null, icone: ICONE_NOTA[categoria(nome)] };
 }
 
 export const ENCICLOPEDIA: Record<string, { tipo: string; origem: string; como: string; conhecer: string[] }> = {
