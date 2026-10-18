@@ -99,9 +99,21 @@ const semPrefixo = (n: string) => n.replace(/^(flor|semente|folha|raiz|casca|bro
 // base -> imagem: qualquer nota do mesmo tronco (base ou variação) empresta sua foto às outras
 const BANCO_BASE: Record<string, string> = Object.fromEntries(Object.entries(BANCO_NOTAS).map(([n, c]) => [slug(semPrefixo(n)), c]));
 
-/** Imagem do banco local: nome exato, normalizado, e por fim a foto da nota-base (variações reaproveitam). */
-export const fotoLocalNota = (nome: string): string | null =>
-  BANCO_NOTAS[nome] ?? BANCO_SLUG[slug(nome)] ?? BANCO_BASE[slug(semPrefixo(nome))] ?? null;
+// sinônimos: nota (por slug) -> nome equivalente cuja foto existe no banco
+const SINONIMOS: Record<string, string> = {
+  whisky: "Uísque", uisque: "Uísque", olibano: "Incenso", menta: "Hortelã", mentaverde: "Hortelã-verde",
+  salmarinho: "Sal", ladano: "Labdano", sementedefuncho: "Erva-doce", funcho: "Erva-doce",
+  cremedeleite: "Creme", flordecha: "Chá", folhadecha: "Chá",
+};
+
+/** Imagem do banco local: nome exato, normalizado, nota-base (variações) e por fim sinônimo. */
+export const fotoLocalNota = (nome: string): string | null => {
+  const direto = BANCO_NOTAS[nome] ?? BANCO_SLUG[slug(nome)] ?? BANCO_BASE[slug(semPrefixo(nome))];
+  if (direto) return direto;
+  const sin = SINONIMOS[slug(nome)];
+  if (sin) return BANCO_NOTAS[sin] ?? BANCO_SLUG[slug(sin)] ?? null;
+  return null;
+};
 
 /** Imagem da nota: foto do banco do usuário (public/notas); sem foto, o chip mostra o glifo. */
 function imagemNota(nome: string): string | null {
