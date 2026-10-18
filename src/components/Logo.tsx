@@ -1,31 +1,34 @@
 import Link from "next/link";
 
-const est = (cx: number, cy: number, cima: number, baixo: number, h: number) => {
-  const k = 0.14;
-  return `M${cx} ${cy - cima} Q${cx + h * k} ${cy - h * k} ${cx + h} ${cy} Q${cx + h * k} ${cy + h * k} ${cx} ${cy + baixo} Q${cx - h * k} ${cy + h * k} ${cx - h} ${cy} Q${cx - h * k} ${cy - h * k} ${cx} ${cy - cima} Z`;
-};
+/** Estrela de quatro pontas (rosa dos ventos), desenhada a partir do centro. */
+const estrela = (cx: number, cy: number, r: number, g = 0.34) =>
+  `M${cx} ${cy - r} Q${cx + r * g} ${cy - r * g} ${cx + r} ${cy} Q${cx + r * g} ${cy + r * g} ${cx} ${cy + r} Q${cx - r * g} ${cy + r * g} ${cx - r} ${cy} Q${cx - r * g} ${cy - r * g} ${cx} ${cy - r} Z`;
 
-/** Símbolo do Atlas: globo, órbita, agulha da bússola com estrelas e a gota em ouro. */
+/**
+ * Símbolo do Parfum Atlas: um medalhão cartográfico (globo com meridianos),
+ * a rosa dos ventos ao norte e, no centro, a gota em ouro. Linhas finas, gota em destaque.
+ */
 export function Logo({ tamanho = 40, traco = 1.2 }: { tamanho?: number; traco?: number }) {
-  const id = `folga-${tamanho}`;
-  const f = 1.15 + 1.6 * traco;
   return (
-    <svg viewBox="0 0 100 120" style={{ width: (tamanho * 100) / 120, height: tamanho, flexShrink: 0 }} aria-hidden="true">
-      <defs>
-        <mask id={id} maskUnits="userSpaceOnUse" x="0" y="0" width="100" height="120">
-          <rect width="100" height="120" fill="#fff" />
-          <rect x={50 - f} width={2 * f} height="120" fill="#000" />
-        </mask>
-      </defs>
-      <g mask={`url(#${id})`} fill="none" stroke="#E6EBE7">
-        <circle cx="50" cy="62" r="30" strokeWidth={1.15 * traco} />
-        <ellipse cx="50" cy="62" rx="16.8" ry="21.6" strokeWidth={0.85 * traco} />
-        <ellipse cx="50" cy="62" rx="40.5" ry="9" strokeWidth={traco} />
+    <svg viewBox="0 0 100 100" style={{ width: tamanho, height: tamanho, flexShrink: 0 }} aria-hidden="true">
+      <g fill="none" stroke="currentColor" strokeLinecap="round">
+        {/* medalhão */}
+        <circle cx="50" cy="52" r="34" strokeWidth={1.3 * traco} />
+        <circle cx="50" cy="52" r="29" strokeWidth={0.5 * traco} opacity="0.5" />
+        {/* globo: equador e meridiano, finos para recuar */}
+        <ellipse cx="50" cy="52" rx="29" ry="8" strokeWidth={0.75 * traco} opacity="0.7" />
+        <ellipse cx="50" cy="52" rx="11" ry="29" strokeWidth={0.75 * traco} opacity="0.7" />
       </g>
-      <rect x={50 - 0.6 * traco} y="20" width={1.2 * traco} height="80" fill="#E6EBE7" />
-      <path d={est(50, 22, 13, 5, 5.6)} fill="#E6EBE7" />
-      <path d={est(50, 99, 5, 12, 4.8)} fill="#E6EBE7" />
-      <path d="M50 50 C53 55.5 54.6 58.6 54.6 61.6 a4.6 4.6 0 0 1 -9.2 0 C45.4 58.6 47 55.5 50 50 Z" fill="var(--ouro)" />
+      {/* rosa dos ventos ao norte + marcas cardeais, em ouro */}
+      <path d={estrela(50, 11, 6.4)} fill="var(--ouro)" />
+      <g fill="currentColor" opacity="0.6">
+        <circle cx="84" cy="52" r={1.1 * traco} />
+        <circle cx="16" cy="52" r={1.1 * traco} />
+        <circle cx="50" cy="86" r={1.1 * traco} />
+      </g>
+      {/* gota de perfume, em ouro, o foco */}
+      <path d="M50 38 C56 47 59 51.5 59 56.5 a9 9 0 0 1 -18 0 C41 51.5 44 47 50 38 Z" fill="var(--ouro)" />
+      <path d="M47 52.5 a3 3 0 0 0 1.6 4.4" fill="none" stroke="var(--on-acento, #1a1408)" strokeWidth="1.1" strokeLinecap="round" opacity="0.55" />
     </svg>
   );
 }
@@ -35,9 +38,9 @@ export function Marca({ tamanho = 44 }: { tamanho?: number }) {
   const atlas = tamanho * 0.42;
   return (
     <Link href="/" className="marca" aria-label="Parfum Atlas, início">
-      <Logo tamanho={tamanho} traco={tamanho < 40 ? 1.9 : 1.6} />
+      <Logo tamanho={tamanho} traco={tamanho < 40 ? 1.7 : 1.4} />
       <span style={{ display: "flex", flexDirection: "column", gap: atlas * 0.22, lineHeight: 1, fontFamily: "var(--marca)" }}>
-        <span style={{ fontSize: atlas, fontWeight: 400, letterSpacing: ".24em" }}>ATLAS</span>
+        <span style={{ fontSize: atlas, fontWeight: 500, letterSpacing: ".22em" }}>ATLAS</span>
         <span style={{ fontSize: atlas * 0.4, letterSpacing: ".5em", color: "var(--ouro)" }}>PARFUM</span>
       </span>
     </Link>
