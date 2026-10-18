@@ -137,16 +137,17 @@ export function NotaChip({ nome, tam = 28, rotulo = true, fs = 13 }: { nome: str
 }
 
 /** Palco com frasco desenhado ou foto. */
-export function PalcoC({ nome, casa, acorde, forma = "ret", tampa = "#141B18", altura, k, raio = 18, foto, children, semBorda, transparente }: { nome: string; casa: string; acorde?: string | null; forma?: Forma | string; tampa?: string; altura: number; k?: number; raio?: number; foto?: string | null; oficial?: boolean; children?: ReactNode; semBorda?: boolean; transparente?: boolean }) {
+export function PalcoC({ nome, casa, acorde, forma = "ret", tampa = "#141B18", altura, k, raio = 18, foto, oficial, children, semBorda, transparente }: { nome: string; casa: string; acorde?: string | null; forma?: Forma | string; tampa?: string; altura: number; k?: number; raio?: number; foto?: string | null; oficial?: boolean; children?: ReactNode; semBorda?: boolean; transparente?: boolean }) {
   const cor = corDoAcorde(acorde);
   const esc = k ?? Math.round((altura / 150) * 100) / 100;
-  // qualquer foto (sua ou oficial) preenche o quadro inteiro: o próprio fundo dela vira o fundo do quadro, sem painel nem sobra
-  const fundo = `radial-gradient(ellipse at 50% 85%, ${hexA(cor, 0.22)} 0%, ${hexA(cor, 0.06)} 55%, ${transparente ? "rgba(0,0,0,0)" : "var(--surface)"} 100%)`;
+  // foto oficial: fundo branco (o papel do rótulo já é branco) e frasco INTEIRO (contain) — vidro aparece completo, branco com branco
+  const branco = Boolean(foto && oficial);
+  const fundo = branco ? "#ffffff" : `radial-gradient(ellipse at 50% 85%, ${hexA(cor, 0.22)} 0%, ${hexA(cor, 0.06)} 55%, ${transparente ? "rgba(0,0,0,0)" : "var(--surface)"} 100%)`;
   return (
-    <div style={{ position: "relative", height: altura, borderRadius: raio, overflow: "hidden", border: semBorda ? "none" : "1px solid var(--line)", background: fundo, display: "flex", alignItems: "flex-end", justifyContent: "center", paddingBottom: Math.round(22 * esc), flexShrink: 0 }}>
+    <div style={{ position: "relative", height: altura, borderRadius: raio, overflow: "hidden", border: semBorda && !branco ? "none" : "1px solid var(--line)", background: fundo, display: "flex", alignItems: "flex-end", justifyContent: "center", paddingBottom: Math.round(22 * esc), flexShrink: 0 }}>
       {foto ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={foto} alt={nome} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
+        <img src={foto} alt={nome} style={oficial ? { position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "contain" } : { position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
       ) : (
         <Frasco nome={nome} casa={casa} acorde={acorde} forma={(forma as Forma) ?? "ret"} tampa={tampa} escala={esc} />
       )}
