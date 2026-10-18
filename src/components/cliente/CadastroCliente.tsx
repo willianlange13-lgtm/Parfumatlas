@@ -59,6 +59,7 @@ export function CadastroCliente({ base, modoInicial }: { base: Record<string, un
   const [pesquisou, setPesquisou] = useState(false);
   const [buscaIA, setBuscaIA] = useState<boolean | null>(null);
   const [completando, setCompletando] = useState(false);
+  const [jaTem, setJaTem] = useState<{ situacao: string; numero: number } | null>(null);
   const link = useRef<string | undefined>(undefined);
   const manualRef = useRef(false); // ficha feita à mão (sem pesquisa)
   const ultimaBusca = useRef("");
@@ -165,6 +166,18 @@ export function CadastroCliente({ base, modoInicial }: { base: Record<string, un
       notas: { saida: [], coracao: [], fundo: [] }, acordes: [], forma: "ret", tampa: "#141B18", imagem: null, fonteFicha: null, revisar: ["nome", "casa"],
     });
   }
+
+  // avisa se o perfume já está na coleção (checa pelo nome + casa da ficha)
+  useEffect(() => {
+    const nome = ficha?.nome?.trim(), casa = ficha?.casa?.trim();
+    if (!nome || !casa) { setJaTem(null); return; }
+    const ctl = new AbortController();
+    const t = setTimeout(() => {
+      fetch(`/api/colecao/tem?nome=${encodeURIComponent(nome)}&casa=${encodeURIComponent(casa)}`, { signal: ctl.signal })
+        .then((r) => r.json()).then((j) => setJaTem(j?.tem ? { situacao: j.situacao, numero: j.numero } : null)).catch(() => {});
+    }, 300);
+    return () => { clearTimeout(t); ctl.abort(); };
+  }, [ficha?.nome, ficha?.casa]);
 
   async function salvar() {
     if (!ficha) return;
@@ -273,8 +286,24 @@ export function CadastroCliente({ base, modoInicial }: { base: Record<string, un
     identificar, pesquisou, completando, escolher, manual, seloBusca: seloBusca(buscaIA), seloFicha: seloFicha(ficha), ouvir, salvar, fotoEscolhida: v.fotoEscolhida, campos, prog: v.prog, fontes: v.fontes, desemp: v.desemp,
     quando: ficha?.votos ? [["Inverno", ficha.votos.estacoes.inverno], ["Primavera", ficha.votos.estacoes.primavera], ["Verão", ficha.votos.estacoes.verao], ["Outono", ficha.votos.estacoes.outono], ["Dia", ficha.votos.dia], ["Noite", ficha.votos.noite]] as [string, number][] : [],
   };
+  const avisoDup = jaTem && ficha
+    ? jaTem.situacao === "quero"
+      ? `Esse já está na sua lista de Quero (nº ${jaTem.numero}).`
+      : jaTem.situacao === "tive"
+        ? `Você já teve esse perfume (nº ${jaTem.numero}). Vai adicionar de novo?`
+        : `Você já tem esse perfume no acervo (nº ${jaTem.numero}).`
+    : "";
   return (
     <>
+      {avisoDup ? (
+        <div role="alert" style={{ position: "fixed", top: "calc(env(safe-area-inset-top, 0px) + 10px)", left: 0, right: 0, zIndex: 60, display: "flex", justifyContent: "center", padding: "0 12px", pointerEvents: "none" }}>
+          <div style={{ pointerEvents: "auto", maxWidth: 560, width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", borderRadius: 14, background: "var(--surface, #1a1512)", border: "1px solid var(--acento, #d8b878)", boxShadow: "0 12px 34px rgba(0,0,0,.5)" }}>
+            <span aria-hidden style={{ color: "var(--acento, #d8b878)", fontSize: 18, lineHeight: 1 }}>⚠︎</span>
+            <span style={{ flexGrow: 1, fontSize: 13.5, lineHeight: 1.4, color: "var(--ink, #f0e9df)" }}>{avisoDup}</span>
+            <button type="button" aria-label="Fechar aviso" onClick={() => setJaTem(null)} style={{ flexShrink: 0, width: 26, height: 26, borderRadius: 13, border: "none", background: "transparent", color: "var(--ink-3, #9b9289)", fontSize: 18, lineHeight: 1, cursor: "pointer" }}>×</button>
+          </div>
+        </div>
+      ) : null}
       <div className="so-computador"><DesCadastro v={v} /></div>
       <div className="so-celular"><CelCadastro c={cel} modoInicial={modoInicial} /></div>
     </>
