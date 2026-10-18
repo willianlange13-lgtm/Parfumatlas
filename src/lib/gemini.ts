@@ -199,6 +199,9 @@ export function schemaEstrito(o: unknown, opcional = false): unknown {
   return base;
 }
 
+/** Tamanho do contexto de cada busca: "low" é mais rápido; OPENAI_SEARCH_CONTEXT na Vercel passa na frente. */
+const CONTEXTO_BUSCA = (process.env.OPENAI_SEARCH_CONTEXT || "low") as "low" | "medium" | "high";
+
 async function chamarOpenAI(partes: Parte[], opcoes: { schema?: object; pesquisar?: boolean; sistema?: string; temperatura?: number; leve?: boolean; esforco?: "low" | "medium"; tempo?: number; maxBuscas?: number; tarefa?: string }, json: boolean): Promise<string> {
   const chave = process.env.OPENAI_API_KEY!;
   const inicioChamada = Date.now();
@@ -207,7 +210,7 @@ async function chamarOpenAI(partes: Parte[], opcoes: { schema?: object; pesquisa
   const corpo: Record<string, unknown> = {
     input: [{ role: "user", content: conteudo }],
     ...(opcoes.sistema || json ? { instructions: [json ? SEM_PERGUNTAS : "", opcoes.sistema ?? ""].filter(Boolean).join("\n\n") } : {}),
-    ...(opcoes.pesquisar ? { tools: [{ type: "web_search" }] } : {}),
+    ...(opcoes.pesquisar ? { tools: [{ type: "web_search", search_context_size: CONTEXTO_BUSCA }] } : {}),
   };
   const formato = json ? (opcoes.schema ? { type: "json_schema", name: "resposta", strict: true, schema: schemaEstrito(opcoes.schema) } : opcoes.pesquisar ? null : { type: "json_object" }) : null;
   let ultimo = "";
@@ -273,7 +276,7 @@ export async function iniciarPesquisaFundo(texto: string, schema: object, esforc
     model: modelo,
     input: [{ role: "user", content: [{ type: "input_text", text: `${texto}\n\nResponda só com um JSON válido neste formato (JSON Schema): ${JSON.stringify(schemaComum(schema))}.` }] }],
     instructions: SEM_PERGUNTAS,
-    tools: [{ type: "web_search" }],
+    tools: [{ type: "web_search", search_context_size: CONTEXTO_BUSCA }],
     background: true,
     store: true,
     ...(modelo.startsWith("gpt-5") || modelo.startsWith("o") ? { reasoning: { effort: esforco } } : {}),
