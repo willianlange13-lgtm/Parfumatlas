@@ -56,7 +56,8 @@ export async function GET(request: NextRequest) {
 
   try {
     const q = encodeURIComponent(`${termo(nome)} ingredient`);
-    const api = `https://api.openverse.org/v1/images/?q=${q}&license=cc0,pdm&page_size=12&mature=false&extension=jpg,png`;
+    // category=photograph: evita ilustração/infográfico/escaneado com texto (ex.: a nota "Coentro" vinha com texto)
+    const api = `https://api.openverse.org/v1/images/?q=${q}&license=cc0,pdm&category=photograph&page_size=12&mature=false&extension=jpg,png`;
     const r = await fetch(api, { headers: { "User-Agent": UA, Accept: "application/json" }, signal: AbortSignal.timeout(9000) });
     if (!r.ok) return semFoto();
     const dados = (await r.json()) as OV;
