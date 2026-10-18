@@ -94,9 +94,13 @@ function categoria(nome: string): string {
 const slug = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
 const BANCO_SLUG: Record<string, string> = Object.fromEntries(Object.entries(BANCO_NOTAS).map(([n, c]) => [slug(n), c]));
 
-/** Imagem da nota: casa pelo nome exato, depois por nome normalizado (acentos/maiúsculas). */
+/** Imagem do banco local (webp em public/notas): nome exato, depois normalizado (acentos/maiúsculas). */
+export const fotoLocalNota = (nome: string): string | null => BANCO_NOTAS[nome] ?? BANCO_SLUG[slug(nome)] ?? null;
+
+/** Imagem da nota: foto real de domínio público via /api/nota; a rota cai para o banco local
+ *  se não achar, e o chip mostra o glifo se tudo falhar. */
 function imagemNota(nome: string): string | null {
-  return BANCO_NOTAS[nome] ?? BANCO_SLUG[slug(nome)] ?? null;
+  return `/api/nota?n=${encodeURIComponent(nome)}`;
 }
 
 export function nota(nome: string) {
