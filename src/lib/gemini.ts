@@ -55,6 +55,37 @@ export async function geminiTexto(partes: Parte[], opcoes: { pesquisar?: boolean
   return chamar(partes, opcoes, false);
 }
 
+/** Modelos de imagem do Gemini, do preferido ao reserva. GEMINI_IMAGE_MODEL na Vercel passa na frente. */
+const MODELOS_IMAGEM = () => [...new Set([process.env.GEMINI_IMAGE_MODEL, "gemini-2.5-flash-image", "gemini-2.0-flash-preview-image-generation"].filter(Boolean) as string[])];
+
+/** Gera uma imagem com o Gemini a partir de um texto. Devolve os bytes (base64) e o tipo, ou null se não der. */
+export async function geminiImagem(prompt: string): Promise<{ mime: string; base64: string } | null> {
+  const chave = process.env.GEMINI_API_KEY;
+  if (!chave) return null;
+  const corpo = {
+    contents: [{ role: "user", parts: [{ text: prompt }] }],
+    generationConfig: { responseModalities: ["IMAGE"], temperature: 0.4 },
+  };
+  for (const modelo of MODELOS_IMAGEM()) {
+    try {
+      const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelo}:generateContent`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-goog-api-key": chave },
+        body: JSON.stringify(corpo),
+        signal: AbortSignal.timeout(45000),
+      });
+      if (!r.ok) {
+        if ([400, 404].includes(r.status)) continue; // modelo indisponível nesta conta: tenta o próximo
+        return null;
+      }
+      const j = await r.json();
+      const parte = (j.candidates?.[0]?.content?.parts ?? []).find((p: { inlineData?: { data?: string; mimeType?: string } }) => p.inlineData?.data);
+      if (parte?.inlineData?.data) return { mime: parte.inlineData.mimeType ?? "image/png", base64: parte.inlineData.data };
+    } catch { /* tenta o próximo modelo */ }
+  }
+  return null;
+}
+
 type OpcoesChamada = { schema?: object; pesquisar?: boolean; sistema?: string; temperatura?: number; leve?: boolean; esforco?: "low" | "medium"; tempo?: number; maxBuscas?: number; tarefa?: string };
 
 /** Registra as falhas também (o sucesso é registrado dentro de cada provedor, com tokens e buscas). */

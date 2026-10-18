@@ -1,55 +1,46 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { WIKI_NOTA } from "@/data/referencia";
+import { geminiImagem } from "@/lib/gemini";
 
-const UA = "ParfumAtlas/1.0 (https://atlas-system-three.vercel.app)";
-const H = { "User-Agent": UA, "Api-User-Agent": UA };
+/** Descrição do que fotografar: notas abstratas ganham uma matéria concreta e bonita. */
+const MATERIA: Record<string, string> = {
+  "Almíscar": "textura aveludada e macia de almíscar, pó claro e sedoso",
+  "Âmbar cinzento": "pedra de âmbar cinzento (ambergris), resina acinzentada com veios",
+  "Âmbar": "resina de âmbar dourada e translúcida",
+  "Ambroxan": "cristais translúcidos de ambroxan sobre pedra escura",
+  "Ambrofix": "cristais translúcidos de ambroxan sobre pedra escura",
+  "Notas marinhas": "respingo de água do mar cristalina sobre pedra molhada",
+  "Cashmeran": "lã de cashmere macia dobrada",
+  "Couro": "couro curtido marrom, textura nobre",
+  "Tabaco": "folhas de tabaco curadas e enroladas",
+  "Incenso": "resina de incenso com uma leve fumaça subindo",
+  "Oud": "lasca de madeira de oud (agarwood) escura e resinosa",
+};
 
-/** A Wikimedia só entrega sem limite os tamanhos padrão de miniatura: troca a largura para 330 px. */
-const tamanhoPadrao = (u: string) => u.replace(/\/(\d+)px-([^/]+)$/, "/330px-$2");
-
-async function pegar(url: string, ms = 5000) {
-  for (let tentativa = 0; tentativa < 3; tentativa++) {
-    try {
-      const r = await fetch(url, { headers: H, cache: "no-store", signal: AbortSignal.timeout(ms) });
-      if (r.status === 404) return null;
-      if (r.ok) return r;
-    } catch { /* tenta de novo */ }
-    await new Promise((ok) => setTimeout(ok, 400 * (tentativa + 1)));
-  }
-  return null;
-}
-
-/** Endereço da miniatura do artigo: primeiro pela API de resumo, depois pela API clássica. */
-async function miniatura(lingua: "en" | "pt", titulo: string): Promise<string | null> {
-  const a = await pegar(`https://${lingua}.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(titulo)}`);
-  const j = a ? await a.json().catch(() => null) : null;
-  const src: string | undefined = j?.thumbnail?.source ?? j?.originalimage?.source;
-  if (src) return tamanhoPadrao(src);
-  const b = await pegar(`https://${lingua}.wikipedia.org/w/api.php?action=query&format=json&redirects=1&prop=pageimages&piprop=thumbnail&pithumbsize=330&titles=${encodeURIComponent(titulo)}`);
-  const k = b ? await b.json().catch(() => null) : null;
-  const pag = k?.query?.pages ? (Object.values(k.query.pages)[0] as { thumbnail?: { source?: string } }) : null;
-  return pag?.thumbnail?.source ?? null;
-}
+const tema = (n: string) => MATERIA[n] ?? `${n}, a matéria-prima de perfumaria`;
 
 /**
- * Entrega a foto da nota pelo próprio site (a CDN da Vercel guarda por 30 dias).
- * Assim o celular não depende da Wikipédia aceitar o pedido dele.
+ * Gera a foto da nota com IA, num estilo único e premium (macro, fundo escuro, luz dourada).
+ * O CDN da Vercel guarda por 30 dias (immutable). Se a geração falhar, devolve 404 e o app mostra o glifo.
  */
 export async function GET(request: NextRequest) {
-  const nome = request.nextUrl.searchParams.get("n") ?? "";
-  const titulo = WIKI_NOTA[nome];
+  const nome = (request.nextUrl.searchParams.get("n") ?? "").trim();
   const falhou = () => new NextResponse(null, { status: 404, headers: { "Cache-Control": "no-store" } });
-  if (!titulo) return falhou();
-  const fontes = [() => miniatura("en", titulo), () => miniatura("pt", nome)];
-  for (const fonte of fontes) {
-    const src = await fonte();
-    if (!src) continue;
-    const img = (await pegar(src, 8000)) ?? (src.includes("/330px-") ? null : await pegar(tamanhoPadrao(src), 8000));
-    if (!img) continue;
-    const bytes = await img.arrayBuffer();
+  if (!nome) return falhou();
+
+  const prompt = `Fotografia macro de ${tema(nome)}. Um único assunto, centralizado, fundo preto quente quase liso, luz dourada suave de contorno, pouca profundidade de campo, still life de perfumaria de luxo, elegante e sóbrio. Sem texto, sem rótulo, sem marca d'água. Quadrado 1:1.`;
+
+  try {
+    const img = await geminiImagem(prompt);
+    if (!img) return falhou();
+    const bytes = Buffer.from(img.base64, "base64");
     return new NextResponse(bytes, {
-      headers: { "Content-Type": img.headers.get("content-type") ?? "image/jpeg", "Cache-Control": "public, max-age=2592000, s-maxage=2592000, immutable" },
+      headers: {
+        "Content-Type": img.mime,
+        // gerada uma vez; o CDN serve as próximas por 30 dias
+        "Cache-Control": "public, max-age=2592000, s-maxage=2592000, immutable",
+      },
     });
+  } catch {
+    return falhou();
   }
-  return falhou();
 }

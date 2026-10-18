@@ -90,8 +90,8 @@ function categoria(nome: string): string {
 }
 
 export function nota(nome: string) {
-  // fotos da Wikipédia saíram (inconsistentes): todas as notas usam o glifo próprio, uma linguagem só
-  return { nome, foto: null as string | null, icone: ICONE_NOTA[categoria(nome)] };
+  // imagem gerada por IA, num estilo único (a rota /api/nota-foto gera e o CDN guarda); o glifo é a rede de segurança
+  return { nome, foto: `/api/nota-foto?n=${encodeURIComponent(nome)}&v=4`, icone: ICONE_NOTA[categoria(nome)] };
 }
 
 export const ENCICLOPEDIA: Record<string, { tipo: string; origem: string; como: string; conhecer: string[] }> = {
