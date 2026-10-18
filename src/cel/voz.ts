@@ -43,9 +43,13 @@ export function ouvir(o: OpcoesVoz): Escuta {
 }
 
 function ouvirAgora(o: OpcoesVoz): Escuta {
-  const W = window as unknown as { SpeechRecognition?: new () => SR; webkitSpeechRecognition?: new () => SR };
+  const W = window as unknown as { SpeechRecognition?: new () => SR; webkitSpeechRecognition?: new () => SR; navigator: { standalone?: boolean } };
   const C = W.SpeechRecognition ?? W.webkitSpeechRecognition;
-  if (!C) return gravarETranscrever(o);
+  // iPhone em modo app (PWA na tela inicial): o reconhecimento existe mas não dispara nada (Apple bloqueia
+  // no standalone). Vai direto para gravar + transcrever, que funciona.
+  const iOS = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  const standalone = W.navigator.standalone === true || window.matchMedia?.("(display-mode: standalone)").matches;
+  if (!C || (iOS && standalone)) return gravarETranscrever(o);
 
   let texto = "", entregue = false, terminou = false, trocouParaGravacao = false;
   let gravacao: Escuta | null = null;
