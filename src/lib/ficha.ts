@@ -231,6 +231,11 @@ export let ultimoErroFicha = "";
 export async function gerarFicha(c: { nome: string; casa: string; concentracao?: string; link?: string }): Promise<FichaIA | null> {
   const { perfumes } = await carregarAcervo();
   const local = [...perfumes.values()].find((p) => normal(p.nome) === normal(c.nome) && normal(p.casa) === normal(c.casa));
+  // pré-existente completo (já no acervo, com notas e acordes): devolve na hora, sem IA e sem round-trips
+  if (local && (local.notas.saida.length + local.notas.coracao.length + local.notas.fundo.length) > 0 && local.acordes.length > 0) {
+    const { id: _i, clima: _c, ...resto } = local; void _i; void _c;
+    return { ...resto, revisar: [], reaproveitada: true, fonteFicha: local.fonteFicha ?? "acervo" };
+  }
   const salva = await fichaSalva(c.nome, c.casa);
   if (salva) return { ...salva, reaproveitada: true };
   // acervo global: ficha sem IA (só traduz nota que sobrou em inglês, com o modelo leve)
