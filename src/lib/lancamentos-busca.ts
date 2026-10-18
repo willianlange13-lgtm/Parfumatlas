@@ -2,6 +2,7 @@ import "server-only";
 import { geminiConfigurado, geminiJSON } from "@/lib/gemini";
 import { acordePT, familiaAtlas, notasPT } from "@/lib/normalizar";
 import { linhaDoPerfume } from "@/lib/dados";
+import { semFundo } from "@/lib/sem-fundo";
 import type { Perfume, Lancamento } from "@/lib/tipos";
 
 type Cliente = NonNullable<ReturnType<typeof import("@/lib/supabase/servico").clienteServico>>;
@@ -12,7 +13,7 @@ const ARABES_FIXAS = ["Lattafa", "Maison Alhambra", "Afnan", "Armaf", "Rasasi", 
 type Achado = {
   nome: string; casa: string; ano?: number | null; mes?: number | null;
   tipo?: "FLANKER" | "VERSÃO NOVA" | "INSPIRADO" | "PARECIDO" | null;
-  inspirado_em?: string | null; concentracao?: string | null; descricao?: string | null; fragrantica?: string | null;
+  inspirado_em?: string | null; concentracao?: string | null; descricao?: string | null; fragrantica?: string | null; fragrantica_id?: number | null;
   saida?: string[] | null; coracao?: string[] | null; fundo?: string[] | null; acordes?: string[] | null;
 };
 
@@ -24,7 +25,7 @@ const SCHEMA = {
       type: "ARRAY",
       items: {
         type: "OBJECT",
-        properties: { nome: S, casa: S, ano: { type: "INTEGER" }, mes: { type: "INTEGER" }, tipo: { type: "STRING", enum: ["FLANKER", "VERSÃO NOVA", "INSPIRADO", "PARECIDO"] }, inspirado_em: S, concentracao: S, descricao: S, fragrantica: S, saida: L, coracao: L, fundo: L, acordes: L },
+        properties: { nome: S, casa: S, ano: { type: "INTEGER" }, mes: { type: "INTEGER" }, tipo: { type: "STRING", enum: ["FLANKER", "VERSÃO NOVA", "INSPIRADO", "PARECIDO"] }, inspirado_em: S, concentracao: S, descricao: S, fragrantica: S, fragrantica_id: { type: "INTEGER" }, saida: L, coracao: L, fundo: L, acordes: L },
         required: ["nome", "casa"],
       },
     },
@@ -53,8 +54,8 @@ export async function buscarLancamentos(sb: Cliente): Promise<{ novos: string[];
   const pedir = (casa: string) => geminiJSON<{ lancamentos: Achado[] }>([{ text: `Liste os perfumes da casa "${casa}" LANÇADOS de ${mesAno(desde)} até ${mesAno(hoje)}, incluindo os deste mês.
 Primeiro abra a página da casa no Fragrantica (fragrantica.com.br/designers/...), que lista do mais novo para o mais antigo; depois procure notícias de lançamento de ${mesAno(hoje)}.
 Só perfumes que existem de verdade e saíram nesse período; nada anterior.
-Para cada um: nome (sem a casa), casa, ano e mês de lançamento, tipo (FLANKER se for versão de uma linha existente, VERSÃO NOVA se for reformulação/concentração nova, INSPIRADO se for clone de um original famoso, PARECIDO nos demais casos), inspirado_em (o original, se for clone), concentração, uma descrição de até 15 palavras em português, o link da página no Fragrantica, as notas de saída/coração/fundo e os acordes principais, em português.
-O que não encontrar fica vazio. Se a casa não lançou nada no período, devolva a lista vazia.` }], { schema: SCHEMA, pesquisar: true, maxBuscas: 3, tempo: 100000, tarefa: "lancamentos" }).then((x) => x.lancamentos ?? []).catch(() => [] as Achado[]);
+Para cada um: nome (sem a casa), casa, ano e mês de lançamento, tipo (FLANKER se for versão de uma linha existente, VERSÃO NOVA se for reformulação/concentração nova, INSPIRADO se for clone de um original famoso, PARECIDO nos demais casos), inspirado_em (o original, se for clone), concentração, uma descrição de até 15 palavras em português, o link da página no Fragrantica (fragrantica: a URL completa que termina em -NÚMERO.html) E o fragrantica_id (apenas o NÚMERO final dessa URL, obrigatório para carregar a foto do frasco), as notas de saída/coração/fundo e os acordes principais, em português.
+Sempre inclua o fragrantica_id; sem ele o perfume fica sem foto. O que não encontrar fica vazio. Se a casa não lançou nada no período, devolva a lista vazia.` }], { schema: SCHEMA, pesquisar: true, maxBuscas: 3, tempo: 100000, tarefa: "lancamentos" }).then((x) => x.lancamentos ?? []).catch(() => [] as Achado[]);
   const listas = await Promise.all(casas.map(pedir)); // todas juntas: em lotes passaria do tempo da Vercel
   const r = { lancamentos: listas.flat() };
 
@@ -69,7 +70,7 @@ O que não encontrar fica vazio. Se a casa não lançou nada no período, devolv
       familia: familiaAtlas(acordes.map((a) => a.nome).join(" "), acordes[0]?.nome), acorde: acordes[0]?.nome ?? "Amadeirado",
       genero: "", pais: "", descricao: (x.descricao ?? "").split(/\s+/).slice(0, 15).join(" "),
       notas: { saida: notasPT(x.saida ?? []), coracao: notasPT(x.coracao ?? []), fundo: notasPT(x.fundo ?? []) }, acordes,
-      imagem: fotoDoLink(x.fragrantica), forma: "ret", tampa: "#141B18",
+      imagem: fotoDoLink(x.fragrantica, x.fragrantica_id), forma: "ret", tampa: "#141B18",
     };
     // não duplica: se a ficha já existe (mesma casa e nome), só liga o lançamento
     const { data: ja } = await sb.from("perfumes").select("id").ilike("nome", p.nome).ilike("casa", p.casa).limit(1).maybeSingle();
@@ -87,7 +88,8 @@ O que não encontrar fica vazio. Se a casa não lançou nada no período, devolv
   return { novos, vistos: achados.length };
 }
 
-const fotoDoLink = (url?: string | null) => {
-  const id = url?.match(/fragrantica\.com(?:\.br)?\/perfume\/[^?#]*-(\d+)\.html/i)?.[1];
-  return id ? `https://fimgs.net/mdimg/perfume/375x500.${id}.jpg` : null;
+const fotoDoLink = (url?: string | null, idDireto?: number | null) => {
+  const id = (idDireto && idDireto > 0 ? String(idDireto) : null) ?? url?.match(/-(\d+)\.html/i)?.[1] ?? url?.match(/\/(\d{3,8})(?:\.|\b)/)?.[1];
+  // trata a foto (fundo branco, sem recorte torto), igual ao frasco oficial do resto do app
+  return id ? semFundo(`https://fimgs.net/mdimg/perfume/375x500.${id}.jpg`) : null;
 };
