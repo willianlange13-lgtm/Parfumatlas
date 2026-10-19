@@ -210,8 +210,10 @@ export async function montarFicha(id: string) {
       { nome: "Coração", notas: p.notas.coracao.slice(0, 8) },
       { nome: "Base", notas: p.notas.fundo.slice(0, 8) },
     ],
-    fixacao: horas > 0 ? hm(horas) : "—",
-    projecao: metros < 0.6 ? 1 : metros < 1.1 ? 2 : metros < 1.7 ? 3 : metros < 2.4 ? 4 : 5,
+    // sua nota "na sua pele" tem prioridade sobre a da comunidade (você marcou no cadastro)
+    fixacao: minhaF ? hm(minhaF.h) : horas > 0 ? hm(horas) : "—",
+    projecao: (() => { const m = minhaP?.m ?? metros; return m < 0.6 ? 1 : m < 1.1 ? 2 : m < 1.7 ? 3 : m < 2.4 ? 4 : 5; })(),
+    perfFonte: minhaF || minhaP ? "na sua pele" : undefined,
     periodo: noite - dia > 10 ? "Noturno" : dia - noite > 10 ? "Diurno" : "Dia e noite",
     diaNoite: { pos: posNoite, legenda: posNoite >= 62 ? "mais para a noite" : posNoite <= 38 ? "mais para o dia" : "dia e noite" },
     classif: {
