@@ -16,6 +16,7 @@ export type DadosGuia = {
   };
   marcadas: string[];
   fonte: string;
+  perfFonte?: string; // quando a fixação/projeção vêm da sua nota ("na sua pele")
 };
 
 const tr = (c: string, a: number) => `color-mix(in oklab, ${c} ${Math.round(a * 100)}%, transparent)`;
@@ -129,7 +130,7 @@ function Quadro({ valor, rotulo }: { valor: ReactNode; rotulo: string }) {
 export function PerformanceGuia({ g }: { g: DadosGuia }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12, width: "100%" }}>
-      <Titulo sub={g.fonte}>Performance</Titulo>
+      <Titulo sub={g.perfFonte ?? g.fonte}>Performance</Titulo>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0, 1fr))", gap: 8 }}>
         <Quadro valor={g.fixacao} rotulo="Fixação" />
         <Quadro rotulo="Projeção" valor={
