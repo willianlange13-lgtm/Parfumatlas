@@ -42,15 +42,32 @@ export function perfumeDaLinha(r: Linha): Perfume {
   };
 }
 
+// o Postgres (text e jsonb) recusa o byte nulo \u0000 e surrogates soltos ("unsupported Unicode escape sequence");
+// a IA às vezes devolve esses caracteres, então limpamos recursivamente antes de gravar.
+function limparUnicode<T>(v: T): T {
+  if (typeof v === "string") {
+    return v.replace(/\u0000/g, "")
+      .replace(/[\uD800-\uDBFF](?![\uDC00-\uDFFF])/g, "") // surrogate alto sem o par
+      .replace(/(^|[^\uD800-\uDBFF])([\uDC00-\uDFFF])/g, "$1") as unknown as T; // surrogate baixo solto
+  }
+  if (Array.isArray(v)) return v.map(limparUnicode) as unknown as T;
+  if (v && typeof v === "object") {
+    const o: Record<string, unknown> = {};
+    for (const k in v) o[k] = limparUnicode((v as Record<string, unknown>)[k]);
+    return o as T;
+  }
+  return v;
+}
+
 export function linhaDoPerfume(p: Perfume): Linha {
-  return {
+  return limparUnicode({
     nome: p.nome, casa: p.casa, ano: p.ano ?? null, concentracao: p.concentracao ?? null, perfumistas: p.perfumistas,
     familia: p.familia, acorde: p.acorde, genero: p.genero ?? null, pais: p.pais ?? null, descricao: p.descricao ?? null,
     notas_saida: p.notas.saida, notas_coracao: p.notas.coracao, notas_fundo: p.notas.fundo, acordes: p.acordes,
     fixacao_h: p.fixacaoH ?? null, projecao_m: p.projecaoM ?? null,
     votos: { ...(p.votos ?? {}), forma: p.forma, tampa: p.tampa, parecidos: p.parecidos ?? [], mesmaCasa: p.mesmaCasa ?? [], buscaParecidos: p.buscaParecidos ?? null, dnaOriginal: p.dnaOriginal ?? null, fonteFicha: p.fonteFicha ?? null }, clima: p.clima ?? {},
     imagem_url: p.imagem ?? null, fontes: p.fontes ?? [], campos_revisar: p.revisar ?? [],
-  };
+  });
 }
 
 export type Acervo = {
