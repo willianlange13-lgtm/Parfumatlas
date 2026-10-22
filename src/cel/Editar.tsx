@@ -92,7 +92,7 @@ export function Editar({ p: p0, e: e0, podeSalvar }: { p: Perfume; e: E; podeSal
       </div>
       <Cartaz a="Ajuste" b="a sua ficha." />
       {erro && <span style={{ color: "var(--erro)", fontSize: 13.5 }}>{erro}</span>}
-      <input id="editar-foto" type="file" accept="image/*" capture="environment" hidden onChange={trocarFoto} />
+      <input id="editar-foto" type="file" accept="image/*" hidden onChange={trocarFoto} />
       <div style={{ display: "flex", gap: 14, alignItems: "center", flexShrink: 0 }}>
         <span style={{ width: 64, height: 80, borderRadius: 14, background: "var(--surface)", border: "1px solid var(--line)", overflow: "hidden", display: "flex", alignItems: "flex-end", justifyContent: "center", paddingBottom: 6, flexShrink: 0 }}>
           {foto ? (

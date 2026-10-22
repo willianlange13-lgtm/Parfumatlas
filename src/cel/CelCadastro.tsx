@@ -117,7 +117,7 @@ export function CelCadastro({ c, modoInicial }: { c: CadCel; modoInicial?: strin
     const poe = (k: "saida" | "coracao" | "fundo") => { const n = prompt("Nome da nota"); if (n?.trim()) c.setFicha({ ...f, notas: { ...f.notas, [k]: [...f.notas[k], n.trim()] } }); };
     return (
       <div className="c-tela sem-barra">
-        <input id="foto-frasco-cel" type="file" accept="image/*" capture="environment" hidden onChange={c.fotoEscolhida} />
+        <input id="foto-frasco-cel" type="file" accept="image/*" hidden onChange={c.fotoEscolhida} />
         <div className="c-topo"><Circ icone="voltar" tamanho={36} rotulo="Voltar" onClick={() => setPasso("id")} /><span className="c-topo-tit">Revisar ficha</span><span style={{ width: 36 }} /></div>
         <Passos n={3} txt="Revisar ficha" />
         {c.completando && <span style={{ fontSize: 13, color: "var(--ink-3)", flexShrink: 0 }}>Buscando os votos de fixação e projeção… pode revisar e salvar, eles entram na ficha quando chegarem.</span>}
@@ -245,7 +245,7 @@ export function CelCadastro({ c, modoInicial }: { c: CadCel; modoInicial?: strin
   const etapa = c.cands.length ? 2 : 1;
   return (
     <div className="c-tela sem-barra">
-      <input id="foto-frasco-cel" type="file" accept="image/*" capture="environment" hidden onChange={c.fotoEscolhida} />
+      <input id="foto-frasco-cel" type="file" accept="image/*" hidden onChange={c.fotoEscolhida} />
       <div className="c-topo"><Circ icone="voltar" href="/" tamanho={36} rotulo="Voltar" /><span className="c-topo-tit">{TIT[c.modo]}</span><span style={{ width: 36 }} /></div>
       {c.modo !== "voz" && <Passos n={etapa} txt={etapa === 1 ? "Identificar" : "Confirmar"} />}
       {etapa === 1 && <h1 className="cad-tit">Foto, link,<br /><em>nome ou voz.</em></h1>}
