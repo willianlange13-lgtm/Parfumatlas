@@ -140,7 +140,7 @@ export function CelSommelier({ v }: { v: VSom }) {
 
   return (
     <div className="c-tela sem-barra" style={{ paddingBottom: 170 }}>
-      <div className="c-topo" style={{ height: 60 }}>
+      <div className="c-topo" style={{ height: "calc(60px + env(safe-area-inset-top))" }}>
         <Circ icone="voltar" tamanho={36} rotulo="Voltar" onClick={() => { setVerExemplo(false); v.nova(); }} />
         <span style={{ width: 34, height: 34, borderRadius: "var(--r-ctl)", border: "1px solid var(--line-2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}><Logo tamanho={22} traco={1.6} /></span>
         <span style={{ display: "flex", flexDirection: "column", flexGrow: 1, minWidth: 0 }}>
