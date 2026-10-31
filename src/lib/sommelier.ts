@@ -89,7 +89,20 @@ Conversa:
 ${mensagens.map((m) => `${m.papel === "eu" ? "Willian" : "Sommelier"}: ${m.texto}`).join("\n")}`;
       const partes = [{ text: contexto }, ...(foto ? [{ inlineData: { mimeType: foto.mime, data: foto.base64 } }] : [])];
       const r = await geminiJSON<Resposta>(partes, { schema: SCHEMA, sistema, temperatura: 0.6, leve: !foto });
-      r.sugestoes = (r.sugestoes ?? []).filter((s) => acervo.perfumes.has(s.perfumeId));
+      // resolve a sugestão por id OU por nome (a IA às vezes erra o id ou põe o nome no lugar) e reescreve para o id real
+      const norm = (s: string) => (s ?? "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim();
+      const porNome = new Map(itens.map((e) => [norm(e.perfume.nome), e.perfume.id]));
+      const querSugerir = (r.sugestoes ?? []).length > 0;
+      r.sugestoes = (r.sugestoes ?? []).map((s) => {
+        if (acervo.perfumes.has(s.perfumeId)) return s;
+        const id = porNome.get(norm(s.perfumeId)) ?? porNome.get(norm(s.rotulo)) ?? null;
+        return id ? { ...s, perfumeId: id } : null;
+      }).filter((s): s is Sugestao => Boolean(s));
+      // a IA quis sugerir mas nenhum id casou: preenche pelo ranking local para não deixar a lista vazia
+      if (querSugerir && r.sugestoes.length === 0) {
+        const local = respostaLocal(pergunta, filtros, itens, clima.agora.temp, clima.agora.umidade, false);
+        if (local.sugestoes?.length) r.sugestoes = local.sugestoes;
+      }
       return r;
     } catch (e) {
       console.error("sommelier gemini", e);
@@ -105,7 +118,7 @@ function respostaLocal(pergunta: string, filtros: Filtros, itens: Entrada[], tem
   const discreto = (filtros.sentir ?? "").toLowerCase() === "discreto" || /discret|trabalho|entrevista/i.test(pergunta + ocasiao);
   const ranking = itens.map((e) => {
     const p = e.perfume;
-    let s = adequacao(p, temp, umid) * 0.6 + Math.min(1, diasDesde(e.ultimoUso) / 40) * 0.15;
+    let s = adequacao(p, temp, umid) * 0.6 + Math.min(1, diasDesde(e.ultimoUso) / 40) * 0.15 + Math.random() * 0.05; // leve variedade entre empates
     const oc = p.votos?.ocasioes.find((o) => o.nome.toLowerCase() === ocasiao)?.v ?? 50;
     s += (oc / 100) * 0.25;
     if (discreto) s -= ((p.projecaoM ?? 1.3) - 1.2) * 0.2;
