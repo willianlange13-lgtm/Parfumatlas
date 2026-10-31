@@ -88,7 +88,8 @@ ${itens.map(resumoPerfume).join("\n")}
 Conversa:
 ${mensagens.map((m) => `${m.papel === "eu" ? "Willian" : "Sommelier"}: ${m.texto}`).join("\n")}`;
       const partes = [{ text: contexto }, ...(foto ? [{ inlineData: { mimeType: foto.mime, data: foto.base64 } }] : [])];
-      const r = await geminiJSON<Resposta>(partes, { schema: SCHEMA, sistema, temperatura: 0.6, leve: !foto });
+      // sommelier conversa e recomenda: usa o modelo principal (não o nano leve), que raciocina melhor
+      const r = await geminiJSON<Resposta>(partes, { schema: SCHEMA, sistema, temperatura: 0.6, leve: false });
       // resolve a sugestão por id OU por nome (a IA às vezes erra o id ou põe o nome no lugar) e reescreve para o id real
       const norm = (s: string) => (s ?? "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim();
       const porNome = new Map(itens.map((e) => [norm(e.perfume.nome), e.perfume.id]));
