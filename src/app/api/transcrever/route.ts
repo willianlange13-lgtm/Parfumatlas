@@ -8,7 +8,17 @@ import { geminiTexto, usaOpenAI } from "@/lib/gemini";
  */
 export const maxDuration = 30;
 
-const DICA = "Nome de perfume e da casa, em português ou inglês. Casas comuns: Lattafa, Armaf, Afnan, Al Haramain, Rasasi, Maison Alhambra, French Avenue, Ajmal, Swiss Arabian, Arabian Oud, Rayhaan, Paris Corner, Fragrance World, Khadlaj, Ard Al Zaafaran, Dior, Chanel, Creed.";
+// dica curta: uma lista longa fazia o Whisper "ecoar" o próprio prompt quando o áudio saía sem fala clara
+const DICA = "Perfumes e marcas (árabes e de grife).";
+
+// quando o áudio é curto/sem fala, a IA às vezes devolve o próprio prompt ou ruído: isso não é transcrição
+function valido(texto: string): string {
+  const t = (texto ?? "").replace(/^["“]|["”]$/g, "").trim();
+  const n = t.toLowerCase();
+  if (!t || t.length < 2) return "";
+  if (n.includes("perfumes e marcas") || n.includes("casas comuns") || n.startsWith("nome de perfume")) return "";
+  return t;
+}
 
 export async function POST(request: NextRequest) {
   if (supabaseConfigurado()) {
@@ -28,14 +38,21 @@ export async function POST(request: NextRequest) {
         form.append("language", "pt");
         form.append("prompt", DICA);
         const r = await fetch("https://api.openai.com/v1/audio/transcriptions", { method: "POST", headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY}` }, body: form, signal: AbortSignal.timeout(25000) });
-        if (r.ok) { const j = (await r.json()) as { text?: string }; return NextResponse.json({ texto: (j.text ?? "").trim() }); }
+        if (r.ok) {
+          const j = (await r.json()) as { text?: string };
+          const texto = valido(j.text ?? "");
+          if (!texto) return NextResponse.json({ erro: "Não entendi. Toque no microfone e fale o nome e a casa." }, { status: 422 });
+          return NextResponse.json({ texto });
+        }
         console.error("[atlas:transcrever]", modelo, r.status, (await r.text()).slice(0, 200));
       }
       return NextResponse.json({ erro: "Não consegui transcrever o áudio agora." }, { status: 502 });
     }
     if (process.env.GEMINI_API_KEY) {
-      const texto = await geminiTexto([{ text: `Transcreva exatamente o que a pessoa falou neste áudio, sem comentar. ${DICA} Responda só com a frase.` }, { inlineData: { mimeType: tipo, data: base64 } }], { temperatura: 0 });
-      return NextResponse.json({ texto: texto.replace(/^["“]|["”]$/g, "").trim() });
+      const bruto = await geminiTexto([{ text: `Transcreva exatamente o que a pessoa falou neste áudio, sem comentar. ${DICA} Responda só com a frase.` }, { inlineData: { mimeType: tipo, data: base64 } }], { temperatura: 0 });
+      const texto = valido(bruto);
+      if (!texto) return NextResponse.json({ erro: "Não entendi. Toque no microfone e fale o nome e a casa." }, { status: 422 });
+      return NextResponse.json({ texto });
     }
     return NextResponse.json({ erro: "A IA não está ligada (falta a chave na Vercel)." }, { status: 400 });
   } catch (e) {
